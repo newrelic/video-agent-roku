@@ -25,7 +25,7 @@ end function
 
 function videoAction(key as String) as Boolean
     if key = "replay"
-        m.video.control = "play"
+        m.video.control = "replay"
         return true
     else if key = "play"
         if m.video.state = "playing"
