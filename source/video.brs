@@ -20,6 +20,8 @@ function setVideo() as void
     m.video = m.top.findNode("myVideo")
     m.video.content = videoContent
     'm.video.control = "play"
+
+    m.video.observeField("state", "stateObserver")
 end function
 
 function videoAction(key as String) as Boolean
@@ -55,4 +57,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         'print "Key Release --> " key
         return false
     end if
+end function
+
+function stateObserver() as void
+    print "Video State Observer"
 end function
