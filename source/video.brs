@@ -6,6 +6,8 @@ sub init()
 end sub
 
 function setVideo() as void
+    print "Prepare video"
+
     videoContent = createObject("RoSGNode", "ContentNode")
 
     jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
@@ -17,10 +19,7 @@ function setVideo() as void
     
     m.video = m.top.findNode("myVideo")
     m.video.content = videoContent
-    m.video.control = "play"
-    m.video.enableTrickPlay = True
-
-    print "Play Video!!"
+    'm.video.control = "play"
 end function
 
 function videoAction(key as String) as Boolean
@@ -33,6 +32,9 @@ function videoAction(key as String) as Boolean
             return true
         else if m.video.state = "paused"
             m.video.control = "resume"
+            return true
+        else
+            m.video.control = "play"
             return true
         end if
     else if key = "fastforward"
@@ -50,7 +52,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         print "Key Press --> " key
         return videoAction(key)
     else
-        print "Key Release --> " key
+        'print "Key Release --> " key
         return false
     end if
 end function
