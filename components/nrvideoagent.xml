@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="NRVideoAgent" extends="Scene"> 
+	<children>
+		<Video
+			id="myVideo"
+			width="1920"
+			height="1080"
+			translation="[0,0]"
+		/>
+    </children>
+
+	<script type="text/brightscript" uri="pkg:/source/video.brs"/>
+</component>
