@@ -3,12 +3,12 @@
 sub init()
     m.top.setFocus(true)
     ' Setup video player
-    setVideo()
+    setupVideoPlaylist()
     ' Set video state observer
-    m.video.observeField("state", "stateObserver")
+    NewRelicVideoStart(m.video)
 end sub
 
-function setVideo() as void
+function setupVideo() as void
     print "Prepare video player with single video"
 
     jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
@@ -38,7 +38,7 @@ function setVideo() as void
     m.video.control = "play"
 end function
 
-function setVideoPlaylist() as void
+function setupVideoPlaylist() as void
     print "Prepare video player with Playlist"
 
     jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
@@ -108,23 +108,4 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         'print "Key Release --> " key
         return false
     end if
-end function
-
-function stateObserver() as Void
-    printVideoInfo()
-end function
-
-function printVideoInfo() as Void
-    print "---------- Video State Observer ----------"
-    print "Player state = " m.video.state
-    print "Current position = " m.video.position
-    print "Current duration = " m.video.duration
-    if m.video.streamInfo <> invalid
-        print "Stream URL = " m.video.streamInfo["streamUrl"]
-        print "Stream Bitrate = " m.video.streamInfo["streamBitrate"]
-        print "Stream Measured Bitrate = " m.video.streamInfo["measuredBitrate"]
-        print "Stream isResumed = " m.video.streamInfo["isResumed"]
-        print "Stream isUnderrun = " m.video.streamInfo["isUnderrun"]
-    end if
-    print "------------------------------------------"
 end function

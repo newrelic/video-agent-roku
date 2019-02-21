@@ -10,4 +10,5 @@
     </children>
 
 	<script type="text/brightscript" uri="pkg:/source/video.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/NRAgent.brs"/>
 </component>
