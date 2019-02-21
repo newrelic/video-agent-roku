@@ -2,26 +2,77 @@
 
 sub init()
     m.top.setFocus(true)
+    ' Setup video player
     setVideo()
+    ' Set video state observer
+    m.video.observeField("state", "stateObserver")
 end sub
 
 function setVideo() as void
-    print "Prepare video"
-
-    videoContent = createObject("RoSGNode", "ContentNode")
+    print "Prepare video player with single video"
 
     jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
     pana = "http://mirrors.standaloneinstaller.com/video-sample/Panasonic_HDC_TM_700_P_50i.m4v"
     bunny = "https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4"
-
-    videoContent.url = jelly
-    videoContent.title = "Video Test"
+    hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+    dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
+    
+    jellyContent = createObject("RoSGNode", "ContentNode")
+    jellyContent.url = jelly
+    jellyContent.title = "Jelly"
+    
+    bunnyContent = createObject("RoSGNode", "ContentNode")
+    bunnyContent.url = bunny
+    bunnyContent.title = "Bunny"
+    
+    hlsContent = createObject("RoSGNode", "ContentNode")
+    hlsContent.url = hls
+    hlsContent.title = "HLS"
+    
+    dashContent = createObject("RoSGNode", "ContentNode")
+    dashContent.url = dash
+    dashContent.title = "DASH"
     
     m.video = m.top.findNode("myVideo")
-    m.video.content = videoContent
-    'm.video.control = "play"
+    m.video.content = jellyContent
+    m.video.control = "play"
+end function
 
-    m.video.observeField("state", "stateObserver")
+function setVideoPlaylist() as void
+    print "Prepare video player with Playlist"
+
+    jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
+    pana = "http://mirrors.standaloneinstaller.com/video-sample/Panasonic_HDC_TM_700_P_50i.m4v"
+    bunny = "https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4"
+    hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+    dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
+
+    playlistContent = createObject("RoSGNode", "ContentNode")
+    
+    jellyContent = createObject("RoSGNode", "ContentNode")
+    jellyContent.url = jelly
+    jellyContent.title = "Jelly"
+    playlistContent.appendChild(jellyContent)
+    
+    bunnyContent = createObject("RoSGNode", "ContentNode")
+    bunnyContent.url = bunny
+    bunnyContent.title = "Bunny"
+    playlistContent.appendChild(bunnyContent)
+    
+    hlsContent = createObject("RoSGNode", "ContentNode")
+    hlsContent.url = hls
+    hlsContent.title = "HLS"
+    playlistContent.appendChild(hlsContent)
+    
+    dashContent = createObject("RoSGNode", "ContentNode")
+    dashContent.url = dash
+    dashContent.title = "DASH"
+    playlistContent.appendChild(dashContent)
+    
+    m.video = m.top.findNode("myVideo")
+    m.video.content = playlistContent
+    m.video.contentIsPlaylist = True
+    m.video.control = "play"
 end function
 
 function videoAction(key as String) as Boolean
@@ -59,6 +110,21 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     end if
 end function
 
-function stateObserver() as void
-    print "Video State Observer"
+function stateObserver() as Void
+    printVideoInfo()
+end function
+
+function printVideoInfo() as Void
+    print "---------- Video State Observer ----------"
+    print "Player state = " m.video.state
+    print "Current position = " m.video.position
+    print "Current duration = " m.video.duration
+    if m.video.streamInfo <> invalid
+        print "Stream URL = " m.video.streamInfo["streamUrl"]
+        print "Stream Bitrate = " m.video.streamInfo["streamBitrate"]
+        print "Stream Measured Bitrate = " m.video.streamInfo["measuredBitrate"]
+        print "Stream isResumed = " m.video.streamInfo["isResumed"]
+        print "Stream isUnderrun = " m.video.streamInfo["isUnderrun"]
+    end if
+    print "------------------------------------------"
 end function
