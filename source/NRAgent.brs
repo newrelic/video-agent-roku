@@ -1,6 +1,7 @@
 '**********************************************************
 ' NRAgent.brs
-' New Relic Video Agent for Roku
+' New Relic Video Agent for Roku.
+' Minimum requirements: FW 7.2
 '
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
@@ -41,6 +42,12 @@ function printVideoInfo() as Void
         print "Stream isResumed = " m.nrVideoObject.streamInfo["isResumed"]
         print "Stream isUnderrun = " m.nrVideoObject.streamInfo["isUnderrun"]
     end if
-    ' TODO: add segment data
+    if m.nrVideoObject.streamingSegment <> invalid
+        print "Segment URL = " m.nrVideoObject.streamingSegment["segUrl"]
+        print "Segment Bitrate = " m.nrVideoObject.streamingSegment["segBitrateBps"]
+        print "Segment Sequence = " m.nrVideoObject.streamingSegment["segSequence"]
+        print "Segment Start time = " m.nrVideoObject.streamingSegment["segStartTime"]
+    end if
+    print "Manifest data = " m.nrVideoObject.manifestData
     print "------------------------------------------"
 end function

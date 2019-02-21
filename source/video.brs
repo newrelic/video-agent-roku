@@ -96,6 +96,9 @@ function videoAction(key as String) as Boolean
     else if key = "rewind"
         m.video.seek = m.video.position - 10
         return true
+    else if key = "right"
+        m.video.control = "skipcontent"
+        return true       
     end if
     return false
 end function
