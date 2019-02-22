@@ -2,9 +2,10 @@
 
 sub init()
     m.top.setFocus(true)
-    ' Setup video player
+    'Setup video player
     setupVideoPlaylist()
-    ' Set video state observer
+    'Start New Relic agents
+    NewRelicStart("1567277","4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl")
     NewRelicVideoStart(m.video)
 end sub
 

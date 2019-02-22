@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<component name="NRVideoAgent" extends="Scene"> 
+<component name="NRVideoAgentExample" extends="Scene"> 
 	<children>
 		<Video
 			id="myVideo"
@@ -10,5 +10,8 @@
     </children>
 
 	<script type="text/brightscript" uri="pkg:/source/video.brs"/>
-	<script type="text/brightscript" uri="pkg:/source/NRAgent.brs"/>
+	
+	<!-- New Relic Agents -->
+	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/NewRelicVideoAgent.brs"/>
 </component>

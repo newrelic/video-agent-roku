@@ -9,7 +9,7 @@ sub Main()
     screen.setMessagePort(m.port)
 
     'Create a scene and load /components/nrvideoagent.xml'
-    scene = screen.CreateScene("NRVideoAgent")
+    scene = screen.CreateScene("NRVideoAgentExample")
     screen.show()
 
     while(true)

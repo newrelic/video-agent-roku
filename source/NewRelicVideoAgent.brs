@@ -1,5 +1,5 @@
 '**********************************************************
-' NRAgent.brs
+' NewRelicVideoAgent.brs
 ' New Relic Video Agent for Roku.
 ' Minimum requirements: FW 7.2
 '
@@ -26,6 +26,9 @@ function NewRelicVideoStart(videoObject as Object)
     m.nrVideoObject = videoObject
     'Player Ready
     nrSendPlayerReady()
+    
+    'a = nrInsertInsightsData("RokuTest",{})
+    'print a
 
 end function
 
