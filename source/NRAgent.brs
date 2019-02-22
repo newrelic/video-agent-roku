@@ -6,7 +6,7 @@
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
 
-sub NewRelicVideoStart(videoObject as Object)
+function NewRelicVideoStart(videoObject as Object)
     print "Init NewRelicVideoAgent" 
     
     'Init list of events
@@ -14,15 +14,15 @@ sub NewRelicVideoStart(videoObject as Object)
     'Current state
     m.nrLastVideoState = "none"
     'Setup event listeners 
-    videoObject.observeField("state", "stateObserver")
-    videoObject.observeField("contentIndex", "indexObserver")
-    'videoObject.observeField("position", "positionObserver")
+    videoObject.observeField("state", "__nrStateObserver__")
+    videoObject.observeField("contentIndex", "__nrIndexObserver__")
+    'videoObject.observeField("position", "__nrPositionObserver__")
     'videoObject.notificationInterval = 1
     'Store video object
     m.nrVideoObject = videoObject
     'Player Ready
     nrSendPlayerReady()
-end sub
+end function
 
 'Record an event to the list. Takes an roAssociativeArray as argument 
 function nrRecordVideoEvent(event as Object) as Void
@@ -91,7 +91,7 @@ function nrSendBufferEnd() as Void
     nrRecordVideoEvent(ev)
 end function
 
-function stateObserver() as Void
+function __nrStateObserver__() as Void
     print "---------- State Observer ----------"
     printVideoInfo()
     
@@ -105,12 +105,12 @@ function stateObserver() as Void
 
 end function
 
-function indexObserver() as Void
+function __nrIndexObserver__() as Void
     print "---------- Index Observer ----------"
     printVideoInfo()
 end function
 
-function positionObserver() as Void
+function __nrPositionObserver__() as Void
     print "--------- Position Observer --------"
     printVideoInfo()
 end function
