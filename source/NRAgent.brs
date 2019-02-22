@@ -6,6 +6,10 @@
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
 
+'===================
+' Public functions '
+'===================
+
 function NewRelicVideoStart(videoObject as Object)
     print "Init NewRelicVideoAgent" 
     
@@ -14,9 +18,9 @@ function NewRelicVideoStart(videoObject as Object)
     'Current state
     m.nrLastVideoState = "none"
     'Setup event listeners 
-    videoObject.observeField("state", "__nrStateObserver__")
-    videoObject.observeField("contentIndex", "__nrIndexObserver__")
-    'videoObject.observeField("position", "__nrPositionObserver__")
+    videoObject.observeField("state", "__nrStateObserver")
+    videoObject.observeField("contentIndex", "__nrIndexObserver")
+    'videoObject.observeField("position", "__nrPositionObserver")
     'videoObject.notificationInterval = 1
     'Store video object
     m.nrVideoObject = videoObject
@@ -91,26 +95,42 @@ function nrSendBufferEnd() as Void
     nrRecordVideoEvent(ev)
 end function
 
-function __nrStateObserver__() as Void
+'=====================
+' Internal functions '
+'=====================
+
+function __nrStateObserver() as Void
     print "---------- State Observer ----------"
     printVideoInfo()
-    
-    if m.nrVideoObject.state = "playing" and m.nrLastVideoState = "paused"
-        nrSendResume()
-    else if m.nrVideoObject.state = "paused" and m.nrLastVideoState = "playing"
-        nrSendPause()
+
+    if m.nrVideoObject.state = "playing"
+        __nrStateTransitionPlaying()
+    else if m.nrVideoObject.state = "paused"
+        __nrStateTransitionPaused()
     end if
     
-     m.nrLastVideoState = m.nrVideoObject.state
+    m.nrLastVideoState = m.nrVideoObject.state
 
 end function
 
-function __nrIndexObserver__() as Void
+function __nrStateTransitionPlaying() as Void
+    if m.nrLastVideoState = "paused"
+        nrSendResume()
+    end if
+end function
+
+function __nrStateTransitionPaused() as Void
+    if m.nrLastVideoState = "playing"
+        nrSendPause()
+    end if
+end function
+
+function __nrIndexObserver() as Void
     print "---------- Index Observer ----------"
     printVideoInfo()
 end function
 
-function __nrPositionObserver__() as Void
+function __nrPositionObserver() as Void
     print "--------- Position Observer --------"
     printVideoInfo()
 end function
