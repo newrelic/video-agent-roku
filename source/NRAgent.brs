@@ -12,7 +12,7 @@
 
 function NewRelicVideoStart(videoObject as Object)
     print "Init NewRelicVideoAgent" 
-    
+
     'Init list of events
     m.nrVideoEventList = CreateObject("roList")
     'Current state
@@ -26,6 +26,7 @@ function NewRelicVideoStart(videoObject as Object)
     m.nrVideoObject = videoObject
     'Player Ready
     nrSendPlayerReady()
+
 end function
 
 'Record an event to the list. Takes an roAssociativeArray as argument 
@@ -46,7 +47,8 @@ end function
 function nrCreateVideoEvent(actionName as String) as Object
     ev = CreateObject("roAssociativeArray")
     ev["actionName"] = actionName
-    'TODO: add timestamp and other very basic attributes
+    timestamp& = CreateObject("roDateTime").asSeconds()
+    ev["timestamp"] = timestamp& * 1000
     
     print "Create Event = " ev
     
