@@ -12,7 +12,6 @@ function setupVideo() as void
     print "Prepare video player with single video"
 
     jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    pana = "http://mirrors.standaloneinstaller.com/video-sample/Panasonic_HDC_TM_700_P_50i.m4v"
     bunny = "https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4"
     hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
     dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
@@ -34,7 +33,7 @@ function setupVideo() as void
     dashContent.title = "DASH"
     
     m.video = m.top.findNode("myVideo")
-    m.video.content = jellyContent
+    m.video.content = dashContent
     m.video.control = "play"
 end function
 
@@ -42,7 +41,6 @@ function setupVideoPlaylist() as void
     print "Prepare video player with Playlist"
 
     jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    pana = "http://mirrors.standaloneinstaller.com/video-sample/Panasonic_HDC_TM_700_P_50i.m4v"
     bunny = "https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4"
     hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
     dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
