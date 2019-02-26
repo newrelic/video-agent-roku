@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component name = "NRTask" extends = "Task">
+	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
 	<script type = "text/brightscript" >
 		<![CDATA[
 		sub init()
@@ -7,6 +8,8 @@
 		end sub
 		
 		function hola()
+		    a = nrInsertInsightsData("RokuTest",{})
+		    print "API request: " a
 			while true
 				sleep(1000)
 	    		print "Hola NRTask"

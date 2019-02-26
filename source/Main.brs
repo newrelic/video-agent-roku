@@ -8,6 +8,7 @@ sub Main()
     m.port = CreateObject("roMessagePort")
     screen.setMessagePort(m.port)
     
+    'Init global scope, required by NRAgent
     m.global = screen.getGlobalNode()
 
     'Create a scene and load /components/nrvideoagent.xml'

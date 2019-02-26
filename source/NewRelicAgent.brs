@@ -11,17 +11,16 @@ function NewRelicStart(account as String, apikey as String) as Void
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
     
-    m.global.addFields({nrAccountNumber: account})
-    m.global.addFields({nrInsightsApiKey: apikey})
+    m.global.addFields({"nrAccountNumber": account})
+    m.global.addFields({"nrInsightsApiKey": apikey})
 end function
 
 function nrInsertInsightsData(eventType as String, attributes as Object) as Object
-    _url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events")
-    _apikey = m.nrInsightsApiKey
+    _url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.global.nrAccountNumber + "/events")
+    _apikey = m.global.nrInsightsApiKey
     attributes["eventType"] = eventType
     _jsonString = FormatJson(attributes)
 
-    'TODO: it only works in a thread (task)
     _urlReq = CreateObject("roUrlTransfer")
 
     _urlReq.SetUrl(_url)
