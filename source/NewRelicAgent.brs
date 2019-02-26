@@ -10,6 +10,9 @@ function NewRelicStart(account as String, apikey as String) as Void
     print "Init NewRelicAgent" 
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
+    
+    m.global.addFields({nrAccountNumber: account})
+    m.global.addFields({nrInsightsApiKey: apikey})
 end function
 
 function nrInsertInsightsData(eventType as String, attributes as Object) as Object

@@ -10,6 +10,8 @@
 			while true
 				sleep(1000)
 	    		print "Hola NRTask"
+	    		print m.global.nrAccountNumber
+	    		print m.global.nrInsightsApiKey
 			end while
 		end function
 		]]>
