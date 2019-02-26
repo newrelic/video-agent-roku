@@ -97,7 +97,13 @@ function videoAction(key as String) as Boolean
         return true
     else if key = "right"
         m.video.control = "skipcontent"
-        return true       
+        return true
+    else if key = "left"
+        if m.video.contentIndex > 0
+            m.video.nextContentIndex = m.video.contentIndex - 1
+            m.video.control = "skipcontent"
+        end if
+        return true
     end if
     return false
 end function

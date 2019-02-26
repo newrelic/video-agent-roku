@@ -29,6 +29,12 @@ function NewRelicVideoStart(videoObject as Object)
     
     'a = nrInsertInsightsData("RokuTest",{})
     'print a
+    
+    m.bgTask = createObject("roSGNode", "NRTask")
+'    m.bgTask.setField("uri", "http://www.sdktestinglab.com/homeoptionslistcontent.xml")
+    'm.bgTask.observeField("content", "showhomeoptionslist")
+    m.bgTask.functionName = "hola"
+    m.bgTask.control = "RUN"
 
 end function
 

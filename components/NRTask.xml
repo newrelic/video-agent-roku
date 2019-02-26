@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name = "NRTask" extends = "Task">
+	<script type = "text/brightscript" >
+		<![CDATA[
+		sub init()
+			print "init NRTask"
+		end sub
+		
+		function hola()
+			while true
+				sleep(1000)
+	    		print "Hola NRTask"
+			end while
+		end function
+		]]>
+	</script>
+</component>
