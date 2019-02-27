@@ -11,6 +11,6 @@
 
 	<script type="text/brightscript" uri="pkg:/source/video.brs"/>
 	
-	<!-- New Relic Agents -->
-	<script type="text/brightscript" uri="pkg:/source/NRAgent.brs"/>
+	<!-- New Relic Agent -->
+	<script type="text/brightscript" uri="pkg:/source/newrelic/NRAgent.brs"/>
 </component>

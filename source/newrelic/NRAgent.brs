@@ -11,14 +11,15 @@
 '==========================
 
 function NewRelicStart(account as String, apikey as String) as Void
-    print "Init NewRelicAgent" 
+    print "Init NewRelicAgent"
+     
+    Run("pkg:/source/newrelic/NRUtils.brs")
+    
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
     
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
-    
-    Run("pkg:/source/NRUtils.brs")
 end function
 
 '========================
