@@ -7,14 +7,14 @@
 			print "init NRTask"
 		end sub
 		
-		function hola()
-		    a = nrInsertInsightsData("RokuTest",{})
-		    print "API request: " a
+		function nrEventProcessor()
 			while true
-				sleep(1000)
-	    		print "Hola NRTask"
+				sleep(5000)
+	    		print "-- Do nrEventProcessor --"
 	    		print m.global.nrAccountNumber
 	    		print m.global.nrInsightsApiKey
+		    	a = nrInsertInsightsData("RokuTest",{actionName: "CONTENT_HEARTBEAT"})
+		    	print "API request: " a
 			end while
 		end function
 		]]>

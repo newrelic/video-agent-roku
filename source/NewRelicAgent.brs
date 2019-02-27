@@ -32,5 +32,9 @@ function nrInsertInsightsData(eventType as String, attributes as Object) as Obje
 
     _resp = _urlReq.PostFromString(_jsonString)
     
+    print "------"
+    print _jsonString
+    print "------"
+    
     return _resp
 end function
