@@ -1,19 +1,10 @@
 '**********************************************************
-' NewRelicAgent.brs
-' New Relic Agent for Roku.
+' NRUtils.brs
+' New Relic Agent Utility functions for Roku.
 ' Minimum requirements: FW 7.2
 '
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
-
-function NewRelicStart(account as String, apikey as String) as Void
-    print "Init NewRelicAgent" 
-    m.nrAccountNumber = account
-    m.nrInsightsApiKey = apikey
-    
-    m.global.addFields({"nrAccountNumber": account})
-    m.global.addFields({"nrInsightsApiKey": apikey})
-end function
 
 function nrInsertInsightsData(eventType as String, attributes as Object) as Object
     _url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.global.nrAccountNumber + "/events")

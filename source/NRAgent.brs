@@ -1,14 +1,29 @@
 '**********************************************************
-' NewRelicVideoAgent.brs
-' New Relic Video Agent for Roku.
+' NRAgent.brs
+' New Relic Agent for Roku.
 ' Minimum requirements: FW 7.2
 '
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
 
-'===================
-' Public functions '
-'===================
+'==========================
+' General Agent functions '
+'==========================
+
+function NewRelicStart(account as String, apikey as String) as Void
+    print "Init NewRelicAgent" 
+    m.nrAccountNumber = account
+    m.nrInsightsApiKey = apikey
+    
+    m.global.addFields({"nrAccountNumber": account})
+    m.global.addFields({"nrInsightsApiKey": apikey})
+    
+    Run("pkg:/source/NRUtils.brs")
+end function
+
+'========================
+' Video Agent functions '
+'========================
 
 function NewRelicVideoStart(videoObject as Object)
     print "Init NewRelicVideoAgent" 
@@ -26,9 +41,7 @@ function NewRelicVideoStart(videoObject as Object)
     m.nrVideoObject = videoObject
     'Player Ready
     nrSendPlayerReady()
-    
-    'TODO: Move Task initialization to NewRelicStart
-    
+    'Init event processor
     m.bgTask = createObject("roSGNode", "NRTask")
     m.bgTask.functionName = "nrEventProcessor"
     m.bgTask.control = "RUN"
