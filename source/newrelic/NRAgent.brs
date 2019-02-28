@@ -12,14 +12,14 @@
 
 function NewRelicStart(account as String, apikey as String) as Void
     print "Init NewRelicAgent"
-     
-    Run("pkg:/source/newrelic/NRUtils.brs")
     
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
     
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
+    m.global.addFields({"nrEventArray": []})
+    
 end function
 
 '========================
@@ -29,8 +29,6 @@ end function
 function NewRelicVideoStart(videoObject as Object)
     print "Init NewRelicVideoAgent" 
 
-    'Init list of events
-    m.nrVideoEventList = CreateObject("roList")
     'Current state
     m.nrLastVideoState = "none"
     'Setup event listeners 
@@ -49,72 +47,46 @@ function NewRelicVideoStart(videoObject as Object)
 
 end function
 
-'Record an event to the list. Takes an roAssociativeArray as argument 
-function nrRecordVideoEvent(event as Object) as Void
-    if m.nrVideoEventList.Count() < 500 
-        m.nrVideoEventList.AddTail(event)
-    end if
-    
-    print "List of Event = " m.nrVideoEventList
-     
-end function
-
-'Extracts the first event from the list. Returns an roAssociativeArray as argument
-function nrExtractEvent() as Object
-    return m.nrVideoEventList.RemoveHead()
-end function
-
-function nrCreateVideoEvent(actionName as String) as Object
-    ev = CreateObject("roAssociativeArray")
-    ev["actionName"] = actionName
-    timestamp& = CreateObject("roDateTime").asSeconds()
-    ev["timestamp"] = timestamp& * 1000
-    
-    print "Create Event = " ev
-    
-    return ev
-end function
-
 'TODO: Consider Ad events
 
 function nrSendPlayerReady() as Void
-    ev = nrCreateVideoEvent("PLAYER_READY")
-    nrRecordVideoEvent(ev)
+    ev = nrCreateEvent("PLAYER_READY")
+    nrRecordEvent(ev)
 end function
 
 function nrSendRequest() as Void
-    ev = nrCreateVideoEvent("CONTENT_REQUEST")
-    nrRecordVideoEvent(ev)
+    ev = nrCreateEvent("CONTENT_REQUEST")
+    nrRecordEvent(ev)
 end function
 
 function nrSendStart() as Void
-    ev = nrCreateVideoEvent("CONTENT_START")
-    nrRecordVideoEvent(ev)
+    ev = nrCreateEvent("CONTENT_START")
+    nrRecordEvent(ev)
 end function
 
 function nrSendEnd() as Void
-    ev = nrCreateVideoEvent("CONTENT_END")
-    nrRecordVideoEvent(ev)
+    ev = nrCreateEvent("CONTENT_END")
+    nrRecordEvent(ev)
 end function
 
 function nrSendPause() as Void
-    ev = nrCreateVideoEvent("CONTENT_PAUSE")
-    nrRecordVideoEvent(ev)
+    ev = nrCreateEvent("CONTENT_PAUSE")
+    nrRecordEvent(ev)
 end function
 
 function nrSendResume() as Void
-    ev = nrCreateVideoEvent("CONTENT_RESUME")
-    nrRecordVideoEvent(ev)
+    ev = nrCreateEvent("CONTENT_RESUME")
+    nrRecordEvent(ev)
 end function
 
 function nrSendBufferStart() as Void
-    ev = nrCreateVideoEvent("CONTENT_BUFFER_START")
-    nrRecordVideoEvent(ev)
+    ev = nrCreateEvent("CONTENT_BUFFER_START")
+    nrRecordEvent(ev)
 end function
 
 function nrSendBufferEnd() as Void
-    ev = nrCreateVideoEvent("CONTENT_BUFFER_END")
-    nrRecordVideoEvent(ev)
+    ev = nrCreateEvent("CONTENT_BUFFER_END")
+    nrRecordEvent(ev)
 end function
 
 '=====================

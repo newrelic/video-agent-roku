@@ -25,7 +25,48 @@ function nrInsertInsightsData(eventType as String, attributes as Object) as Obje
     
     print "------"
     print _jsonString
+    'print "m.global = " m.global
     print "------"
     
     return _resp
+end function
+
+'Record an event to the list. Takes an roAssociativeArray as argument 
+function nrRecordEvent(event as Object) as Void
+    if m.global.nrEventArray.Count() < 500
+        arr = m.global.nrEventArray
+        arr.Push(event)
+        m.global.nrEventArray = arr
+        
+        printVideoEventList()
+    end if
+end function
+
+'Extracts the first event from the list. Returns an roAssociativeArray as argument
+function nrExtractEvent() as Object
+    arr = m.global.nrEventArray
+    res = arr.Pop()
+    m.global.nrEventArray = arr
+    return res
+end function
+
+function nrCreateEvent(actionName as String) as Object
+    ev = CreateObject("roAssociativeArray")
+    ev["actionName"] = actionName
+    timestamp& = CreateObject("roDateTime").asSeconds()
+    ev["timestamp"] = timestamp& * 1000
+    
+    print "Create Event = " ev
+    
+    return ev
+end function
+
+function printVideoEventList() as Void
+    print "------------- printVideoEventList ------------" 
+    i = 0
+    while i < m.global.nrEventArray.Count()
+        print m.global.nrEventArray[i]
+        i = i + 1
+    end while
+    print "----------------------------------------------"
 end function
