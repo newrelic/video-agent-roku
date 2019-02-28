@@ -47,7 +47,13 @@ function NewRelicVideoStart(videoObject as Object)
     m.bgTask = createObject("roSGNode", "NRTask")
     m.bgTask.functionName = "nrTaskMain"
     m.bgTask.control = "RUN"
-
+    'Init heartbeat timer
+    m.hbTimer = CreateObject("roSGNode", "Timer")
+    m.hbTimer.repeat = true
+    m.hbTimer.duration = 30
+    m.hbTimer.observeField("fire", "__nrHeartbeatHandler")
+    m.hbTimer.control = "start"
+    
 end function
 
 function nrAction(action as String) as String
@@ -169,9 +175,25 @@ function __nrPositionObserver() as Void
 end function
 
 function __nrAddVideoAttributes(ev as Object) as Object
-    ev.AddReplace(nrAttr("Duration"),m.nrVideoObject.duration * 1000)
-    ev.AddReplace(nrAttr("Playhead"),m.nrVideoObject.position * 1000)
+    ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
+    ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
+    ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
+    if m.nrVideoObject.streamInfo <> invalid
+        ev.AddReplace(nrAttr("Src"), m.nrVideoObject.streamInfo["streamUrl"])
+        ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
+        ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
+    end if
+    if m.nrVideoObject.streamingSegment <> invalid
+        ev.AddReplace(nrAttr("SegmentBitrate"), m.nrVideoObject.streamingSegment["segBitrateBps"])
+    end if
     return ev
+end function
+
+function __nrHeartbeatHandler() as Void
+    'Only send while it is playing (state is not "none" or "finished")
+    if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
+        __nrSendAction("HEARTBEAT")
+    end if
 end function
 
 function printVideoInfo() as Void
