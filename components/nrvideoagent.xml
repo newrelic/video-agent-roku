@@ -9,7 +9,7 @@
 		/>
     </children>
     
-    <!-- New Relic Agent -->
+    <!-- Setup New Relic Agent -->
     <script type="text/brightscript" uri="pkg:/source/newrelic/NRUtils.brs"/>
 	<script type="text/brightscript" uri="pkg:/source/newrelic/NRAgent.brs"/>
 

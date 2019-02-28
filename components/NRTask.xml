@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+**********************************************************
+ NRTask.xml
+ New Relic Agent background task.
+ Minimum requirements: FW 7.2
+
+ Copyright 2019 New Relic Inc. All Rights Reserved. 
+**********************************************************
+-->
+
 <component name = "NRTask" extends = "Task">
 	<script type="text/brightscript" uri="pkg:/source/newrelic/NRUtils.brs"/>
 	<script type = "text/brightscript" >
 		<![CDATA[
-		sub init()
-			print "init NRTask"
-		end sub
-		
-		function nrEventProcessor()
+		function nrTaskMain()
 			while true
-				sleep(5000)
-	    		print "-- Do nrEventProcessor --"
-	    		print m.global.nrAccountNumber
-	    		print m.global.nrInsightsApiKey
-		    	a = nrInsertInsightsData("RokuTest",{actionName: "CONTENT_HEARTBEAT"})
-		    	print "API request: " a
+				sleep(10000)
+				nrEventProcessor()
 			end while
 		end function
 		]]>

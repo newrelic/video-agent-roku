@@ -42,7 +42,7 @@ function NewRelicVideoStart(videoObject as Object)
     nrSendPlayerReady()
     'Init event processor
     m.bgTask = createObject("roSGNode", "NRTask")
-    m.bgTask.functionName = "nrEventProcessor"
+    m.bgTask.functionName = "nrTaskMain"
     m.bgTask.control = "RUN"
 
 end function

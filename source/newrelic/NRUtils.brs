@@ -23,12 +23,18 @@ function nrInsertInsightsData(eventType as String, attributes as Object) as Obje
 
     _resp = _urlReq.PostFromString(_jsonString)
     
-    print "------"
-    print _jsonString
-    'print "m.global = " m.global
-    print "------"
-    
     return _resp
+end function
+
+function nrEventProcessor()
+    print "-- Do nrEventProcessor --"
+    while true
+        ev = nrExtractEvent()
+        if ev = invalid then exit while
+        a = nrInsertInsightsData("RokuTest", ev)
+        print "API request: " a " of ev = " ev
+    end while
+    print "-------------------------"
 end function
 
 'Record an event to the list. Takes an roAssociativeArray as argument 
