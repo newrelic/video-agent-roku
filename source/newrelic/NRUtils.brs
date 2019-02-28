@@ -45,6 +45,7 @@ function nrRecordEvent(event as Object) as Void
         arr.Push(event)
         m.global.nrEventArray = arr
         
+        print "Record New Event = " event
         'printVideoEventList()
     end if
 end function
@@ -74,7 +75,9 @@ function nrCreateEvent(actionName as String) as Object
     ev["timestamp"] = timestampMS&
     m.global.nrLastTimestamp = timestamp&
     
-    print "Create Event = " ev
+    'TODO: add common attributes:
+    '  appBuild, appId, appName, appVersion, device, newRelicVersion, osName, osVersion, sessionId
+    'And other Roku related info. 
     
     return ev
 end function

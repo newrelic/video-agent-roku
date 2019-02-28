@@ -58,44 +58,44 @@ function nrAction(action as String) as String
     end if
 end function
 
+function nrAttr(attribute as String) as String
+    if m.isAd = true
+        return "ad" + attribute
+    else
+        return "content" + attribute
+    end if
+end function
+
 function nrSendPlayerReady() as Void
-    ev = nrCreateEvent(nrAction("READY"))
-    nrRecordEvent(ev)
+    __nrSendAction("READY")
 end function
 
 function nrSendRequest() as Void
-    ev = nrCreateEvent(nrAction("REQUEST"))
-    nrRecordEvent(ev)
+    __nrSendAction("REQUEST")
 end function
 
 function nrSendStart() as Void
-    ev = nrCreateEvent(nrAction("START"))
-    nrRecordEvent(ev)
+    __nrSendAction("START")
 end function
 
 function nrSendEnd() as Void
-    ev = nrCreateEvent(nrAction("END"))
-    nrRecordEvent(ev)
+    __nrSendAction("END")
 end function
 
 function nrSendPause() as Void
-    ev = nrCreateEvent(nrAction("PAUSE"))
-    nrRecordEvent(ev)
+    __nrSendAction("PAUSE")
 end function
 
 function nrSendResume() as Void
-    ev = nrCreateEvent(nrAction("RESUME"))
-    nrRecordEvent(ev)
+    __nrSendAction("RESUME")
 end function
 
 function nrSendBufferStart() as Void
-    ev = nrCreateEvent(nrAction("BUFFER_START"))
-    nrRecordEvent(ev)
+    __nrSendAction("BUFFER_START")
 end function
 
 function nrSendBufferEnd() as Void
-    ev = nrCreateEvent(nrAction("BUFFER_END"))
-    nrRecordEvent(ev)
+    __nrSendAction("BUFFER_END")
 end function
 
 'TODO: add timer for the heatbeat action
@@ -103,6 +103,12 @@ end function
 '=====================
 ' Internal functions '
 '=====================
+
+function __nrSendAction(actionName as String) as Void
+    ev = nrCreateEvent(nrAction(actionName))
+    ev = __nrAddVideoAttributes(ev)
+    nrRecordEvent(ev)
+end function
 
 function __nrStateObserver() as Void
     print "---------- State Observer ----------"
@@ -158,6 +164,12 @@ end function
 function __nrPositionObserver() as Void
     print "--------- Position Observer --------"
     printVideoInfo()
+end function
+
+function __nrAddVideoAttributes(ev as Object) as Object
+    ev.AddReplace(nrAttr("Duration"),m.nrVideoObject.duration * 1000)
+    ev.AddReplace(nrAttr("Playhead"),m.nrVideoObject.position * 1000)
+    return ev
 end function
 
 function printVideoInfo() as Void
