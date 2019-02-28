@@ -45,7 +45,7 @@ function nrRecordEvent(event as Object) as Void
         arr.Push(event)
         m.global.nrEventArray = arr
         
-        printVideoEventList()
+        'printVideoEventList()
     end if
 end function
 

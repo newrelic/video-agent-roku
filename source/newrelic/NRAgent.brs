@@ -33,6 +33,7 @@ function NewRelicVideoStart(videoObject as Object)
 
     'Current state
     m.nrLastVideoState = "none"
+    m.isAd = false
     'Setup event listeners 
     videoObject.observeField("state", "__nrStateObserver")
     videoObject.observeField("contentIndex", "__nrIndexObserver")
@@ -49,47 +50,55 @@ function NewRelicVideoStart(videoObject as Object)
 
 end function
 
-'TODO: Consider Ad events
+function nrAction(action as String) as String
+    if m.isAd = true
+        return "AD_" + action
+    else
+        return "CONTENT_" + action
+    end if
+end function
 
 function nrSendPlayerReady() as Void
-    ev = nrCreateEvent("PLAYER_READY")
+    ev = nrCreateEvent(nrAction("READY"))
     nrRecordEvent(ev)
 end function
 
 function nrSendRequest() as Void
-    ev = nrCreateEvent("CONTENT_REQUEST")
+    ev = nrCreateEvent(nrAction("REQUEST"))
     nrRecordEvent(ev)
 end function
 
 function nrSendStart() as Void
-    ev = nrCreateEvent("CONTENT_START")
+    ev = nrCreateEvent(nrAction("START"))
     nrRecordEvent(ev)
 end function
 
 function nrSendEnd() as Void
-    ev = nrCreateEvent("CONTENT_END")
+    ev = nrCreateEvent(nrAction("END"))
     nrRecordEvent(ev)
 end function
 
 function nrSendPause() as Void
-    ev = nrCreateEvent("CONTENT_PAUSE")
+    ev = nrCreateEvent(nrAction("PAUSE"))
     nrRecordEvent(ev)
 end function
 
 function nrSendResume() as Void
-    ev = nrCreateEvent("CONTENT_RESUME")
+    ev = nrCreateEvent(nrAction("RESUME"))
     nrRecordEvent(ev)
 end function
 
 function nrSendBufferStart() as Void
-    ev = nrCreateEvent("CONTENT_BUFFER_START")
+    ev = nrCreateEvent(nrAction("BUFFER_START"))
     nrRecordEvent(ev)
 end function
 
 function nrSendBufferEnd() as Void
-    ev = nrCreateEvent("CONTENT_BUFFER_END")
+    ev = nrCreateEvent(nrAction("BUFFER_END"))
     nrRecordEvent(ev)
 end function
+
+'TODO: add timer for the heatbeat action
 
 '=====================
 ' Internal functions '
