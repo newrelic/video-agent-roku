@@ -27,14 +27,15 @@ function nrInsertInsightsData(eventType as String, attributes as Object) as Obje
 end function
 
 function nrEventProcessor()
-    print "-- Do nrEventProcessor --"
+    print "-- nrEventProcessor --"
     while true
         ev = nrExtractEvent()
         if ev = invalid then exit while
-        a = nrInsertInsightsData("RokuTest", ev)
-        print "API request: " a " of ev = " ev
+        res = nrInsertInsightsData("RokuTest", ev)
+        if res <> 200
+           'TODO: what if it fails? retry or discard? Or insert into list again?
+        end if
     end while
-    print "-------------------------"
 end function
 
 'Record an event to the list. Takes an roAssociativeArray as argument 
@@ -60,7 +61,18 @@ function nrCreateEvent(actionName as String) as Object
     ev = CreateObject("roAssociativeArray")
     ev["actionName"] = actionName
     timestamp& = CreateObject("roDateTime").asSeconds()
-    ev["timestamp"] = timestamp& * 1000
+    timestampMS& = timestamp& * 1000
+    
+    if timestamp& = m.global.nrLastTimestamp
+        m.global.nrTicks = m.global.nrTicks + 1
+    else
+        m.global.nrTicks = 0
+    end if
+    
+    timestampMS& = timestampMS& + m.global.nrTicks
+    
+    ev["timestamp"] = timestampMS&
+    m.global.nrLastTimestamp = timestamp&
     
     print "Create Event = " ev
     

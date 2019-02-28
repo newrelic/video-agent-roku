@@ -19,6 +19,8 @@ function NewRelicStart(account as String, apikey as String) as Void
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
     m.global.addFields({"nrEventArray": []})
+    m.global.addFields({"nrLastTimestamp": 0})
+    m.global.addFields({"nrTicks": 0})
     
 end function
 
@@ -101,6 +103,14 @@ function __nrStateObserver() as Void
         __nrStateTransitionPlaying()
     else if m.nrVideoObject.state = "paused"
         __nrStateTransitionPaused()
+    else if m.nrVideoObject.state = "buffering"
+        __nrStateTransitionBuffering()
+    else if m.nrVideoObject.state = "finished"
+        nrSendEnd()
+    else if m.nrVideoObject.state = "stopped"
+        nrSendEnd()
+    else if m.nrVideoObject.state = "error"
+        'TODO: error handling
     end if
     
     m.nrLastVideoState = m.nrVideoObject.state
@@ -110,6 +120,11 @@ end function
 function __nrStateTransitionPlaying() as Void
     if m.nrLastVideoState = "paused"
         nrSendResume()
+    else if m.nrLastVideoState = "buffering"
+        nrSendBufferEnd()
+        if m.nrVideoObject.position = 0
+            nrSendStart()
+        end if
     end if
 end function
 
@@ -117,6 +132,13 @@ function __nrStateTransitionPaused() as Void
     if m.nrLastVideoState = "playing"
         nrSendPause()
     end if
+end function
+
+function __nrStateTransitionBuffering() as Void
+    if m.nrLastVideoState = "none"
+        nrSendRequest()
+    end if
+    nrSendBufferStart()
 end function
 
 function __nrIndexObserver() as Void

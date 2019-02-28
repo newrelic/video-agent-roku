@@ -3,7 +3,8 @@
 sub init()
     m.top.setFocus(true)
     'Setup video player
-    setupVideoPlaylist()
+    'setupVideoPlaylist()
+    setupVideo()
     'Start New Relic agents
     NewRelicStart("1567277","4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl")
     NewRelicVideoStart(m.video)
@@ -35,7 +36,7 @@ function setupVideo() as void
     
     m.video = m.top.findNode("myVideo")
     m.video.content = dashContent
-    m.video.control = "play"
+    'm.video.control = "play"
 end function
 
 function setupVideoPlaylist() as void
