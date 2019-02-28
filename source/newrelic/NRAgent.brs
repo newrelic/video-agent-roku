@@ -106,8 +106,6 @@ function nrSendBufferEnd() as Void
     __nrSendAction("BUFFER_END")
 end function
 
-'TODO: add timer for the heatbeat action
-
 '=====================
 ' Internal functions '
 '=====================
@@ -117,6 +115,8 @@ function __nrSendAction(actionName as String) as Void
     ev = __nrAddVideoAttributes(ev)
     nrRecordEvent(ev)
 end function
+
+'TODO: implement events for playlists (start / end for each video)
 
 function __nrStateObserver() as Void
     print "---------- State Observer ----------"
@@ -133,7 +133,7 @@ function __nrStateObserver() as Void
     else if m.nrVideoObject.state = "stopped"
         nrSendEnd()
     else if m.nrVideoObject.state = "error"
-        'TODO: error handling
+        'TODO: send error action, get errorCode and errorMsg from video player object
     end if
     
     m.nrLastVideoState = m.nrVideoObject.state
@@ -173,6 +173,8 @@ function __nrPositionObserver() as Void
     print "--------- Position Observer --------"
     printVideoInfo()
 end function
+
+'TODO: implement "timeSince" attributes
 
 function __nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
