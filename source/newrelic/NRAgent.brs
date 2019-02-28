@@ -67,7 +67,9 @@ function nrAttr(attribute as String) as String
 end function
 
 function nrSendPlayerReady() as Void
-    __nrSendAction("READY")
+    ev = nrCreateEvent("PLAYER_READY")
+    ev = __nrAddVideoAttributes(ev)
+    nrRecordEvent(ev)
 end function
 
 function nrSendRequest() as Void
