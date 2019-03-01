@@ -37,8 +37,6 @@ function NewRelicVideoStart(videoObject as Object)
     'Setup event listeners 
     videoObject.observeField("state", "__nrStateObserver")
     videoObject.observeField("contentIndex", "__nrIndexObserver")
-    videoObject.observeField("position", "__nrPositionObserver")
-    videoObject.notificationInterval = 1
     'Store video object
     m.nrVideoObject = videoObject
     'Player Ready
@@ -168,13 +166,6 @@ function __nrIndexObserver() as Void
     
     __nrSendAction("NEXT")
     
-end function
-
-function __nrPositionObserver() as Void
-    if m.nrVideoObject.position = 0
-        print "--------- Position Observer --------> POS ZERO"
-        printVideoInfo()
-    end if
 end function
 
 'TODO: implement "timeSince" attributes
