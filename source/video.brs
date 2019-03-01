@@ -105,9 +105,6 @@ function videoAction(key as String) as Boolean
             m.video.control = "skipcontent"
         end if
         return true
-    'else if key = "back"
-    '    nrEventProcessor()
-    '    return false
     end if
     return false
 end function

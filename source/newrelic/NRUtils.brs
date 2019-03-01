@@ -27,11 +27,11 @@ function nrInsertInsightsData(eventType as String, attributes as Object) as Obje
 end function
 
 function nrEventProcessor()
-    print "-- nrEventProcessor --"
     while true
         ev = nrExtractEvent()
         if ev = invalid then exit while
         res = nrInsertInsightsData("RokuTest", ev)
+        print "-- nrEventProcessor: insert insights data --"
         if res <> 200
            'TODO: what if it fails? retry or discard? Or insert into list again?
         end if
