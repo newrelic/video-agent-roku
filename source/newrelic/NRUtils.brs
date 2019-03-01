@@ -78,6 +78,7 @@ function nrCreateEvent(actionName as String) as Object
     'TODO: add common attributes:
     '  appBuild, appId, appName, appVersion, device, newRelicVersion, osName, osVersion, sessionId
     'And other Roku related info. 
+    'sessionID = timestamp + random number (hash?)
     
     return ev
 end function

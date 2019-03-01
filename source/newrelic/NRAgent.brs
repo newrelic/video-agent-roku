@@ -116,8 +116,6 @@ function __nrSendAction(actionName as String) as Void
     nrRecordEvent(ev)
 end function
 
-'TODO: implement events for playlists (start / end for each video)
-
 function __nrStateObserver() as Void
     print "---------- State Observer ----------"
     printVideoInfo()
@@ -167,6 +165,9 @@ end function
 function __nrIndexObserver() as Void
     print "---------- Index Observer ----------"
     printVideoInfo()
+    
+    __nrSendAction("NEXT")
+    
 end function
 
 function __nrPositionObserver() as Void
@@ -175,6 +176,7 @@ function __nrPositionObserver() as Void
 end function
 
 'TODO: implement "timeSince" attributes
+'TODO: add videoId for each new video (using the sessionId?)
 
 function __nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
