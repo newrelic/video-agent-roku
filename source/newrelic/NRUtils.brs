@@ -58,31 +58,6 @@ function nrExtractEvent() as Object
     return res
 end function
 
-function nrCreateEvent(actionName as String) as Object
-    ev = CreateObject("roAssociativeArray")
-    ev["actionName"] = actionName
-    timestamp& = CreateObject("roDateTime").asSeconds()
-    timestampMS& = timestamp& * 1000
-    
-    if timestamp& = m.global.nrLastTimestamp
-        m.global.nrTicks = m.global.nrTicks + 1
-    else
-        m.global.nrTicks = 0
-    end if
-    
-    timestampMS& = timestampMS& + m.global.nrTicks
-    
-    ev["timestamp"] = timestampMS&
-    m.global.nrLastTimestamp = timestamp&
-    
-    'TODO: add common attributes:
-    '  appBuild, appId, appName, appVersion, device, newRelicVersion, osName, osVersion, sessionId
-    'And other Roku related info. 
-    'sessionID = timestamp + random number (hash?)
-    
-    return ev
-end function
-
 function printVideoEventList() as Void
     print "------------- printVideoEventList ------------" 
     i = 0

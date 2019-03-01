@@ -15,6 +15,7 @@ function NewRelicStart(account as String, apikey as String) as Void
     
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
+    m.nrSessionId = __nrGenerateId()
     
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
@@ -104,6 +105,28 @@ function nrSendBufferEnd() as Void
     __nrSendAction("BUFFER_END")
 end function
 
+function nrCreateEvent(actionName as String) as Object
+    ev = CreateObject("roAssociativeArray")
+    ev["actionName"] = actionName
+    timestamp& = CreateObject("roDateTime").asSeconds()
+    timestampMS& = timestamp& * 1000
+    
+    if timestamp& = m.global.nrLastTimestamp
+        m.global.nrTicks = m.global.nrTicks + 1
+    else
+        m.global.nrTicks = 0
+    end if
+    
+    timestampMS& = timestampMS& + m.global.nrTicks
+    
+    ev["timestamp"] = timestampMS&
+    m.global.nrLastTimestamp = timestamp&
+    
+    ev = __nrAddAttributes(ev)
+    
+    return ev
+end function
+
 '=====================
 ' Internal functions '
 '=====================
@@ -186,11 +209,30 @@ function __nrAddVideoAttributes(ev as Object) as Object
     return ev
 end function
 
+function __nrAddAttributes(ev as Object) as Object
+    'TODO: add common attributes:
+    '  appBuild, appId, appName, appVersion, device, newRelicVersion, osName, osVersion, sessionId
+    'And other Roku related info. 
+    ev.AddReplace("sessionId", m.nrSessionId)
+    return ev
+end function
+
 function __nrHeartbeatHandler() as Void
     'Only send while it is playing (state is not "none" or "finished")
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
         __nrSendAction("HEARTBEAT")
     end if
+end function
+
+function __nrGenerateId() as String
+    timestamp = CreateObject("roDateTime").asSeconds()
+    randStr = "ID" + Str(timestamp) + Str(Rnd(0) * 1000.0)
+    ba = CreateObject("roByteArray")
+    ba.FromAsciiString(randStr)
+    digest = CreateObject("roEVPDigest")
+    digest.Setup("md5")
+    result = digest.Process(ba)
+    return result
 end function
 
 function printVideoInfo() as Void
