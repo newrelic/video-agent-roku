@@ -224,6 +224,9 @@ function __nrAddAttributes(ev as Object) as Object
     ev.AddReplace("trackerName", "rokutracker")
     ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
     ev.AddReplace("sessionId", m.nrSessionId)
+    hdmi = CreateObject("roHdmiStatus")
+    ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
+    ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
     di = CreateObject("roDeviceInfo")
     ev.AddReplace("uuid", di.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
     ev.AddReplace("device", di.GetModelDisplayName())
@@ -235,6 +238,7 @@ function __nrAddAttributes(ev as Object) as Object
     ev.AddReplace("osVersion", di.GetVersion())
     ev.AddReplace("countryCode", di.GetUserCountryCode())
     ev.AddReplace("timeZone", di.GetTimeZone())
+    ev.AddReplace("locale", di.GetCurrentLocale())
     ev.AddReplace("memoryLevel", di.GetGeneralMemoryLevel())
     ev.AddReplace("connectionType", di.GetConnectionType())
     ev.AddReplace("ipAddress", di.GetExternalIp())
@@ -243,6 +247,9 @@ function __nrAddAttributes(ev as Object) as Object
     ev.AddReplace("displayAspectRatio", di.GetDisplayAspectRatio())
     ev.AddReplace("videoMode", di.GetVideoMode())
     ev.AddReplace("graphicsPlatform", di.GetGraphicsPlatform())
+    ev.AddReplace("timeSinceLastKeypress", di.TimeSinceLastKeypress())
+    
+    
     'ev.AddReplace("", di.)
     
     return ev
