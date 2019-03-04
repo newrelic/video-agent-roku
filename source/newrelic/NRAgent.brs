@@ -22,6 +22,7 @@ function NewRelicStart(account as String, apikey as String) as Void
     m.global.addFields({"nrEventArray": []})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
+    m.global.addFields({"nrAgentVersion": "0.1.0"})
     
 end function
 
@@ -218,7 +219,9 @@ function __nrAddAttributes(ev as Object) as Object
     '  appBuild, appId, appName, appVersion, device, newRelicVersion, osName, osVersion, sessionId
     'And other Roku related info.
     ev.AddReplace("newRelicAgent", "RokuAgent")
-    ev.AddReplace("newRelicVersion", "0.1.0") 
+    ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
+    ev.AddReplace("trackerName", "rokutracker")
+    ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
     ev.AddReplace("sessionId", m.nrSessionId)
     di = CreateObject("roDeviceInfo")
     ev.AddReplace("uuid", di.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
