@@ -1,7 +1,7 @@
 '**********************************************************
 ' NRAgent.brs
 ' New Relic Agent for Roku.
-' Minimum requirements: FW 7.2
+' Minimum requirements: FW 8.1
 '
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
@@ -194,6 +194,8 @@ end function
 'TODO: implement "timeSince" attributes
 'TODO: add videoId for each new video (using the sessionId?)
 
+'TODO: some attributes are not going to change, we can create it only once and then add every time
+
 function __nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
     ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
@@ -206,14 +208,29 @@ function __nrAddVideoAttributes(ev as Object) as Object
     if m.nrVideoObject.streamingSegment <> invalid
         ev.AddReplace(nrAttr("SegmentBitrate"), m.nrVideoObject.streamingSegment["segBitrateBps"])
     end if
+    ev.AddReplace("playerName", "RokuVideoPlayer")
+    di = CreateObject("roDeviceInfo")
+    ev.AddReplace("playerVersion", di.GetVersion())
     return ev
 end function
 
 function __nrAddAttributes(ev as Object) as Object
     'TODO: add common attributes:
     '  appBuild, appId, appName, appVersion, device, newRelicVersion, osName, osVersion, sessionId
-    'And other Roku related info. 
+    'And other Roku related info.
+    ev.AddReplace("newRelicAgent", "RokuAgent")
+    ev.AddReplace("newRelicVersion", "0.1.0") 
     ev.AddReplace("sessionId", m.nrSessionId)
+    di = CreateObject("roDeviceInfo")
+    ev.AddReplace("uuid", di.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
+    ev.AddReplace("device", di.GetModelDisplayName())
+    ev.AddReplace("deviceGroup", "Roku")
+    ev.AddReplace("deviceManufacturer", "Roku")
+    ev.AddReplace("deviceModel", di.GetModel())
+    ev.AddReplace("deviceType", di.GetModelType())
+    ev.AddReplace("osName", "RokuOS")
+    ev.AddReplace("osVersion", di.GetVersion())
+    
     return ev
 end function
 
