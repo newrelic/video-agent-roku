@@ -236,6 +236,14 @@ function __nrAddAttributes(ev as Object) as Object
     ev.AddReplace("countryCode", di.GetUserCountryCode())
     ev.AddReplace("timeZone", di.GetTimeZone())
     ev.AddReplace("memoryLevel", di.GetGeneralMemoryLevel())
+    ev.AddReplace("connectionType", di.GetConnectionType())
+    ev.AddReplace("ipAddress", di.GetExternalIp())
+    ev.AddReplace("displayType", di.GetDisplayType())
+    ev.AddReplace("displayMode", di.GetDisplayMode())
+    ev.AddReplace("displayAspectRatio", di.GetDisplayAspectRatio())
+    ev.AddReplace("videoMode", di.GetVideoMode())
+    ev.AddReplace("graphicsPlatform", di.GetGraphicsPlatform())
+    'ev.AddReplace("", di.)
     
     return ev
 end function
