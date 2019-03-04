@@ -209,8 +209,7 @@ function __nrAddVideoAttributes(ev as Object) as Object
         ev.AddReplace(nrAttr("SegmentBitrate"), m.nrVideoObject.streamingSegment["segBitrateBps"])
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
-    di = CreateObject("roDeviceInfo")
-    ev.AddReplace("playerVersion", di.GetVersion())
+    ev.AddReplace("playerVersion", ev["osVersion"])
     return ev
 end function
 
