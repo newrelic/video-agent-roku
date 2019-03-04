@@ -16,6 +16,8 @@ function NewRelicStart(account as String, apikey as String) as Void
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
     m.nrSessionId = __nrGenerateId()
+    m.nrTimer = CreateObject("roTimespan")
+    m.nrTimer.Mark()
     
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
@@ -211,9 +213,7 @@ function __nrAddVideoAttributes(ev as Object) as Object
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
     ev.AddReplace("playerVersion", ev["osVersion"])
-    'TODO: calculate session duration (time since initial timestamp) ->
-    sessionDuration = 0
-    ev.AddReplace("sessionDuration", sessionDuration)
+    ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
     return ev
 end function
 
