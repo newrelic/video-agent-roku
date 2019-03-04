@@ -192,7 +192,7 @@ function __nrIndexObserver() as Void
     
 end function
 
-'TODO: implement "timeSince" attributes
+'TODO: implement "timeSince" attributes,  numberOf and others
 'TODO: add videoId for each new video (using the sessionId?)
 
 'TODO: some attributes are not going to change, we can create it only once and then add every time
@@ -211,13 +211,14 @@ function __nrAddVideoAttributes(ev as Object) as Object
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
     ev.AddReplace("playerVersion", ev["osVersion"])
+    'TODO: calculate session duration (time since initial timestamp) ->
+    sessionDuration = 0
+    ev.AddReplace("sessionDuration", sessionDuration)
     return ev
 end function
 
 function __nrAddAttributes(ev as Object) as Object
-    'TODO: add common attributes:
-    '  appBuild, appId, appName, appVersion, device, newRelicVersion, osName, osVersion, sessionId
-    'And other Roku related info.
+    'TODO: appBuild, appId, appName, appVersion
     ev.AddReplace("newRelicAgent", "RokuAgent")
     ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
     ev.AddReplace("trackerName", "rokutracker")
@@ -232,6 +233,9 @@ function __nrAddAttributes(ev as Object) as Object
     ev.AddReplace("deviceType", di.GetModelType())
     ev.AddReplace("osName", "RokuOS")
     ev.AddReplace("osVersion", di.GetVersion())
+    ev.AddReplace("countryCode", di.GetUserCountryCode())
+    ev.AddReplace("timeZone", di.GetTimeZone())
+    ev.AddReplace("memoryLevel", di.GetGeneralMemoryLevel())
     
     return ev
 end function
