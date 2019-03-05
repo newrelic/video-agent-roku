@@ -218,7 +218,6 @@ function __nrAddVideoAttributes(ev as Object) as Object
 end function
 
 function __nrAddAttributes(ev as Object) as Object
-    'TODO: appBuild, appId, appName, appVersion
     ev.AddReplace("newRelicAgent", "RokuAgent")
     ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
     ev.AddReplace("trackerName", "rokutracker")
@@ -255,6 +254,9 @@ function __nrAddAttributes(ev as Object) as Object
     ev.AddReplace("appVersion", app.GetVersion())
     ev.AddReplace("appName", app.GetTitle())
     ev.AddReplace("appDevId", app.GetDevID())
+    appbuild = app.GetValue("build_version").ToInt()
+    if appbuild = 0 then appbuild = 1
+    ev.AddReplace("appBuild", appbuild)
     
     return ev
 end function
