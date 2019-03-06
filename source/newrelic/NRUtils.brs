@@ -29,7 +29,7 @@ function nrEventProcessor()
     while true
         ev = nrExtractEvent()
         if ev = invalid then exit while
-        if ev["eventType"] = invalid then ev["eventType"] = "RokuTest"
+        if ev["eventType"] = invalid then ev["eventType"] = "RokuEvent"
         res = nrInsertInsightsData(ev)
         print "-- nrEventProcessor: insert insights data --"
         if res <> 200
