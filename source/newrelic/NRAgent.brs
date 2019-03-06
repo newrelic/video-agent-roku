@@ -37,7 +37,8 @@ function NewRelicVideoStart(videoObject as Object)
 
     'Current state
     m.nrLastVideoState = "none"
-    m.isAd = false
+    m.nrIsAd = false
+    m.nrVideoCounter = 0
     'Setup event listeners 
     videoObject.observeField("state", "__nrStateObserver")
     videoObject.observeField("contentIndex", "__nrIndexObserver")
@@ -59,7 +60,7 @@ function NewRelicVideoStart(videoObject as Object)
 end function
 
 function nrAction(action as String) as String
-    if m.isAd = true
+    if m.nrIsAd = true
         return "AD_" + action
     else
         return "CONTENT_" + action
@@ -67,7 +68,7 @@ function nrAction(action as String) as String
 end function
 
 function nrAttr(attribute as String) as String
-    if m.isAd = true
+    if m.nrIsAd = true
         return "ad" + attribute
     else
         return "content" + attribute
@@ -89,6 +90,7 @@ function nrSendStart() as Void
 end function
 
 function nrSendEnd() as Void
+    m.nrVideoCounter = m.nrVideoCounter + 1
     __nrSendAction("END")
 end function
 
@@ -199,13 +201,12 @@ function __nrIndexObserver() as Void
     print "---------- Index Observer ----------"
     printVideoInfo()
     
+    m.nrVideoCounter = m.nrVideoCounter + 1
     __nrSendAction("NEXT")
     
 end function
 
 'TODO: implement "timeSince" attributes,  numberOf and others
-'TODO: add videoId for each new video (using the sessionId?)
-
 'TODO: some attributes are not going to change, we can create it only once and then add every time
 
 function __nrAddVideoAttributes(ev as Object) as Object
@@ -228,6 +229,7 @@ function __nrAddVideoAttributes(ev as Object) as Object
     dev = CreateObject("roDeviceInfo")
     ev.AddReplace("playerVersion", dev.GetVersion())
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
+    ev.AddReplace("videoId", m.nrSessionId + "-" + m.nrVideoCounter.ToStr())
     return ev
 end function
 
