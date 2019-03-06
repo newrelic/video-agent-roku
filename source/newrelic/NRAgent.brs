@@ -205,6 +205,13 @@ function __nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
     if m.nrVideoObject.streamInfo <> invalid
         ev.AddReplace(nrAttr("Src"), m.nrVideoObject.streamInfo["streamUrl"])
+        'Generate Id from Src (hashing it)
+        ba = CreateObject("roByteArray")
+        ba.FromAsciiString(m.nrVideoObject.streamInfo["streamUrl"])
+        digest = CreateObject("roEVPDigest")
+        digest.Setup("md5")
+        result = digest.Process(ba)
+        ev.AddReplace(nrAttr("Id"), result)
         ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
         ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
     end if
