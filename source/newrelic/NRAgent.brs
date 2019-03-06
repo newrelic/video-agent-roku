@@ -208,10 +208,7 @@ function __nrAddVideoAttributes(ev as Object) as Object
         'Generate Id from Src (hashing it)
         ba = CreateObject("roByteArray")
         ba.FromAsciiString(m.nrVideoObject.streamInfo["streamUrl"])
-        digest = CreateObject("roEVPDigest")
-        digest.Setup("md5")
-        result = digest.Process(ba)
-        ev.AddReplace(nrAttr("Id"), result)
+        ev.AddReplace(nrAttr("Id"), ba.GetCRC32())
         ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
         ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
     end if
