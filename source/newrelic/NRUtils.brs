@@ -6,10 +6,9 @@
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
 
-function nrInsertInsightsData(eventType as String, attributes as Object) as Object
+function nrInsertInsightsData(attributes as Object) as Object
     _url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.global.nrAccountNumber + "/events")
     _apikey = m.global.nrInsightsApiKey
-    attributes["eventType"] = eventType
     _jsonString = FormatJson(attributes)
 
     _urlReq = CreateObject("roUrlTransfer")
@@ -30,7 +29,8 @@ function nrEventProcessor()
     while true
         ev = nrExtractEvent()
         if ev = invalid then exit while
-        res = nrInsertInsightsData("RokuTest", ev)
+        if ev["eventType"] = invalid then ev["eventType"] = "RokuTest"
+        res = nrInsertInsightsData(ev)
         print "-- nrEventProcessor: insert insights data --"
         if res <> 200
            'TODO: what if it fails? retry or discard? Or insert into list again?

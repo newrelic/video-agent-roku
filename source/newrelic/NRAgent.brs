@@ -108,9 +108,18 @@ function nrSendBufferEnd() as Void
     __nrSendAction("BUFFER_END")
 end function
 
+function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
+    ev = nrCreateEvent(actionName)
+    if attr <> invalid
+        attr["eventType"] = eventType
+        ev.Append(attr)
+    end if
+    nrRecordEvent(ev)
+end function
+
 function nrCreateEvent(actionName as String) as Object
     ev = CreateObject("roAssociativeArray")
-    ev["actionName"] = actionName
+    if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
     timestamp& = CreateObject("roDateTime").asSeconds()
     timestampMS& = timestamp& * 1000
     
