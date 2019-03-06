@@ -206,8 +206,20 @@ function __nrIndexObserver() as Void
     
 end function
 
-'TODO: implement "timeSince" attributes,  numberOf and others
 'TODO: some attributes are not going to change, we can create it only once and then add every time
+
+'TODO:
+'timeSinceBufferBegin -> only BUFFER_END
+'timeSinceLastAd -> all
+'timeSinceLastHeartbeat -> all
+'timeSinceLoad -> all
+'timeSincePaused -> only RESUME
+'timeSinceRequested -> all
+'timeSinceStarted -> all
+'timeSinceTrackerReady -> all
+'totalPlaytime -> all
+'numberOfVideos -> all, m.nrVideoCounter + 1
+'numberOfErrors -> all
 
 function __nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
