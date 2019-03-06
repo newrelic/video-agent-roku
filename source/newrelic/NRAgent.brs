@@ -255,7 +255,7 @@ function __nrAddAttributes(ev as Object) as Object
     appid = app.GetID().ToInt()
     if appid = 0 then appid = 1
     ev.AddReplace("appId", appid)
-    ev.AddReplace("appVersion", app.GetVersion())
+    ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
     ev.AddReplace("appName", app.GetTitle())
     ev.AddReplace("appDevId", app.GetDevID())
     appbuild = app.GetValue("build_version").ToInt()
