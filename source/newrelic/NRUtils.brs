@@ -33,7 +33,8 @@ function nrEventProcessor()
         res = nrInsertInsightsData(ev)
         print "-- nrEventProcessor: insert insights data --"
         if res <> 200
-           'TODO: what if it fails? retry or discard? Or insert into list again?
+            'Failed, reinsert event and will retry later
+            nrRecordEvent(ev)
         end if
     end while
 end function
@@ -46,7 +47,6 @@ function nrRecordEvent(event as Object) as Void
         m.global.nrEventArray = arr
         
         print "Record New Event = " event
-        'printVideoEventList()
     end if
 end function
 
@@ -58,12 +58,12 @@ function nrExtractEvent() as Object
     return res
 end function
 
-function printVideoEventList() as Void
-    print "------------- printVideoEventList ------------" 
-    i = 0
-    while i < m.global.nrEventArray.Count()
-        print m.global.nrEventArray[i]
-        i = i + 1
-    end while
-    print "----------------------------------------------"
-end function
+'function printVideoEventList() as Void
+'    print "------------- printVideoEventList ------------" 
+'    i = 0
+'    while i < m.global.nrEventArray.Count()
+'        print m.global.nrEventArray[i]
+'        i = i + 1
+'    end while
+'    print "----------------------------------------------"
+'end function
