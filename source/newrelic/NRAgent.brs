@@ -58,7 +58,7 @@ function NewRelicVideoStart(videoObject as Object)
     m.nrTimeSinceBufferBegin = 0.0
     m.nrTimeSinceLastAd = 0.0
     m.nrTimeSinceLastHeartbeat = 0.0
-    m.nrTtimeSinceLoad = 0.0
+    m.nrTimeSinceLoad = 0.0
     m.nrTimeSincePaused = 0.0
     m.nrTimeSinceRequested = 0.0
     m.nrTimeSinceStarted = 0.0
@@ -89,17 +89,21 @@ function nrAttr(attribute as String) as String
 end function
 
 function nrSendPlayerReady() as Void
+    m.nrTimeSinceLoad = m.nrTimer.TotalMilliseconds()
+    m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
     ev = nrCreateEvent("PLAYER_READY")
     ev = __nrAddVideoAttributes(ev)
     nrRecordEvent(ev)
 end function
 
 function nrSendRequest() as Void
+    m.nrTimeSinceRequested = m.nrTimer.TotalMilliseconds()
     __nrSendAction("REQUEST")
 end function
 
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
+    m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
     __nrSendAction("START")
 end function
 
@@ -258,11 +262,6 @@ end function
 
 'TODO:
 'timeSinceLastAd -> all
-'timeSinceLastHeartbeat -> all
-'timeSinceLoad -> all
-'timeSinceRequested -> all
-'timeSinceStarted -> all
-'timeSinceTrackerReady -> all
 'totalPlaytime -> all
 
 function __nrAddTimeSinceAttributes(ev as Object) as Object
@@ -271,7 +270,12 @@ function __nrAddTimeSinceAttributes(ev as Object) as Object
     end if
     if Right(ev["actionName"], 7) = "_RESUME"
         ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
-    end if 
+    end if
+    ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
+    ev.AddReplace("timeSinceLoad", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLoad)
+    ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
+    ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
+    ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
     return ev
 end function
 
@@ -323,6 +327,7 @@ function __nrHeartbeatHandler() as Void
     'Only send while it is playing (state is not "none" or "finished")
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
         __nrSendAction("HEARTBEAT")
+        m.nrTimeSinceLastHeartbeat = m.nrTimer.TotalMilliseconds()
     end if
 end function
 
