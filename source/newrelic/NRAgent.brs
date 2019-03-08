@@ -56,14 +56,12 @@ function NewRelicVideoStart(videoObject as Object)
     m.hbTimer.control = "start"
     'Timestamps for timeSince attributes
     m.nrTimeSinceBufferBegin = 0.0
-    m.nrTimeSinceLastAd = 0.0
     m.nrTimeSinceLastHeartbeat = 0.0
     m.nrTimeSinceLoad = 0.0
     m.nrTimeSincePaused = 0.0
     m.nrTimeSinceRequested = 0.0
     m.nrTimeSinceStarted = 0.0
     m.nrTimeSinceTrackerReady = 0.0
-    m.nrTotalPlaytime = 0.0
     'Counters
     m.nrNumberOfErrors = 0
     
