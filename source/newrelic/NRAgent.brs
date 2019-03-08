@@ -55,15 +55,15 @@ function NewRelicVideoStart(videoObject as Object)
     m.hbTimer.observeField("fire", "__nrHeartbeatHandler")
     m.hbTimer.control = "start"
     'Timestamps for timeSince attributes
-    m.nrTimeSinceBufferBegin = 0
-    m.nrTimeSinceLastAd = 0
-    m.nrTimeSinceLastHeartbeat = 0
-    m.nrTtimeSinceLoad = 0
-    m.nrTimeSincePaused = 0
-    m.nrTimeSinceRequested = 0
-    m.nrTimeSinceStarted = 0
-    m.nrTimeSinceTrackerReady = 0
-    m.nrTotalPlaytime = 0
+    m.nrTimeSinceBufferBegin = 0.0
+    m.nrTimeSinceLastAd = 0.0
+    m.nrTimeSinceLastHeartbeat = 0.0
+    m.nrTtimeSinceLoad = 0.0
+    m.nrTimeSincePaused = 0.0
+    m.nrTimeSinceRequested = 0.0
+    m.nrTimeSinceStarted = 0.0
+    m.nrTimeSinceTrackerReady = 0.0
+    m.nrTotalPlaytime = 0.0
     'Counters
     m.nrNumberOfErrors = 0
     
@@ -109,6 +109,7 @@ function nrSendEnd() as Void
 end function
 
 function nrSendPause() as Void
+    m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
     __nrSendAction("PAUSE")
 end function
 
@@ -117,6 +118,7 @@ function nrSendResume() as Void
 end function
 
 function nrSendBufferStart() as Void
+    m.nrTimeSinceBufferBegin = m.nrTimer.TotalMilliseconds()
     __nrSendAction("BUFFER_START")
 end function
 
@@ -255,17 +257,21 @@ function __nrAddVideoAttributes(ev as Object) as Object
 end function
 
 'TODO:
-'timeSinceBufferBegin -> only BUFFER_END
 'timeSinceLastAd -> all
 'timeSinceLastHeartbeat -> all
 'timeSinceLoad -> all
-'timeSincePaused -> only RESUME
 'timeSinceRequested -> all
 'timeSinceStarted -> all
 'timeSinceTrackerReady -> all
 'totalPlaytime -> all
 
 function __nrAddTimeSinceAttributes(ev as Object) as Object
+    if Right(ev["actionName"], 11) = "_BUFFER_END"
+        ev.AddReplace("timeSinceBufferBegin", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceBufferBegin)
+    end if
+    if Right(ev["actionName"], 7) = "_RESUME"
+        ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
+    end if 
     return ev
 end function
 
