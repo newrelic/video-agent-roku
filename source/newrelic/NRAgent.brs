@@ -44,8 +44,6 @@ function NewRelicVideoStart(videoObject as Object)
     videoObject.observeField("contentIndex", "__nrIndexObserver")
     'Store video object
     m.nrVideoObject = videoObject
-    'Player Ready
-    nrSendPlayerReady()
     'Init event processor
     m.bgTask = createObject("roSGNode", "NRTask")
     m.bgTask.functionName = "nrTaskMain"
@@ -56,6 +54,21 @@ function NewRelicVideoStart(videoObject as Object)
     m.hbTimer.duration = 30
     m.hbTimer.observeField("fire", "__nrHeartbeatHandler")
     m.hbTimer.control = "start"
+    'Timestamps for timeSince attributes
+    m.nrTimeSinceBufferBegin = 0
+    m.nrTimeSinceLastAd = 0
+    m.nrTimeSinceLastHeartbeat = 0
+    m.nrTtimeSinceLoad = 0
+    m.nrTimeSincePaused = 0
+    m.nrTimeSinceRequested = 0
+    m.nrTimeSinceStarted = 0
+    m.nrTimeSinceTrackerReady = 0
+    m.nrTotalPlaytime = 0
+    'Counters
+    m.nrNumberOfErrors = 0
+    
+    'Player Ready
+    nrSendPlayerReady()
     
 end function
 
@@ -86,6 +99,7 @@ function nrSendRequest() as Void
 end function
 
 function nrSendStart() as Void
+    m.nrNumberOfErrors = 0
     __nrSendAction("START")
 end function
 
@@ -166,6 +180,7 @@ function __nrStateObserver() as Void
     else if m.nrVideoObject.state = "stopped"
         nrSendEnd()
     else if m.nrVideoObject.state = "error"
+        m.nrNumberOfErrors = m.nrNumberOfErrors + 1
         'TODO: send error action, get errorCode and errorMsg from video player object
     end if
     
@@ -208,19 +223,6 @@ end function
 
 'TODO: some attributes are not going to change, we can create it only once and then add every time
 
-'TODO:
-'timeSinceBufferBegin -> only BUFFER_END
-'timeSinceLastAd -> all
-'timeSinceLastHeartbeat -> all
-'timeSinceLoad -> all
-'timeSincePaused -> only RESUME
-'timeSinceRequested -> all
-'timeSinceStarted -> all
-'timeSinceTrackerReady -> all
-'totalPlaytime -> all
-'numberOfVideos -> all, m.nrVideoCounter + 1
-'numberOfErrors -> all
-
 function __nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
     ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
@@ -242,6 +244,28 @@ function __nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace("playerVersion", dev.GetVersion())
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
     ev.AddReplace("videoId", m.nrSessionId + "-" + m.nrVideoCounter.ToStr())
+    'Add counters
+    ev.AddReplace("numberOfVideos", m.nrVideoCounter + 1)
+    ev.AddReplace("numberOfErrors", m.nrNumberOfErrors)
+    
+    'Add timeSince attributes
+    ev = __nrAddTimeSinceAttributes(ev)
+    
+    return ev
+end function
+
+'TODO:
+'timeSinceBufferBegin -> only BUFFER_END
+'timeSinceLastAd -> all
+'timeSinceLastHeartbeat -> all
+'timeSinceLoad -> all
+'timeSincePaused -> only RESUME
+'timeSinceRequested -> all
+'timeSinceStarted -> all
+'timeSinceTrackerReady -> all
+'totalPlaytime -> all
+
+function __nrAddTimeSinceAttributes(ev as Object) as Object
     return ev
 end function
 
