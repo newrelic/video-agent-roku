@@ -26,6 +26,11 @@ function NewRelicStart(account as String, apikey as String) as Void
     m.global.addFields({"nrTicks": 0})
     m.global.addFields({"nrAgentVersion": "0.1.0"})
     
+    'Init event processor
+    m.bgTask = createObject("roSGNode", "NRTask")
+    m.bgTask.functionName = "nrTaskMain"
+    m.bgTask.control = "RUN"
+    
 end function
 
 '========================
@@ -44,10 +49,6 @@ function NewRelicVideoStart(videoObject as Object)
     videoObject.observeField("contentIndex", "__nrIndexObserver")
     'Store video object
     m.nrVideoObject = videoObject
-    'Init event processor
-    m.bgTask = createObject("roSGNode", "NRTask")
-    m.bgTask.functionName = "nrTaskMain"
-    m.bgTask.control = "RUN"
     'Init heartbeat timer
     m.hbTimer = CreateObject("roSGNode", "Timer")
     m.hbTimer.repeat = true
