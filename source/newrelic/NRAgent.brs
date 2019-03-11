@@ -90,57 +90,60 @@ end function
 function nrSendPlayerReady() as Void
     m.nrTimeSinceLoad = m.nrTimer.TotalMilliseconds()
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
-    ev = nrCreateEvent("PLAYER_READY")
-    ev = __nrAddVideoAttributes(ev)
-    nrRecordEvent(ev)
+    nrSendVideoEvent("PLAYER_READY")
 end function
 
 function nrSendRequest() as Void
     m.nrTimeSinceRequested = m.nrTimer.TotalMilliseconds()
-    __nrSendAction("REQUEST")
+    nrSendVideoEvent(nrAction("REQUEST"))
 end function
 
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
-    __nrSendAction("START")
+    nrSendVideoEvent(nrAction("START"))
 end function
 
 function nrSendEnd() as Void
     m.nrVideoCounter = m.nrVideoCounter + 1
-    __nrSendAction("END")
+    nrSendVideoEvent(nrAction("END"))
 end function
 
 function nrSendPause() as Void
     m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
-    __nrSendAction("PAUSE")
+    nrSendVideoEvent(nrAction("PAUSE"))
 end function
 
 function nrSendResume() as Void
-    __nrSendAction("RESUME")
+    nrSendVideoEvent(nrAction("RESUME"))
 end function
 
 function nrSendBufferStart() as Void
     m.nrTimeSinceBufferBegin = m.nrTimer.TotalMilliseconds()
-    __nrSendAction("BUFFER_START")
+    nrSendVideoEvent(nrAction("BUFFER_START"))
 end function
 
 function nrSendBufferEnd() as Void
-    __nrSendAction("BUFFER_END")
+    nrSendVideoEvent(nrAction("BUFFER_END"))
 end function
 
-function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
-    ev = nrCreateEvent(actionName)
-    if attr <> invalid
-        attr["eventType"] = eventType
-        ev.Append(attr)
-    end if
+'Used by all video senders
+function nrSendVideoEvent(actionName as String) as Void
+    ev = nrCreateEvent("RokuVideoEvent", actionName)
+    ev = __nrAddVideoAttributes(ev)
     nrRecordEvent(ev)
 end function
 
-function nrCreateEvent(actionName as String) as Object
+'Used to send generic events
+function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
+    ev = nrCreateEvent(eventType, actionName)
+    nrRecordEvent(ev)
+end function
+
+function nrCreateEvent(eventType as String, actionName as String) as Object
     ev = CreateObject("roAssociativeArray")
     if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
+    if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
     timestamp& = CreateObject("roDateTime").asSeconds()
     timestampMS& = timestamp& * 1000
     
@@ -163,12 +166,6 @@ end function
 '=====================
 ' Internal functions '
 '=====================
-
-function __nrSendAction(actionName as String) as Void
-    ev = nrCreateEvent(nrAction(actionName))
-    ev = __nrAddVideoAttributes(ev)
-    nrRecordEvent(ev)
-end function
 
 function __nrStateObserver() as Void
     print "---------- State Observer ----------"
@@ -222,7 +219,7 @@ function __nrIndexObserver() as Void
     printVideoInfo()
     
     m.nrVideoCounter = m.nrVideoCounter + 1
-    __nrSendAction("NEXT")
+    nrSendVideoEvent(nrAction("NEXT"))
     
 end function
 
@@ -233,6 +230,7 @@ function __nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
     ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
     if m.nrVideoObject.streamInfo <> invalid
+        'BUG: when using playlists reach the end and restart it, the src remains in the last track
         ev.AddReplace(nrAttr("Src"), m.nrVideoObject.streamInfo["streamUrl"])
         'Generate Id from Src (hashing it)
         ba = CreateObject("roByteArray")
@@ -325,7 +323,7 @@ end function
 function __nrHeartbeatHandler() as Void
     'Only send while it is playing (state is not "none" or "finished")
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
-        __nrSendAction("HEARTBEAT")
+        nrSendVideoEvent(nrAction("HEARTBEAT"))
         m.nrTimeSinceLastHeartbeat = m.nrTimer.TotalMilliseconds()
     end if
 end function
