@@ -248,6 +248,8 @@ function __nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace("playerVersion", dev.GetVersion())
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
     ev.AddReplace("videoId", m.nrSessionId + "-" + m.nrVideoCounter.ToStr())
+    ev.AddReplace("trackerName", "rokutracker")
+    ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
     'Add counters
     ev.AddReplace("numberOfVideos", m.nrVideoCounter + 1)
     ev.AddReplace("numberOfErrors", m.nrNumberOfErrors)
@@ -280,8 +282,6 @@ end function
 function __nrAddAttributes(ev as Object) as Object
     ev.AddReplace("newRelicAgent", "RokuAgent")
     ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
-    ev.AddReplace("trackerName", "rokutracker")
-    ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
     ev.AddReplace("sessionId", m.nrSessionId)
     hdmi = CreateObject("roHdmiStatus")
     ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
