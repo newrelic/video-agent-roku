@@ -8,21 +8,21 @@
 
 function nrInsertInsightsData(attributes as Object) as Object
     _url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.global.nrAccountNumber + "/events")
-    _apikey = m.global.nrInsightsApiKey
-    _jsonString = FormatJson(attributes)
+    apikey = m.global.nrInsightsApiKey
+    jsonString = FormatJson(attributes)
 
-    _urlReq = CreateObject("roUrlTransfer")
+    urlReq = CreateObject("roUrlTransfer")
 
-    _urlReq.SetUrl(_url)
-    _urlReq.RetainBodyOnError(true)
-    _urlReq.EnablePeerVerification(false)
-    _urlReq.EnableHostVerification(false)
-    _urlReq.AddHeader("Content-Type","application/json")
-    _urlReq.AddHeader("X-Insert-Key",_apikey)
+    urlReq.SetUrl(_url)
+    urlReq.RetainBodyOnError(true)
+    urlReq.EnablePeerVerification(false)
+    urlReq.EnableHostVerification(false)
+    urlReq.AddHeader("Content-Type", "application/json")
+    urlReq.AddHeader("X-Insert-Key", apikey)
 
-    _resp = _urlReq.PostFromString(_jsonString)
+    resp = urlReq.PostFromString(jsonString)
     
-    return _resp
+    return resp
 end function
 
 function nrEventProcessor()
