@@ -8,6 +8,7 @@ sub Main()
     m.port = CreateObject("roMessagePort")
     screen.setMessagePort(m.port)
     
+    'TODO: move this to agent
     'System Log
     syslog = CreateObject("roSystemLog")
     syslog.SetMessagePort(m.port)
@@ -17,7 +18,7 @@ sub Main()
     syslog.EnableType("http.complete")
     
     'Get global scope
-    'm.global = screen.getGlobalNode()
+    m.global = screen.getGlobalNode()
 
     'Create a scene and load /components/nrvideoagent.xml'
     scene = screen.CreateScene("NRVideoAgentExample")
@@ -26,15 +27,18 @@ sub Main()
     while(true)
         msg = wait(0, m.port)
         msgType = type(msg)
+        'TODO: call an agent method to check this
         if msgType = "roSystemLogEvent" Then
         i = msg.GetInfo()
             if i.LogType = "http.error"
-                print ">>>>>>>>> HTTP ERROR: " i
+                nrSendHTTPError(i)
             else if i.LogType = "http.connect"
-                print ">>>>>>>>> HTTP CONNECT: " i
+                nrSendHTTPConnect(i)
             else if i.LogType = "http.complete"
-                print ">>>>>>>>> HTTP COMPLETE: " i            
-            End If
+                nrSendHTTPComplete(i)
+            else if i.LogType = "bandwidth.minute"
+                nrSendBandwidth(i)
+            end If
         end if
     end while
 end sub

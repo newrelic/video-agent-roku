@@ -33,6 +33,58 @@ function NewRelicStart(account as String, apikey as String) as Void
     
 end function
 
+function nrSendHTTPError(info as Object) as Void
+    attr = {
+        "httpCode": info["HttpCode"],
+        "method": info["Method"],
+        "origUrl": info["OrigUrl"],
+        "status": info["Status"],
+        "targetIp": info["TargetIp"],
+        "url": info["Url"]
+    }   
+    nrSendCustomEvent("RokuEvent", "HTTP_ERROR", attr)
+end function
+
+function nrSendHTTPConnect(info as Object) as Void
+    attr = {
+        "httpCode": info["HttpCode"],
+        "method": info["Method"],
+        "origUrl": info["OrigUrl"],
+        "status": info["Status"],
+        "targetIp": info["TargetIp"],
+        "url": info["Url"]
+    }
+    nrSendCustomEvent("RokuEvent", "HTTP_CONNECT", attr)
+end function
+
+function nrSendHTTPComplete(info as Object) as Void
+    attr = {
+        "bytesDownloaded": info["BytesDownloaded"],
+        "bytesUploaded": info["BytesUploaded"],
+        "connectTime": info["ConnectTime"],
+        "contentType": info["ContentType"],
+        "dnsLookupTime": info["DNSLookupTime"],
+        "downloadSpeed": info["DownloadSpeed"],
+        "firstByteTime": info["FirstByteTime"],
+        "httpCode": info["HttpCode"],
+        "method": info["Method"],
+        "origUrl": info["OrigUrl"],
+        "status": info["Status"],
+        "targetIp": info["TargetIp"],
+        "transferTime": info["TransferTime"],
+        "uploadSpeed": info["UploadSpeed"],
+        "url": info["Url"]
+    }
+    nrSendCustomEvent("RokuEvent", "HTTP_COMPLETE", attr)
+end function
+
+function nrSendBandwidth(info as Object) as Void
+    attr = {
+        "bandwidth": info["bandwidth"]
+    }
+    nrSendCustomEvent("RokuEvent", "BANDWIDTH_MINUTE", attr)
+end function
+
 '========================
 ' Video Agent functions '
 '========================
@@ -137,6 +189,7 @@ end function
 'Used to send generic events
 function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
     ev = nrCreateEvent(eventType, actionName)
+    ev.Append(attr)
     nrRecordEvent(ev)
 end function
 
