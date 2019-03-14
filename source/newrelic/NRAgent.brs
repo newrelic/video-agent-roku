@@ -33,6 +33,38 @@ function NewRelicStart(account as String, apikey as String) as Void
     
 end function
 
+function nrStartSysTracker(port) as Object
+    syslog = CreateObject("roSystemLog")
+    syslog.SetMessagePort(port)
+    syslog.EnableType("http.error")
+    syslog.EnableType("http.connect")
+    syslog.EnableType("bandwidth.minute")
+    syslog.EnableType("http.complete")
+    return syslog
+end function
+
+function nrProcessMessage(msg as Object) as Boolean
+    msgType = type(msg)
+    if msgType = "roSystemLogEvent" Then
+        i = msg.GetInfo()
+        if i.LogType = "http.error"
+            nrSendHTTPError(i)
+            return true
+        else if i.LogType = "http.connect"
+            nrSendHTTPConnect(i)
+            return true
+        else if i.LogType = "http.complete"
+            nrSendHTTPComplete(i)
+            return true
+        else if i.LogType = "bandwidth.minute"
+            nrSendBandwidth(i)
+            return true
+        end If
+    end if
+    
+    return false
+end function
+
 function nrSendHTTPError(info as Object) as Void
     attr = {
         "httpCode": info["HttpCode"],
