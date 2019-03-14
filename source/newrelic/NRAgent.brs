@@ -13,14 +13,12 @@
 function NewRelicStart(account as String, apikey as String) as Void
     print "Init NewRelicAgent"
     
-    m.nrAccountNumber = account
-    m.nrInsightsApiKey = apikey
-    m.nrSessionId = __nrGenerateId()
     m.nrTimer = CreateObject("roTimespan")
     m.nrTimer.Mark()
     
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
+    m.global.addFields({"nrSessionId": __nrGenerateId()})
     m.global.addFields({"nrEventArray": []})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
@@ -331,7 +329,7 @@ function __nrAddVideoAttributes(ev as Object) as Object
     dev = CreateObject("roDeviceInfo")
     ev.AddReplace("playerVersion", dev.GetVersion())
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
-    ev.AddReplace("videoId", m.nrSessionId + "-" + m.nrVideoCounter.ToStr())
+    ev.AddReplace("videoId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
     ev.AddReplace("trackerName", "rokutracker")
     ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
     'Add counters
@@ -366,7 +364,7 @@ end function
 function __nrAddAttributes(ev as Object) as Object
     ev.AddReplace("newRelicAgent", "RokuAgent")
     ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
-    ev.AddReplace("sessionId", m.nrSessionId)
+    ev.AddReplace("sessionId", m.global.nrSessionId)
     hdmi = CreateObject("roHdmiStatus")
     ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
     ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
