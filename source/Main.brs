@@ -13,12 +13,11 @@ sub Main()
     'Create a scene and load /components/nrvideoagent.xml'
     scene = screen.CreateScene("NRVideoAgentExample")
     screen.show()
-
-    while(true)
-        msg = wait(0, m.port)
-        if nrProcessMessage(msg) = false
-            'handle message manually...
-        end if
-    end while
+    
+    waitFunction = Function(msg as Object)
+        print "msg = " msg
+    end function
+    
+    NewRelicWait(m.port, waitFunction)
+    
 end sub
-

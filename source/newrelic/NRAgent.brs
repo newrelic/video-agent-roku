@@ -41,6 +41,16 @@ function NewRelicStart() as Void
     
 end function
 
+function NewRelicWait(port as Object, foo as Function) as Void
+    while(true)
+        msg = wait(0, port)
+        if nrProcessMessage(msg) = false
+            'handle message manually
+            foo(msg)
+        end if
+    end while
+end function
+
 function nrStartSysTracker(port) as Object
     syslog = CreateObject("roSystemLog")
     syslog.SetMessagePort(port)
