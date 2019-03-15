@@ -10,11 +10,11 @@
 ' General Agent functions '
 '==========================
 
-function NewRelicStart(account as String, apikey as String) as Void
-    print "Init NewRelicAgent"
+'Must be called from Main
+function NewRelic(account as String, apikey as String, screen as Object) as Void
+    print "NewRelic"
     
-    m.nrTimer = CreateObject("roTimespan")
-    m.nrTimer.Mark()
+    m.global = screen.getGlobalNode()
     
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
@@ -24,6 +24,16 @@ function NewRelicStart(account as String, apikey as String) as Void
     m.global.addFields({"nrTicks": 0})
     m.global.addFields({"nrAgentVersion": "0.1.0"})
     
+    m.syslog = nrStartSysTracker(screen.GetMessagePort())
+    
+end function
+
+function NewRelicStart() as Void
+    print "NewRelicStart"
+    
+    m.nrTimer = CreateObject("roTimespan")
+    m.nrTimer.Mark()
+        
     'Init event processor
     m.bgTask = createObject("roSGNode", "NRTask")
     m.bgTask.functionName = "nrTaskMain"
@@ -120,7 +130,7 @@ end function
 '========================
 
 function NewRelicVideoStart(videoObject as Object)
-    print "Init NewRelicVideoAgent" 
+    print "NewRelicVideoStart" 
 
     'Current state
     m.nrLastVideoState = "none"
