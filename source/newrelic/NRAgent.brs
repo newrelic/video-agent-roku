@@ -22,7 +22,7 @@ function NewRelic(account as String, apikey as String, screen as Object) as Void
     m.global.addFields({"nrEventArray": []})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.1.0"})
+    m.global.addFields({"nrAgentVersion": "0.9.0"})
     
     m.syslog = nrStartSysTracker(screen.GetMessagePort())
     
