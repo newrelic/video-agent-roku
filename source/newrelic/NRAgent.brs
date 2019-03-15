@@ -12,10 +12,11 @@
 
 'Must be called from Main
 function NewRelic(account as String, apikey as String, screen as Object) as Void
-    print "NewRelic"
     
     m.global = screen.getGlobalNode()
     
+    nrLog("NewRelic")
+
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
     m.global.addFields({"nrSessionId": __nrGenerateId()})
@@ -23,13 +24,14 @@ function NewRelic(account as String, apikey as String, screen as Object) as Void
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
     m.global.addFields({"nrAgentVersion": "0.9.0"})
+    m.global.addFields({"nrLogsState": false})
     
     m.syslog = nrStartSysTracker(screen.GetMessagePort())
     
 end function
 
 function NewRelicStart() as Void
-    print "NewRelicStart"
+    nrLog("NewRelicStart")
     
     m.nrTimer = CreateObject("roTimespan")
     m.nrTimer.Mark()
@@ -140,7 +142,7 @@ end function
 '========================
 
 function NewRelicVideoStart(videoObject as Object)
-    print "NewRelicVideoStart" 
+    nrLog("NewRelicVideoStart") 
 
     'Current state
     m.nrLastVideoState = "none"
@@ -271,8 +273,8 @@ end function
 '=====================
 
 function __nrStateObserver() as Void
-    print "---------- State Observer ----------"
-    printVideoInfo()
+    nrLog("---------- State Observer ----------")
+    __logVideoInfo()
 
     if m.nrVideoObject.state = "playing"
         __nrStateTransitionPlaying()
@@ -318,8 +320,8 @@ function __nrStateTransitionBuffering() as Void
 end function
 
 function __nrIndexObserver() as Void
-    print "---------- Index Observer ----------"
-    printVideoInfo()
+    nrLog("---------- Index Observer ----------")
+    __logVideoInfo()
     
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrSendVideoEvent(nrAction("NEXT"))
@@ -442,25 +444,25 @@ function __nrGenerateId() as String
     return result
 end function
 
-function printVideoInfo() as Void
-    print "===================================="
-    print "Player state = " m.nrVideoObject.state
-    print "Current position = " m.nrVideoObject.position
-    print "Current duration = " m.nrVideoObject.duration
-    print "Muted = " m.nrVideoObject.mute
+function __logVideoInfo() as Void
+    nrLog("====================================")
+    nrLog(["Player state = ", m.nrVideoObject.state])
+    nrLog(["Current position = ", m.nrVideoObject.position])
+    nrLog(["Current duration = ", m.nrVideoObject.duration])
+    nrLog(["Muted = ", m.nrVideoObject.mute])
     if m.nrVideoObject.streamInfo <> invalid
-        print "Stream URL = " m.nrVideoObject.streamInfo["streamUrl"]
-        print "Stream Bitrate = " m.nrVideoObject.streamInfo["streamBitrate"]
-        print "Stream Measured Bitrate = " m.nrVideoObject.streamInfo["measuredBitrate"]
-        print "Stream isResumed = " m.nrVideoObject.streamInfo["isResumed"]
-        print "Stream isUnderrun = " m.nrVideoObject.streamInfo["isUnderrun"]
+        nrLog(["Stream URL = ", m.nrVideoObject.streamInfo["streamUrl"]])
+        nrLog(["Stream Bitrate = ", m.nrVideoObject.streamInfo["streamBitrate"]])
+        nrLog(["Stream Measured Bitrate = ", m.nrVideoObject.streamInfo["measuredBitrate"]])
+        nrLog(["Stream isResumed = ", m.nrVideoObject.streamInfo["isResumed"]])
+        nrLog(["Stream isUnderrun = ", m.nrVideoObject.streamInfo["isUnderrun"]])
     end if
     if m.nrVideoObject.streamingSegment <> invalid
-        print "Segment URL = " m.nrVideoObject.streamingSegment["segUrl"]
-        print "Segment Bitrate = " m.nrVideoObject.streamingSegment["segBitrateBps"]
-        print "Segment Sequence = " m.nrVideoObject.streamingSegment["segSequence"]
-        print "Segment Start time = " m.nrVideoObject.streamingSegment["segStartTime"]
+        nrLog(["Segment URL = ", m.nrVideoObject.streamingSegment["segUrl"]])
+        nrLog(["Segment Bitrate = ", m.nrVideoObject.streamingSegment["segBitrateBps"]])
+        nrLog(["Segment Sequence = ", m.nrVideoObject.streamingSegment["segSequence"]])
+        nrLog(["Segment Start time = ", m.nrVideoObject.streamingSegment["segStartTime"]])
     end if
-    print "Manifest data = " m.nrVideoObject.manifestData
-    print "===================================="
+    nrLog(["Manifest data = ", m.nrVideoObject.manifestData])
+    nrLog("====================================")
 end function

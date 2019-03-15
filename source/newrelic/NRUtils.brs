@@ -30,7 +30,7 @@ function nrEventProcessor()
         ev = nrExtractEvent()
         if ev = invalid then exit while
         res = nrInsertInsightsData(ev)
-        print "-- nrEventProcessor: insert insights data --"
+        nrLog("-- nrEventProcessor: insert insights data --")
         if res <> 200
             'Failed, reinsert event and will retry later
             nrRecordEvent(ev)
@@ -45,9 +45,9 @@ function nrRecordEvent(event as Object) as Void
         arr.Push(event)
         m.global.nrEventArray = arr
         
-        print "Record New Event = " event
+        nrLog(["Record New Event = ", event])
     else
-        print "Events overflow, discard event"
+        nrLog("Events overflow, discard event")
     end if
 end function
 
@@ -59,12 +59,19 @@ function nrExtractEvent() as Object
     return res
 end function
 
-'function printVideoEventList() as Void
-'    print "------------- printVideoEventList ------------" 
-'    i = 0
-'    while i < m.global.nrEventArray.Count()
-'        print m.global.nrEventArray[i]
-'        i = i + 1
-'    end while
-'    print "----------------------------------------------"
-'end function
+function nrLog(messages as Object) as Void
+    if m.global.nrLogsState = true
+        if type(messages) = "roArray"         
+            For i=0 To messages.Count() - 1 Step 1
+                print messages[i];
+            End For
+            print ""
+        else
+            print messages
+        end if
+    end if
+end function
+
+function nrSetLogsState(state as Boolean) as Void
+    m.global.nrLogsState = state
+end function
