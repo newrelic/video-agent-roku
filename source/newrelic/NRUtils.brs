@@ -59,15 +59,15 @@ function nrExtractEvent() as Object
     return res
 end function
 
-function nrLog(messages as Object) as Void
+function nrLog(msg as Dynamic) as Void
     if m.global.nrLogsState = true
-        if type(messages) = "roArray"         
-            For i=0 To messages.Count() - 1 Step 1
-                print messages[i];
+        if type(msg) = "roArray"         
+            For i=0 To msg.Count() - 1 Step 1
+                print msg[i];
             End For
             print ""
         else
-            print messages
+            print msg
         end if
     end if
 end function
