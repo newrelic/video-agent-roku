@@ -1,26 +1,23 @@
 'NR Video Agent Example - Main'
 
 sub Main()
-    print "in showChannelSGScreen"
+    print "Main"
 
-    'Indicate this is a Roku SceneGraph application'
+    'The screen and port must be initialized before starting the NewRelic agent
     screen = CreateObject("roSGScreen")
     m.port = CreateObject("roMessagePort")
     screen.setMessagePort(m.port)
     
-    'Get global scope
-    'm.global = screen.getGlobalNode()
+    NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", screen)
 
     'Create a scene and load /components/nrvideoagent.xml'
     scene = screen.CreateScene("NRVideoAgentExample")
     screen.show()
-
-    while(true)
-        msg = wait(0, m.port)
-        msgType = type(msg)
-        if msgType = "roSGScreenEvent"
-            if msg.isScreenClosed() then return
-        end if
-    end while
+    
+    waitFunction = Function(msg as Object)
+        print "msg = " msg
+    end function
+    
+    NewRelicWait(m.port, waitFunction)
+    
 end sub
-

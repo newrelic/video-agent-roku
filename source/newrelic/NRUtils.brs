@@ -46,6 +46,8 @@ function nrRecordEvent(event as Object) as Void
         m.global.nrEventArray = arr
         
         print "Record New Event = " event
+    else
+        print "Events overflow, discard event"
     end if
 end function
 

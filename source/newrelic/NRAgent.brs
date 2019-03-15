@@ -10,22 +10,30 @@
 ' General Agent functions '
 '==========================
 
-function NewRelicStart(account as String, apikey as String) as Void
-    print "Init NewRelicAgent"
+'Must be called from Main
+function NewRelic(account as String, apikey as String, screen as Object) as Void
+    print "NewRelic"
     
-    m.nrAccountNumber = account
-    m.nrInsightsApiKey = apikey
-    m.nrSessionId = __nrGenerateId()
-    m.nrTimer = CreateObject("roTimespan")
-    m.nrTimer.Mark()
+    m.global = screen.getGlobalNode()
     
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
+    m.global.addFields({"nrSessionId": __nrGenerateId()})
     m.global.addFields({"nrEventArray": []})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
     m.global.addFields({"nrAgentVersion": "0.1.0"})
     
+    m.syslog = nrStartSysTracker(screen.GetMessagePort())
+    
+end function
+
+function NewRelicStart() as Void
+    print "NewRelicStart"
+    
+    m.nrTimer = CreateObject("roTimespan")
+    m.nrTimer.Mark()
+        
     'Init event processor
     m.bgTask = createObject("roSGNode", "NRTask")
     m.bgTask.functionName = "nrTaskMain"
@@ -33,12 +41,106 @@ function NewRelicStart(account as String, apikey as String) as Void
     
 end function
 
+function NewRelicWait(port as Object, foo as Function) as Void
+    while(true)
+        msg = wait(0, port)
+        if nrProcessMessage(msg) = false
+            'handle message manually
+            foo(msg)
+        end if
+    end while
+end function
+
+function nrStartSysTracker(port) as Object
+    syslog = CreateObject("roSystemLog")
+    syslog.SetMessagePort(port)
+    syslog.EnableType("http.error")
+    syslog.EnableType("http.connect")
+    syslog.EnableType("bandwidth.minute")
+    syslog.EnableType("http.complete")
+    return syslog
+end function
+
+function nrProcessMessage(msg as Object) as Boolean
+    msgType = type(msg)
+    if msgType = "roSystemLogEvent" Then
+        i = msg.GetInfo()
+        if i.LogType = "http.error"
+            nrSendHTTPError(i)
+            return true
+        else if i.LogType = "http.connect"
+            nrSendHTTPConnect(i)
+            return true
+        else if i.LogType = "http.complete"
+            nrSendHTTPComplete(i)
+            return true
+        else if i.LogType = "bandwidth.minute"
+            nrSendBandwidth(i)
+            return true
+        end If
+    end if
+    
+    return false
+end function
+
+function nrSendHTTPError(info as Object) as Void
+    attr = {
+        "httpCode": info["HttpCode"],
+        "method": info["Method"],
+        "origUrl": info["OrigUrl"],
+        "status": info["Status"],
+        "targetIp": info["TargetIp"],
+        "url": info["Url"]
+    }   
+    nrSendCustomEvent("RokuEvent", "HTTP_ERROR", attr)
+end function
+
+function nrSendHTTPConnect(info as Object) as Void
+    attr = {
+        "httpCode": info["HttpCode"],
+        "method": info["Method"],
+        "origUrl": info["OrigUrl"],
+        "status": info["Status"],
+        "targetIp": info["TargetIp"],
+        "url": info["Url"]
+    }
+    nrSendCustomEvent("RokuEvent", "HTTP_CONNECT", attr)
+end function
+
+function nrSendHTTPComplete(info as Object) as Void
+    attr = {
+        "bytesDownloaded": info["BytesDownloaded"],
+        "bytesUploaded": info["BytesUploaded"],
+        "connectTime": info["ConnectTime"],
+        "contentType": info["ContentType"],
+        "dnsLookupTime": info["DNSLookupTime"],
+        "downloadSpeed": info["DownloadSpeed"],
+        "firstByteTime": info["FirstByteTime"],
+        "httpCode": info["HttpCode"],
+        "method": info["Method"],
+        "origUrl": info["OrigUrl"],
+        "status": info["Status"],
+        "targetIp": info["TargetIp"],
+        "transferTime": info["TransferTime"],
+        "uploadSpeed": info["UploadSpeed"],
+        "url": info["Url"]
+    }
+    nrSendCustomEvent("RokuEvent", "HTTP_COMPLETE", attr)
+end function
+
+function nrSendBandwidth(info as Object) as Void
+    attr = {
+        "bandwidth": info["bandwidth"]
+    }
+    nrSendCustomEvent("RokuEvent", "BANDWIDTH_MINUTE", attr)
+end function
+
 '========================
 ' Video Agent functions '
 '========================
 
 function NewRelicVideoStart(videoObject as Object)
-    print "Init NewRelicVideoAgent" 
+    print "NewRelicVideoStart" 
 
     'Current state
     m.nrLastVideoState = "none"
@@ -137,6 +239,7 @@ end function
 'Used to send generic events
 function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
     ev = nrCreateEvent(eventType, actionName)
+    ev.Append(attr)
     nrRecordEvent(ev)
 end function
 
@@ -246,7 +349,7 @@ function __nrAddVideoAttributes(ev as Object) as Object
     dev = CreateObject("roDeviceInfo")
     ev.AddReplace("playerVersion", dev.GetVersion())
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
-    ev.AddReplace("videoId", m.nrSessionId + "-" + m.nrVideoCounter.ToStr())
+    ev.AddReplace("videoId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
     ev.AddReplace("trackerName", "rokutracker")
     ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
     'Add counters
@@ -281,7 +384,7 @@ end function
 function __nrAddAttributes(ev as Object) as Object
     ev.AddReplace("newRelicAgent", "RokuAgent")
     ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
-    ev.AddReplace("sessionId", m.nrSessionId)
+    ev.AddReplace("sessionId", m.global.nrSessionId)
     hdmi = CreateObject("roHdmiStatus")
     ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
     ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
