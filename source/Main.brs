@@ -9,7 +9,7 @@ sub Main()
     screen.setMessagePort(m.port)
     
     NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", screen)
-    nrSetLogsState(true)
+    nrActivateLogging(true)
 
     'Create a scene and load /components/nrvideoagent.xml'
     scene = screen.CreateScene("NRVideoAgentExample")

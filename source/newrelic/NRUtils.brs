@@ -72,6 +72,6 @@ function nrLog(msg as Dynamic) as Void
     end if
 end function
 
-function nrSetLogsState(state as Boolean) as Void
+function nrActivateLogging(state as Boolean) as Void
     m.global.nrLogsState = state
 end function
