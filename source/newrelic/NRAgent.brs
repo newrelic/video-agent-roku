@@ -231,10 +231,21 @@ function nrSendBufferEnd() as Void
     nrSendVideoEvent(nrAction("BUFFER_END"))
 end function
 
+function nrSendError(msg as String) as Void
+    errMsg = msg
+    if msg = invalid or msg = ""
+        errMsg = "UNKNOWN"
+    end if
+    nrSendVideoEvent(nrAction("ERROR"), {"errorMessage": errMsg})
+end function
+
 'Used by all video senders
-function nrSendVideoEvent(actionName as String) as Void
+function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     ev = nrCreateEvent("RokuVideoEvent", actionName)
     ev = __nrAddVideoAttributes(ev)
+    if type(attr) = "roAssociativeArray"
+       ev.Append(attr)
+    end if
     nrRecordEvent(ev)
 end function
 
@@ -288,7 +299,7 @@ function __nrStateObserver() as Void
         nrSendEnd()
     else if m.nrVideoObject.state = "error"
         m.nrNumberOfErrors = m.nrNumberOfErrors + 1
-        'TODO: send error action, get errorCode and errorMsg from video player object
+        nrSendError(m.nrVideoObject.errorMsg)
     end if
     
     m.nrLastVideoState = m.nrVideoObject.state
