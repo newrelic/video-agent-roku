@@ -3,11 +3,11 @@
 \f3\fnil\fcharset0 Menlo-Regular;\f4\fnil\fcharset0 Menlo-Italic;\f5\fswiss\fcharset0 Helvetica-Oblique;
 }
 {\colortbl;\red255\green255\blue255;\red40\green0\blue200;\red75\green0\blue240;\red50\green100\blue100;
-\red50\green205\blue50;\red225\green75\blue25;\red251\green0\blue7;\red251\green0\blue7;\red63\green127\blue127;
-\red102\green205\blue170;\red50\green100\blue100;\red191\green191\blue191;}
+\red50\green205\blue50;\red225\green75\blue25;\red251\green0\blue7;\red63\green127\blue127;\red102\green205\blue170;
+\red191\green191\blue191;}
 {\*\expandedcolortbl;;\csgenericrgb\c15686\c0\c78431;\csgenericrgb\c29412\c0\c94118;\csgenericrgb\c19608\c39216\c39216;
-\csgenericrgb\c19608\c80392\c19608;\csgenericrgb\c88235\c29412\c9804;\cssrgb\c100000\c12195\c0;\cssrgb\c100000\c12195\c0;\csgenericrgb\c24706\c49804\c49804;
-\csgenericrgb\c40000\c80392\c66667;\csgenericrgb\c19608\c39216\c39216;\csgray\c79525;}
+\csgenericrgb\c19608\c80392\c19608;\csgenericrgb\c88235\c29412\c9804;\cssrgb\c100000\c12195\c0;\csgenericrgb\c24706\c49804\c49804;\csgenericrgb\c40000\c80392\c66667;
+\csgray\c79525;}
 \paperw11900\paperh16840\margl1440\margr1440\vieww14740\viewh15000\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
@@ -43,8 +43,9 @@
 \cf0 \
 Initialise the agent. It must be called only once at the very beginning of the app, preferably inside the Main subroutine.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Arguments:
+\f0\b \cf0 Arguments:
 \f1\b0 \
 \
 
@@ -119,8 +120,9 @@ Example:
 \cf0 \
 Provides the main event loop of the application. Automatically detects and handles the system events used by the agent.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Arguments:
+\f0\b \cf0 Arguments:
 \f1\b0 \
 \
 
@@ -163,7 +165,7 @@ Nothing.\
 \f3\i0 \cf0 )\
         
 \f2\b \cf2 print
-\f3\b0 \cf0  \cf4 "\cf4 \ul \ulc4 msg\cf4 \ulnone  = "\cf0  msg\
+\f3\b0 \cf0  \cf4 "\ul \ulc4 msg\ulnone  = "\cf0  msg\
     
 \f2\b \cf2 end
 \f3\b0 \cf0  
@@ -174,7 +176,7 @@ Nothing.\
 \f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
-\cb8 >>>>\cb1 \
+\cb7 >>>>\cb1 \
 \
 \pard\pardeftab720\partightenfactor0
 
@@ -188,8 +190,9 @@ Nothing.\
 \cf0 \
 Start tracking of system level events, essentially network events: HTTP REQUEST, RESPONSE, ERROR and BANDWIDTH. Must be called inside the scene where events happen, inside the init subroutine.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Arguments:
+\f0\b \cf0 Arguments:
 \f1\b0 \
 \
 None.\
@@ -218,8 +221,7 @@ Nothing.\
 \f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 \cb7 >>>>\cb1 \
+\cb7 >>>>\cb1 \
 \
 \pard\pardeftab720\partightenfactor0
 
@@ -234,19 +236,22 @@ Nothing.\
 \cf0 \
 Start tracking of video level events. Must be called inside the scene where events happen, inside the init subroutine.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Arguments:
+\f0\b \cf0 Arguments:
 \f1\b0 \
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f5\i videoObject:
+\f5\i \cf0 videoObject:
 \f1\i0 \
 	An instance of the 
-\f3 \cf9 Video
+\f3 \cf8 Video
 \f1 \cf0  node.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Returns:
+\f0\b \cf0 Returns:
 \f1\b0 \
 \
 Nothing.\
@@ -265,7 +270,7 @@ Nothing.\
 \f2\b \cf2 true
 \f3\b0 \cf0 )\
     
-\f4\i \cf10 'Setup video player
+\f4\i \cf9 'Setup video player
 \f3\i0 \cf0 \
     m.video = m.top.findNode(\cf4 "myVideo"\cf0 )\
     m.video.content = \cf4 "http://yt-dash-mse-tes..."\cf0 \
@@ -275,8 +280,7 @@ Nothing.\
 \f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 \cb7 >>>>\cb1 \
+\cb7 >>>>\cb1 \
 \
 \pard\pardeftab720\partightenfactor0
 
@@ -294,17 +298,20 @@ Nothing.\
 \cf0 \
 Enable or disable agent console logs.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Arguments:
+\f0\b \cf0 Arguments:
 \f1\b0 \
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f5\i state:
+\f5\i \cf0 state:
 \f1\i0 \
 	True to enable, false to disable.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Returns:
+\f0\b \cf0 Returns:
 \f1\b0 \
 \
 Nothing.\
@@ -321,8 +328,7 @@ Nothing.\
 \f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 \cb7 >>>>\cb1 \
+\cb7 >>>>\cb1 \
 \
 \pard\pardeftab720\partightenfactor0
 
@@ -350,12 +356,14 @@ Send a custom event to Insights. You can only use this function after having ini
 \f3 NewRelicStart
 \f1 .\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Arguments:
+\f0\b \cf0 Arguments:
 \f1\b0 \
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f5\i eventType:
+\f5\i \cf0 eventType:
 \f1\i0 \
 	The event type of the insights event.\
 \
@@ -371,8 +379,9 @@ Send a custom event to Insights. You can only use this function after having ini
 \f3 \cf4 roAssociativeArray
 \f1 \cf0  instance containing the attributes.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Returns:
+\f0\b \cf0 Returns:
 \f1\b0 \
 \
 Nothing.\
@@ -387,8 +396,7 @@ Nothing.\
 \f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 \cb7 >>>>\cb1 \
+\cb7 >>>>\cb1 \
 \
 \pard\pardeftab720\partightenfactor0
 
@@ -414,12 +422,14 @@ Send a custom video event to Insights. It is very similar to
 \f3 NewRelicVideoStart
 \f1 .\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Arguments:
+\f0\b \cf0 Arguments:
 \f1\b0 \
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f5\i actionName:
+\f5\i \cf0 actionName:
 \f1\i0 \
 	The \'93actionName\'94 attribute value.\
 \
@@ -427,11 +437,12 @@ Send a custom video event to Insights. It is very similar to
 \f5\i attr:
 \f1\i0 \
 	A 
-\f3 \cf11 roAssociativeArray
+\f3 \cf4 roAssociativeArray
 \f1 \cf0  instance containing the attributes.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Returns:
+\f0\b \cf0 Returns:
 \f1\b0 \
 \
 Nothing.\
@@ -446,8 +457,7 @@ Nothing.\
 \f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 \cb7 >>>>\cb1 \
+\cb7 >>>>\cb1 \
 \
 \pard\pardeftab720\partightenfactor0
 
@@ -467,40 +477,41 @@ Sends a raw request to Insights. It makes the HTTP request so it must be called 
 \f3 NewRelic
 \f1 .\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Arguments:
+\f0\b \cf0 Arguments:
 \f1\b0 \
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f5\i attributes:
+\f5\i \cf0 attributes:
 \f1\i0 \
 	A 
-\f3 \cf11 roAssociativeArray
+\f3 \cf4 roAssociativeArray
 \f1 \cf0  instance containing the attributes. It must contain the eventType and the actionName.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b Returns:
+\f0\b \cf0 Returns:
 \f1\b0 \
 \
 The HTTP response.\
 \
 
 \f0\b Example:\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f1\b0 \
+\f1\b0 \cf0 \
 \pard\pardeftab720\partightenfactor0
 
 \f3 \cf0     attr = \{\
         \cf4 \'93eventType\'94\cf0 : \cf4 \'93RokuEvent\'94\cf0 ,\
-\pard\pardeftab720\partightenfactor0
-\cf0         \cf11 \'93actionName\'94\cf0 : \cf11 \'93myAction\'94\cf0 ,\
-        \cf11 \'93attribute\'94\cf0 : \cf11 \'93value\'94\cf0 ,\
-\pard\pardeftab720\partightenfactor0
-\cf0     \}
+        \cf4 \'93actionName\'94\cf0 : \cf4 \'93myAction\'94\cf0 ,\
+        \cf4 \'93attribute\'94\cf0 : \cf4 \'93value\'94\cf0 ,\
+    \}
 \f1 \
-\pard\pardeftab720\partightenfactor0
 
-\f3 \cf0     nrInsertInsightsData(attr)
+\f3     nrInsertInsightsData(attr)
 \f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
@@ -523,40 +534,40 @@ This event groups all actions related to system tracking. Essentially networking
 \
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Action Name\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Description\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 BANDWIDTH_MINUTE\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Reports the bandwidth every minute.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 HTTP_CONNECT\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 An HTTP request.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 HTTP_COMPLETE\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 An HTTP response.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11200\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 HTTP_ERROR\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -571,261 +582,261 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Attribute Name\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Description\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 newRelicAgent\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Always \'93RokuAgent\'94.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 newRelicVersion\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Agent\'92s version.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 sessionId\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Session ID, a hash that is generated every time the app starts.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 hdmiIsConnected\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Boolean, HDMI is connected or not.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 hdmiHdcpVersion\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 HDCP version.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 uuid\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Roku Device UUID.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 device\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Roku device name.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 deviceGroup\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Always \'93Roku\'94.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 deviceManufacturer\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Always \'93Roku\'94.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 deviceModel\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Roku model.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 deviceType\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Roku model type.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 osName\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Always \'93RokuOS\'94.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 osVersion\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Firmware version.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 countryCode\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Country where user is connected from.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 timeZone\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Current user\'92s timezone.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 locale\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Current user\'92s locale.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 memoryLevel\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Device memory level.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 connectionType\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Network connection type (WiFi, etc).\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 ipAddress\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Public IP address of device.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 displayType\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Type of display, screen, TV, etc.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 displayMode\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Display mode.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 displayAspectRatio\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Aspect ratio.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 videoMode\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video mode.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 graphicsPlatform\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Graphics platform (OpenGL, etc).\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 timeSinceLastKeyPress\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Time since last key press in the remote, in milliseconds.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 appId\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Application ID.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 appVersion\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Application version.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 appName\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Application name.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 appDevId\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Developper ID.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3120\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 appBuild\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Application build number.\cell \lastrow\row
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
-1.2.2 Specific Action Attributes\
+1.2.2 Action Specific Attributes\
 \
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clheight104 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clheight104 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clheight104 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clheight104 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Attribute Name\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -834,9 +845,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 Actions\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 httpCode\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -845,9 +856,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE, HTTP_CONNECT, HTTP_ERROR\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 method\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -856,9 +867,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE, HTTP_CONNECT, HTTP_ERROR\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 origUrl\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -867,9 +878,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE, HTTP_CONNECT, HTTP_ERROR\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 status\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -878,9 +889,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE, HTTP_CONNECT, HTTP_ERROR\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 targetIp\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -889,9 +900,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE, HTTP_CONNECT, HTTP_ERROR\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 url\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -900,9 +911,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE, HTTP_CONNECT, HTTP_ERROR\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 bytesDownloaded\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -911,9 +922,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 bytesUploaded\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -922,9 +933,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 connectTime\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -933,9 +944,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 contentType\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -944,9 +955,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 dnsLookupTime\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -955,9 +966,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 downloadSpeed\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -966,9 +977,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 firstByteTime\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -977,9 +988,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 transferTime\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -988,9 +999,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 uploadSpeed\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -999,9 +1010,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 HTTP_COMPLETE\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3160\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth6740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth4180\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 bandwidth\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -1010,8 +1021,9 @@ There is a set of attributes common to all actions sent over a RokuEvent and oth
 \cf0 BANDWIDTH_MINUTE\cell \lastrow\row
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0\b 2. RokuVideoEvent
+\f0\b \cf0 2. RokuVideoEvent
 \f1\b0 \
 \
 This event groups all actions related to video tracking.\
@@ -1020,88 +1032,88 @@ This event groups all actions related to video tracking.\
 \
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Action Name\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Description\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 PLAYER_READY\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Player is ready to start working. It happens when the video agent is started.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 CONTENT_REQUEST\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \'93Play\'94 button pressed or autoplay activated.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 CONTENT_START\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video just started playing.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 CONTENT_END\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video ended playing.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 CONTENT_PAUSE\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video paused.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 CONTENT_RESUME\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video resumed.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 CONTENT_BUFFER_START\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video started buffering.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 CONTENT_BUFFER_END\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video ended buffering.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 CONTENT_ERROR\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video error happened.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3220\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11080\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 CONTENT_HEARTBEAT\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -1118,189 +1130,189 @@ For video events, the common attributes include all RokuEvent common attributes 
 \
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Attribute Name\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Description\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 contentDuration\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Total video duration in milliseconds.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 contentPlayhead\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Current video position in milliseconds.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 contentIsMuted\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video is muted or not.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 contentSrc\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video URL.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 contentId\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Content ID, a CRC32 of contentSrc.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 contentBitrate\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video manifest bitrate.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 contentMeasuredBitrate\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Video measured bitrate.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 contentSegmentBitrate\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 In case of segmented video sources (HLS, DASH), the current segment\'92s bitrate.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 playerName\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Always \'93RokuVideoPlayer\'94\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 playerVersion\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Current firmware version.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 sessionDuration\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Time since session started.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 videoId\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 sessionId + \'93-\'93 + video counter.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 trackerName\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Always \'93rokutracker\'94.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 trackerVersion\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Agent version.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 numberOfVideos\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Number of videos played.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 numberOfErrors\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Number of errors happened.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 timeSinceLastHeartbeat\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Time since last heartbeat, in milliseconds.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 timeSinceLoad\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Time since video loaded, in milliseconds.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 timeSinceRequested\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Time since video requested, in milliseoncods.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 timeSinceStarted\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Time since video started, in milliseoncods.\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx4320
-\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx4320
+\clvertalc \clshdrawnil \clwWidth11060\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 timeSinceTrackerReady\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Time since PLAYER_READY, in milliseoncods.\cell \lastrow\row
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
-2.2.2 Specific Action Attributes\
+2.2.2 Action Specific Attributes\
 \
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth7100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth3740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth7100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth3740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 Attribute Name\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -1309,9 +1321,9 @@ For video events, the common attributes include all RokuEvent common attributes 
 \cf0 Actions\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth7100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth3740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth7100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth3740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 timeSinceBufferBegin\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -1320,9 +1332,9 @@ For video events, the common attributes include all RokuEvent common attributes 
 \cf0 CONTENT_BUFFER_END\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth7100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth3740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth7100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth3740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 timeSincePaused\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
@@ -1331,9 +1343,9 @@ For video events, the common attributes include all RokuEvent common attributes 
 \cf0 CONTENT_RESUME\cell \row
 
 \itap1\trowd \taflags1 \trgaph108\trleft-108 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
-\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx2880
-\clvertalc \clshdrawnil \clwWidth7100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx5760
-\clvertalc \clshdrawnil \clwWidth3740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf12 \clbrdrl\brdrs\brdrw20\brdrcf12 \clbrdrb\brdrs\brdrw20\brdrcf12 \clbrdrr\brdrs\brdrw20\brdrcf12 \clpadl100 \clpadr100 \gaph\cellx8640
+\clvertalc \clshdrawnil \clwWidth3240\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx2880
+\clvertalc \clshdrawnil \clwWidth7100\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx5760
+\clvertalc \clshdrawnil \clwWidth3740\clftsWidth3 \clbrdrt\brdrs\brdrw20\brdrcf10 \clbrdrl\brdrs\brdrw20\brdrcf10 \clbrdrb\brdrs\brdrw20\brdrcf10 \clbrdrr\brdrs\brdrw20\brdrcf10 \clpadl100 \clpadr100 \gaph\cellx8640
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 errorMessage\cell 
 \pard\intbl\itap1\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
