@@ -21,6 +21,7 @@ function NewRelic(account as String, apikey as String, screen as Object) as Void
     m.global.addFields({"nrInsightsApiKey": apikey})
     m.global.addFields({"nrSessionId": __nrGenerateId()})
     m.global.addFields({"nrEventArray": []})
+    m.global.addFields({"nrEventGroups": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
     m.global.addFields({"nrAgentVersion": "0.10.0"})
@@ -55,11 +56,13 @@ end function
 
 function nrStartSysTracker(port) as Object
     syslog = CreateObject("roSystemLog")
+    
     syslog.SetMessagePort(port)
     syslog.EnableType("http.error")
     syslog.EnableType("http.connect")
     syslog.EnableType("bandwidth.minute")
     syslog.EnableType("http.complete")
+    
     return syslog
 end function
 
@@ -98,6 +101,7 @@ function nrSendHTTPError(info as Object) as Void
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
+    'TODO: group event instead of sending it
     attr = {
         "httpCode": info["HttpCode"],
         "method": info["Method"],
@@ -110,6 +114,7 @@ function nrSendHTTPConnect(info as Object) as Void
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
+    'TODO: group event instead of sending it
     attr = {
         "bytesDownloaded": info["BytesDownloaded"],
         "bytesUploaded": info["BytesUploaded"],
@@ -277,6 +282,14 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     ev = __nrAddAttributes(ev)
     
     return ev
+end function
+
+function nrFlushEventGroups() as Void
+    m.global.nrEventGroups = {}
+end function
+
+function nrGroupNewEvent(ev as Object) as Void
+    'TODO: find URL in nrEventGroups, if found -> merge data, if not -> create new entry
 end function
 
 '=====================

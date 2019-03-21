@@ -15,9 +15,15 @@
 	<script type = "text/brightscript" >
 		<![CDATA[
 		function nrTaskMain()
+			cnt = 0
 			while true
-				sleep(5000)
-				nrEventProcessor()
+				sleep(2500)
+				nrProcessGroupedEvents()
+				cnt = cnt + 1
+				if cnt = 2
+					nrEventProcessor()
+					cnt = 0
+				end if
 			end while
 		end function
 		]]>

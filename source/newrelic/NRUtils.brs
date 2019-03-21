@@ -25,7 +25,7 @@ function nrInsertInsightsData(attributes as Object) as Object
     return resp
 end function
 
-function nrEventProcessor()
+function nrEventProcessor() as Void
     while true
         ev = nrExtractEvent()
         if ev = invalid then exit while
@@ -36,6 +36,10 @@ function nrEventProcessor()
             nrRecordEvent(ev)
         end if
     end while
+end function
+
+function nrProcessGroupedEvents() as Void
+    'TODO: convert grouped events into events in the Event Array
 end function
 
 'Record an event to the list. Takes an roAssociativeArray as argument 
