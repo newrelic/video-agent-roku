@@ -40,6 +40,10 @@ end function
 
 function nrProcessGroupedEvents() as Void
     'TODO: convert grouped events into events in the Event Array
+    
+    'Flush event groups
+    nrLog("Flush Event Groups")
+    m.global.nrEventGroups = {}
 end function
 
 'Record an event to the list. Takes an roAssociativeArray as argument 

@@ -284,12 +284,15 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     return ev
 end function
 
-function nrFlushEventGroups() as Void
-    m.global.nrEventGroups = {}
-end function
-
 function nrGroupNewEvent(ev as Object) as Void
-    'TODO: find URL in nrEventGroups, if found -> merge data, if not -> create new entry
+    if ev["Url"] = invalid then return
+    urlKey = ev["Url"]
+    evGroup = m.global.nrEventGroups[urlKey]
+    if evGroup = invalid
+        'TODO: create new group from event
+    else
+        'TODO: merge event to existing group
+    end if
 end function
 
 '=====================
