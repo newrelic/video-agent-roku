@@ -21,7 +21,8 @@ function NewRelic(account as String, apikey as String, screen as Object) as Void
     m.global.addFields({"nrInsightsApiKey": apikey})
     m.global.addFields({"nrSessionId": __nrGenerateId()})
     m.global.addFields({"nrEventArray": []})
-    m.global.addFields({"nrEventGroups": CreateObject("roAssociativeArray")})
+    m.global.addFields({"nrEventGroupsConnect": CreateObject("roAssociativeArray")})
+    m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
     m.global.addFields({"nrAgentVersion": "0.10.0"})
@@ -62,30 +63,16 @@ function nrSendCustomEvent(eventType as String, actionName as String, attr as Ob
 end function
 
 function nrSendHTTPError(info as Object) as Void
-    attr = {
-        "httpCode": info["HttpCode"],
-        "method": info["Method"],
-        "origUrl": info["OrigUrl"],
-        "status": info["Status"],
-        "targetIp": info["TargetIp"],
-        "url": info["Url"]
-    }   
+    attr = nrAddCommonHTTPAttr(info)   
     nrSendCustomEvent("RokuEvent", "HTTP_ERROR", attr)
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
     'TODO: group event instead of sending it
-    attr = {
-        "httpCode": info["HttpCode"],
-        "method": info["Method"],
-        "origUrl": info["OrigUrl"],
-        "status": info["Status"],
-        "targetIp": info["TargetIp"],
-        "url": info["Url"]
-    }
-    nrSendCustomEvent("RokuEvent", "HTTP_CONNECT", attr)
+    attr = nrAddCommonHTTPAttr(info)
+    'nrSendCustomEvent("RokuEvent", "HTTP_CONNECT", attr)
     
-    nrGroupNewEvent(info, "HTTP_CONNECT")
+    nrGroupNewEvent(attr, "HTTP_CONNECT")
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -98,18 +85,26 @@ function nrSendHTTPComplete(info as Object) as Void
         "dnsLookupTime": info["DNSLookupTime"],
         "downloadSpeed": info["DownloadSpeed"],
         "firstByteTime": info["FirstByteTime"],
+        "transferTime": info["TransferTime"],
+        "uploadSpeed": info["UploadSpeed"],
+    }
+    commonAttr = nrAddCommonHTTPAttr(info)
+    attr.Append(commonAttr)
+    'nrSendCustomEvent("RokuEvent", "HTTP_COMPLETE", attr)
+    
+    nrGroupNewEvent(attr, "HTTP_COMPLETE")
+end function
+
+function nrAddCommonHTTPAttr(info as Object) as Object
+    attr = {
         "httpCode": info["HttpCode"],
         "method": info["Method"],
         "origUrl": info["OrigUrl"],
         "status": info["Status"],
         "targetIp": info["TargetIp"],
-        "transferTime": info["TransferTime"],
-        "uploadSpeed": info["UploadSpeed"],
         "url": info["Url"]
     }
-    nrSendCustomEvent("RokuEvent", "HTTP_COMPLETE", attr)
-    
-    nrGroupNewEvent(info, "HTTP_COMPLETE")
+    return attr
 end function
 
 function nrSendBandwidth(info as Object) as Void
@@ -123,7 +118,7 @@ end function
 ' Video Agent functions '
 '======================='
 
-function NewRelicVideoStart(videoObject as Object)
+function NewRelicVideoStart(videoObject as Object) as Void
     nrLog("NewRelicVideoStart") 
 
     'Current state
@@ -383,33 +378,56 @@ function nrAddAttributes(ev as Object) as Object
     return ev
 end function
 
-'TODO: detect urls with same schema htt... /*.ts and group them, otherwise the chuks create hundreds of requests
+'TODO: detect urls with same schema htt... /*.ext and group them, otherwise the chuks create hundreds of requests
+' Where "ext" can be ts, mp4, etc
 
 function nrGroupNewEvent(ev as Object, actionName as String) as Void
     if ev["Url"] = invalid then return
     urlKey = ev["Url"]
+    matchUrl = nrParseVideoStreamUrl(urlKey)
+    if matchUrl <> "" then urlKey = matchUrl
     ev["actionName"] = actionName
-    evGroup = m.global.nrEventGroups[urlKey]
-    if evGroup = invalid
-        'Create new group from event
-        ev["counter"] = 1
-        tmp = m.global.nrEventGroups
-        tmp[urlKey] = ev
-        m.global.nrEventGroups = tmp
-    else
-        evGroup["counter"] = evGroup["counter"] + 1
-        'TODO: merge event to existing group
-        tmp = m.global.nrEventGroups
-        tmp[urlKey] = evGroup
-        m.global.nrEventGroups = tmp
+    
+    if actionName = "HTTP_COMPLETE"
+        m.global.nrEventGroupsComplete = nrGroupMergeEvent(urlKey, m.global.nrEventGroupsComplete, ev)
+    else if actionName = "HTTP_CONNECT"
+        m.global.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.global.nrEventGroupsConnect, ev)
     end if
     
     __logEvGroups()
 end function
 
-'TODO: create function to parse URLs
-function nrParseUrl(url as String)
+function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as Object
+    evGroup = group[urlKey]
+    if evGroup = invalid
+        'Create new group from event
+        ev["counter"] = 1
+        group[urlKey] = ev
+    else
+        evGroup["counter"] = evGroup["counter"] + 1
+        'TODO: merge event to existing group -> add numeric values and we will divide by counter to get the mean when creating the insights event 
+        group[urlKey] = evGroup
+    end if
+    return group       
+end function
 
+'TODO: create function to parse URLs
+function nrParseVideoStreamUrl(url as String) as String
+    r = CreateObject("roRegex", "\/\/|\/", "")
+    arr = r.Split(url)
+    nrLog(["Parse URL = ", arr])
+    if arr.Count() = 0 then return ""
+    if arr[0] <> "http:" and arr[0] <> "https:" then return ""
+    
+    lastItem = arr[arr.Count() - 1]
+    
+    r = CreateObject("roRegex", "^\w+\.\w+$", "")
+    if r.IsMatch(lastItem) = false then return ""
+    
+    matchUrl = Left(url, url.Len() - lastItem.Len())
+    nrLog(["Match URL = ", matchUrl])
+    
+    return matchUrl
 end function
 
 '========================'
@@ -515,10 +533,13 @@ function __logVideoInfo() as Void
 end function
 
 function __logEvGroups() as Void
-    nrLog("=========== Event Groups ===========")
-    'traverse all m.global.nrEventGroups keys and print the events
-    for each item in m.global.nrEventGroups.Items()
+    nrLog("============ Event Groups HTTP_CONNECT ===========")
+    for each item in m.global.nrEventGroupsConnect.Items()
         print item.key, item.value
     end for
-    nrLog("====================================")
+    nrLog("=========== Event Groups HTTP_COMPLETE ===========")
+    for each item in m.global.nrEventGroupsComplete.Items()
+        print item.key, item.value
+    end for
+    nrLog("==================================================")
 end function

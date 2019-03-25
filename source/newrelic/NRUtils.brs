@@ -39,10 +39,18 @@ function nrEventProcessor() as Void
 end function
 
 function nrProcessGroupedEvents() as Void
-    if m.global.nrEventGroups.Count() > 0
-        'TODO: convert grouped events into events in the Event Array
+    if m.global.nrEventGroupsConnect.Count() > 0
+        'TODO: convert grouped events into events in the Event Array. Calculate means for numeric values
         'Flush event groups
-        nrLog("Flush Event Groups")
+        nrLog("Flush Connect Event Groups")
+        'TODO: uncomment
+        'm.global.nrEventGroups = {}
+    end if
+    
+    if m.global.nrEventGroupsComplete.Count() > 0
+        'TODO: convert grouped events into events in the Event Array. Calculate means for numeric values
+        'Flush event groups
+        nrLog("Flush Complete Event Groups")
         'TODO: uncomment
         'm.global.nrEventGroups = {}
     end if
