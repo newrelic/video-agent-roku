@@ -17,13 +17,9 @@
 		function nrTaskMain()
 			cnt = 0
 			while true
-				sleep(2500)
+				sleep(10000)
 				nrProcessGroupedEvents()
-				cnt = cnt + 1
-				if cnt = 2
-					nrEventProcessor()
-					cnt = 0
-				end if
+				nrEventProcessor()
 			end while
 		end function
 		]]>

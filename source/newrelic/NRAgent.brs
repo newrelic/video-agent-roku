@@ -55,28 +55,17 @@ function NewRelicWait(port as Object, foo as Function) as Void
     end while
 end function
 
-'Used to send generic events
-function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
-    ev = nrCreateEvent(eventType, actionName)
-    ev.Append(attr)
-    nrRecordEvent(ev)
-end function
-
 function nrSendHTTPError(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)   
     nrSendCustomEvent("RokuEvent", "HTTP_ERROR", attr)
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
-    'TODO: group event instead of sending it
     attr = nrAddCommonHTTPAttr(info)
-    'nrSendCustomEvent("RokuEvent", "HTTP_CONNECT", attr)
-    
     nrGroupNewEvent(attr, "HTTP_CONNECT")
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
-    'TODO: group event instead of sending it
     attr = {
         "bytesDownloaded": info["BytesDownloaded"],
         "bytesUploaded": info["BytesUploaded"],
@@ -90,21 +79,7 @@ function nrSendHTTPComplete(info as Object) as Void
     }
     commonAttr = nrAddCommonHTTPAttr(info)
     attr.Append(commonAttr)
-    'nrSendCustomEvent("RokuEvent", "HTTP_COMPLETE", attr)
-    
     nrGroupNewEvent(attr, "HTTP_COMPLETE")
-end function
-
-function nrAddCommonHTTPAttr(info as Object) as Object
-    attr = {
-        "httpCode": info["HttpCode"],
-        "method": info["Method"],
-        "origUrl": info["OrigUrl"],
-        "status": info["Status"],
-        "targetIp": info["TargetIp"],
-        "url": info["Url"]
-    }
-    return attr
 end function
 
 function nrSendBandwidth(info as Object) as Void
@@ -248,6 +223,18 @@ function nrProcessMessage(msg as Object) as Boolean
     return false
 end function
 
+function nrAddCommonHTTPAttr(info as Object) as Object
+    attr = {
+        "httpCode": info["HttpCode"],
+        "method": info["Method"],
+        "origUrl": info["OrigUrl"],
+        "status": info["Status"],
+        "targetIp": info["TargetIp"],
+        "url": info["Url"]
+    }
+    return attr
+end function
+
 function nrAction(action as String) as String
     if m.nrIsAd = true
         return "AD_" + action
@@ -262,29 +249,6 @@ function nrAttr(attribute as String) as String
     else
         return "content" + attribute
     end if
-end function
-
-function nrCreateEvent(eventType as String, actionName as String) as Object
-    ev = CreateObject("roAssociativeArray")
-    if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
-    if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
-    timestamp& = CreateObject("roDateTime").asSeconds()
-    timestampMS& = timestamp& * 1000
-    
-    if timestamp& = m.global.nrLastTimestamp
-        m.global.nrTicks = m.global.nrTicks + 1
-    else
-        m.global.nrTicks = 0
-    end if
-    
-    timestampMS& = timestampMS& + m.global.nrTicks
-    
-    ev["timestamp"] = timestampMS&
-    m.global.nrLastTimestamp = timestamp&
-    
-    ev = nrAddAttributes(ev)
-    
-    return ev
 end function
 
 'TODO: some attributes are not going to change, we can create it only once and then add every time
@@ -336,51 +300,6 @@ function nrAddVideoAttributes(ev as Object) as Object
     return ev
 end function
 
-function nrAddAttributes(ev as Object) as Object
-    ev.AddReplace("newRelicAgent", "RokuAgent")
-    ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
-    ev.AddReplace("sessionId", m.global.nrSessionId)
-    hdmi = CreateObject("roHdmiStatus")
-    ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
-    ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
-    dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
-    ev.AddReplace("device", dev.GetModelDisplayName())
-    ev.AddReplace("deviceGroup", "Roku")
-    ev.AddReplace("deviceManufacturer", "Roku")
-    ev.AddReplace("deviceModel", dev.GetModel())
-    ev.AddReplace("deviceType", dev.GetModelType())
-    ev.AddReplace("osName", "RokuOS")
-    ev.AddReplace("osVersion", dev.GetVersion())
-    ev.AddReplace("countryCode", dev.GetUserCountryCode())
-    ev.AddReplace("timeZone", dev.GetTimeZone())
-    ev.AddReplace("locale", dev.GetCurrentLocale())
-    ev.AddReplace("memoryLevel", dev.GetGeneralMemoryLevel())
-    ev.AddReplace("connectionType", dev.GetConnectionType())
-    ev.AddReplace("ipAddress", dev.GetExternalIp())
-    ev.AddReplace("displayType", dev.GetDisplayType())
-    ev.AddReplace("displayMode", dev.GetDisplayMode())
-    ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
-    ev.AddReplace("videoMode", dev.GetVideoMode())
-    ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
-    ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)    
-    app = CreateObject("roAppInfo")
-    appid = app.GetID().ToInt()
-    if appid = 0 then appid = 1
-    ev.AddReplace("appId", appid)
-    ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
-    ev.AddReplace("appName", app.GetTitle())
-    ev.AddReplace("appDevId", app.GetDevID())
-    appbuild = app.GetValue("build_version").ToInt()
-    if appbuild = 0 then appbuild = 1
-    ev.AddReplace("appBuild", appbuild)
-    
-    return ev
-end function
-
-'TODO: detect urls with same schema htt... /*.ext and group them, otherwise the chuks create hundreds of requests
-' Where "ext" can be ts, mp4, etc
-
 function nrGroupNewEvent(ev as Object, actionName as String) as Void
     if ev["Url"] = invalid then return
     urlKey = ev["Url"]
@@ -404,28 +323,27 @@ function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as O
         ev["counter"] = 1
         group[urlKey] = ev
     else
+        'Add new event to existing group
         evGroup["counter"] = evGroup["counter"] + 1
         'TODO: merge event to existing group -> add numeric values and we will divide by counter to get the mean when creating the insights event 
         group[urlKey] = evGroup
     end if
-    return group       
+    return group
 end function
 
-'TODO: create function to parse URLs
 function nrParseVideoStreamUrl(url as String) as String
     r = CreateObject("roRegex", "\/\/|\/", "")
     arr = r.Split(url)
-    nrLog(["Parse URL = ", arr])
+    
     if arr.Count() = 0 then return ""
     if arr[0] <> "http:" and arr[0] <> "https:" then return ""
     
     lastItem = arr[arr.Count() - 1]
-    
     r = CreateObject("roRegex", "^\w+\.\w+$", "")
+    
     if r.IsMatch(lastItem) = false then return ""
     
     matchUrl = Left(url, url.Len() - lastItem.Len())
-    nrLog(["Match URL = ", matchUrl])
     
     return matchUrl
 end function
