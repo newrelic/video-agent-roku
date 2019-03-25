@@ -6,9 +6,9 @@
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
 
-'==========================
+'========================='
 ' General Agent functions '
-'==========================
+'========================='
 
 'Must be called from Main
 function NewRelic(account as String, apikey as String, screen as Object) as Void
@@ -54,38 +54,11 @@ function NewRelicWait(port as Object, foo as Function) as Void
     end while
 end function
 
-function nrStartSysTracker(port) as Object
-    syslog = CreateObject("roSystemLog")
-    
-    syslog.SetMessagePort(port)
-    syslog.EnableType("http.error")
-    syslog.EnableType("http.connect")
-    syslog.EnableType("bandwidth.minute")
-    syslog.EnableType("http.complete")
-    
-    return syslog
-end function
-
-function nrProcessMessage(msg as Object) as Boolean
-    msgType = type(msg)
-    if msgType = "roSystemLogEvent" Then
-        i = msg.GetInfo()
-        if i.LogType = "http.error"
-            nrSendHTTPError(i)
-            return true
-        else if i.LogType = "http.connect"
-            nrSendHTTPConnect(i)
-            return true
-        else if i.LogType = "http.complete"
-            nrSendHTTPComplete(i)
-            return true
-        else if i.LogType = "bandwidth.minute"
-            nrSendBandwidth(i)
-            return true
-        end If
-    end if
-    
-    return false
+'Used to send generic events
+function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
+    ev = nrCreateEvent(eventType, actionName)
+    ev.Append(attr)
+    nrRecordEvent(ev)
 end function
 
 function nrSendHTTPError(info as Object) as Void
@@ -146,9 +119,9 @@ function nrSendBandwidth(info as Object) as Void
     nrSendCustomEvent("RokuEvent", "BANDWIDTH_MINUTE", attr)
 end function
 
-'========================
+'======================='
 ' Video Agent functions '
-'========================
+'======================='
 
 function NewRelicVideoStart(videoObject as Object)
     nrLog("NewRelicVideoStart") 
@@ -182,22 +155,6 @@ function NewRelicVideoStart(videoObject as Object)
     'Player Ready
     nrSendPlayerReady()
     
-end function
-
-function nrAction(action as String) as String
-    if m.nrIsAd = true
-        return "AD_" + action
-    else
-        return "CONTENT_" + action
-    end if
-end function
-
-function nrAttr(attribute as String) as String
-    if m.nrIsAd = true
-        return "ad" + attribute
-    else
-        return "content" + attribute
-    end if
 end function
 
 function nrSendPlayerReady() as Void
@@ -258,11 +215,58 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     nrRecordEvent(ev)
 end function
 
-'Used to send generic events
-function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
-    ev = nrCreateEvent(eventType, actionName)
-    ev.Append(attr)
-    nrRecordEvent(ev)
+'=================='
+' Helper functions '
+'=================='
+
+function nrStartSysTracker(port) as Object
+    syslog = CreateObject("roSystemLog")
+    
+    syslog.SetMessagePort(port)
+    syslog.EnableType("http.error")
+    syslog.EnableType("http.connect")
+    syslog.EnableType("bandwidth.minute")
+    syslog.EnableType("http.complete")
+    
+    return syslog
+end function
+
+function nrProcessMessage(msg as Object) as Boolean
+    msgType = type(msg)
+    if msgType = "roSystemLogEvent" Then
+        i = msg.GetInfo()
+        if i.LogType = "http.error"
+            nrSendHTTPError(i)
+            return true
+        else if i.LogType = "http.connect"
+            nrSendHTTPConnect(i)
+            return true
+        else if i.LogType = "http.complete"
+            nrSendHTTPComplete(i)
+            return true
+        else if i.LogType = "bandwidth.minute"
+            nrSendBandwidth(i)
+            return true
+        end If
+    end if
+    
+    return false
+end function
+
+function nrAction(action as String) as String
+    if m.nrIsAd = true
+        return "AD_" + action
+    else
+        return "CONTENT_" + action
+    end if
+end function
+
+function nrAttr(attribute as String) as String
+    if m.nrIsAd = true
+        return "ad" + attribute
+    else
+        return "content" + attribute
+    end if
 end function
 
 function nrCreateEvent(eventType as String, actionName as String) as Object
@@ -379,6 +383,8 @@ function nrAddAttributes(ev as Object) as Object
     return ev
 end function
 
+'TODO: detect urls with same schema htt... /*.ts and group them, otherwise the chuks create hundreds of requests
+
 function nrGroupNewEvent(ev as Object, actionName as String) as Void
     if ev["Url"] = invalid then return
     urlKey = ev["Url"]
@@ -401,9 +407,14 @@ function nrGroupNewEvent(ev as Object, actionName as String) as Void
     __logEvGroups()
 end function
 
-'=====================
-' Internal functions '
-'=====================
+'TODO: create function to parse URLs
+function nrParseUrl(url as String)
+
+end function
+
+'========================'
+' Observers and Handlers '
+'========================'
 
 function __nrStateObserver() as Void
     nrLog("---------- State Observer ----------")
