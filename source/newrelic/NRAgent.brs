@@ -111,6 +111,8 @@ function nrSendHTTPConnect(info as Object) as Void
         "url": info["Url"]
     }
     nrSendCustomEvent("RokuEvent", "HTTP_CONNECT", attr)
+    
+    nrGroupNewEvent(info, "HTTP_CONNECT")
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -133,6 +135,8 @@ function nrSendHTTPComplete(info as Object) as Void
         "url": info["Url"]
     }
     nrSendCustomEvent("RokuEvent", "HTTP_COMPLETE", attr)
+    
+    nrGroupNewEvent(info, "HTTP_COMPLETE")
 end function
 
 function nrSendBandwidth(info as Object) as Void
@@ -284,15 +288,26 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     return ev
 end function
 
-function nrGroupNewEvent(ev as Object) as Void
+function nrGroupNewEvent(ev as Object, actionName as String) as Void
     if ev["Url"] = invalid then return
     urlKey = ev["Url"]
+    ev["actionName"] = actionName
     evGroup = m.global.nrEventGroups[urlKey]
     if evGroup = invalid
-        'TODO: create new group from event
+        'Create new group from event
+        ev["counter"] = 1
+        tmp = m.global.nrEventGroups
+        tmp[urlKey] = ev
+        m.global.nrEventGroups = tmp
     else
+        evGroup["counter"] = evGroup["counter"] + 1
         'TODO: merge event to existing group
+        tmp = m.global.nrEventGroups
+        tmp[urlKey] = evGroup
+        m.global.nrEventGroups = tmp
     end if
+    
+    __logEvGroups()
 end function
 
 '=====================
@@ -491,5 +506,14 @@ function __logVideoInfo() as Void
         nrLog(["Segment Start time = ", m.nrVideoObject.streamingSegment["segStartTime"]])
     end if
     nrLog(["Manifest data = ", m.nrVideoObject.manifestData])
+    nrLog("====================================")
+end function
+
+function __logEvGroups() as Void
+    nrLog("=========== Event Groups ===========")
+    'traverse all m.global.nrEventGroups keys and print the events
+    for each item in m.global.nrEventGroups.Items()
+        print item.key, item.value
+    end for
     nrLog("====================================")
 end function
