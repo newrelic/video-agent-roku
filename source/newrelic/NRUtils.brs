@@ -129,7 +129,6 @@ function nrConvertGroupsToEvents(group as Object) as Void
     'TODO: convert grouped events into events in the Event Array. Calculate means for numeric values
     for each item in group.Items()
         item.value["matchUrl"] = item.key
-        'nrRecordEvent(item.value)
         nrSendCustomEvent("RokuEvent", item.value["actionName"], item.value)
     end for
 end function
