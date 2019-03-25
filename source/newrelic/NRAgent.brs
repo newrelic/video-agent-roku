@@ -251,7 +251,7 @@ end function
 'Used by all video senders
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     ev = nrCreateEvent("RokuVideoEvent", actionName)
-    ev = __nrAddVideoAttributes(ev)
+    ev = nrAddVideoAttributes(ev)
     if type(attr) = "roAssociativeArray"
        ev.Append(attr)
     end if
@@ -283,7 +283,98 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     ev["timestamp"] = timestampMS&
     m.global.nrLastTimestamp = timestamp&
     
-    ev = __nrAddAttributes(ev)
+    ev = nrAddAttributes(ev)
+    
+    return ev
+end function
+
+'TODO: some attributes are not going to change, we can create it only once and then add every time
+
+function nrAddVideoAttributes(ev as Object) as Object
+    ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
+    ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
+    ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
+    if m.nrVideoObject.streamInfo <> invalid
+        'BUG: when using playlists reach the end and restart it, the src remains in the last track
+        ev.AddReplace(nrAttr("Src"), m.nrVideoObject.streamInfo["streamUrl"])
+        'Generate Id from Src (hashing it)
+        ba = CreateObject("roByteArray")
+        ba.FromAsciiString(m.nrVideoObject.streamInfo["streamUrl"])
+        ev.AddReplace(nrAttr("Id"), ba.GetCRC32())
+        ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
+        ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
+    end if
+    if m.nrVideoObject.streamingSegment <> invalid
+        ev.AddReplace(nrAttr("SegmentBitrate"), m.nrVideoObject.streamingSegment["segBitrateBps"])
+    end if
+    ev.AddReplace("playerName", "RokuVideoPlayer")
+    dev = CreateObject("roDeviceInfo")
+    ev.AddReplace("playerVersion", dev.GetVersion())
+    ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
+    ev.AddReplace("videoId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
+    ev.AddReplace("trackerName", "rokutracker")
+    ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
+    'Add counters
+    ev.AddReplace("numberOfVideos", m.nrVideoCounter + 1)
+    ev.AddReplace("numberOfErrors", m.nrNumberOfErrors)
+    
+    'Add timeSince attributes
+    'TODO:
+    'timeSinceLastAd -> all
+    'totalPlaytime -> all
+    if Right(ev["actionName"], 11) = "_BUFFER_END"
+        ev.AddReplace("timeSinceBufferBegin", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceBufferBegin)
+    end if
+    if Right(ev["actionName"], 7) = "_RESUME"
+        ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
+    end if
+    ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
+    ev.AddReplace("timeSinceLoad", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLoad)
+    ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
+    ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
+    ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
+    
+    return ev
+end function
+
+function nrAddAttributes(ev as Object) as Object
+    ev.AddReplace("newRelicAgent", "RokuAgent")
+    ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
+    ev.AddReplace("sessionId", m.global.nrSessionId)
+    hdmi = CreateObject("roHdmiStatus")
+    ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
+    ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
+    dev = CreateObject("roDeviceInfo")
+    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
+    ev.AddReplace("device", dev.GetModelDisplayName())
+    ev.AddReplace("deviceGroup", "Roku")
+    ev.AddReplace("deviceManufacturer", "Roku")
+    ev.AddReplace("deviceModel", dev.GetModel())
+    ev.AddReplace("deviceType", dev.GetModelType())
+    ev.AddReplace("osName", "RokuOS")
+    ev.AddReplace("osVersion", dev.GetVersion())
+    ev.AddReplace("countryCode", dev.GetUserCountryCode())
+    ev.AddReplace("timeZone", dev.GetTimeZone())
+    ev.AddReplace("locale", dev.GetCurrentLocale())
+    ev.AddReplace("memoryLevel", dev.GetGeneralMemoryLevel())
+    ev.AddReplace("connectionType", dev.GetConnectionType())
+    ev.AddReplace("ipAddress", dev.GetExternalIp())
+    ev.AddReplace("displayType", dev.GetDisplayType())
+    ev.AddReplace("displayMode", dev.GetDisplayMode())
+    ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
+    ev.AddReplace("videoMode", dev.GetVideoMode())
+    ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
+    ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)    
+    app = CreateObject("roAppInfo")
+    appid = app.GetID().ToInt()
+    if appid = 0 then appid = 1
+    ev.AddReplace("appId", appid)
+    ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
+    ev.AddReplace("appName", app.GetTitle())
+    ev.AddReplace("appDevId", app.GetDevID())
+    appbuild = app.GetValue("build_version").ToInt()
+    if appbuild = 0 then appbuild = 1
+    ev.AddReplace("appBuild", appbuild)
     
     return ev
 end function
@@ -368,103 +459,6 @@ function __nrIndexObserver() as Void
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrSendVideoEvent(nrAction("NEXT"))
     
-end function
-
-'TODO: some attributes are not going to change, we can create it only once and then add every time
-
-function __nrAddVideoAttributes(ev as Object) as Object
-    ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
-    ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
-    ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
-    if m.nrVideoObject.streamInfo <> invalid
-        'BUG: when using playlists reach the end and restart it, the src remains in the last track
-        ev.AddReplace(nrAttr("Src"), m.nrVideoObject.streamInfo["streamUrl"])
-        'Generate Id from Src (hashing it)
-        ba = CreateObject("roByteArray")
-        ba.FromAsciiString(m.nrVideoObject.streamInfo["streamUrl"])
-        ev.AddReplace(nrAttr("Id"), ba.GetCRC32())
-        ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
-        ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
-    end if
-    if m.nrVideoObject.streamingSegment <> invalid
-        ev.AddReplace(nrAttr("SegmentBitrate"), m.nrVideoObject.streamingSegment["segBitrateBps"])
-    end if
-    ev.AddReplace("playerName", "RokuVideoPlayer")
-    dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("playerVersion", dev.GetVersion())
-    ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
-    ev.AddReplace("videoId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
-    ev.AddReplace("trackerName", "rokutracker")
-    ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
-    'Add counters
-    ev.AddReplace("numberOfVideos", m.nrVideoCounter + 1)
-    ev.AddReplace("numberOfErrors", m.nrNumberOfErrors)
-    
-    'Add timeSince attributes
-    ev = __nrAddTimeSinceAttributes(ev)
-    
-    return ev
-end function
-
-'TODO:
-'timeSinceLastAd -> all
-'totalPlaytime -> all
-
-function __nrAddTimeSinceAttributes(ev as Object) as Object
-    if Right(ev["actionName"], 11) = "_BUFFER_END"
-        ev.AddReplace("timeSinceBufferBegin", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceBufferBegin)
-    end if
-    if Right(ev["actionName"], 7) = "_RESUME"
-        ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
-    end if
-    ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
-    ev.AddReplace("timeSinceLoad", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLoad)
-    ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
-    ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
-    ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
-    return ev
-end function
-
-function __nrAddAttributes(ev as Object) as Object
-    ev.AddReplace("newRelicAgent", "RokuAgent")
-    ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
-    ev.AddReplace("sessionId", m.global.nrSessionId)
-    hdmi = CreateObject("roHdmiStatus")
-    ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
-    ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
-    dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
-    ev.AddReplace("device", dev.GetModelDisplayName())
-    ev.AddReplace("deviceGroup", "Roku")
-    ev.AddReplace("deviceManufacturer", "Roku")
-    ev.AddReplace("deviceModel", dev.GetModel())
-    ev.AddReplace("deviceType", dev.GetModelType())
-    ev.AddReplace("osName", "RokuOS")
-    ev.AddReplace("osVersion", dev.GetVersion())
-    ev.AddReplace("countryCode", dev.GetUserCountryCode())
-    ev.AddReplace("timeZone", dev.GetTimeZone())
-    ev.AddReplace("locale", dev.GetCurrentLocale())
-    ev.AddReplace("memoryLevel", dev.GetGeneralMemoryLevel())
-    ev.AddReplace("connectionType", dev.GetConnectionType())
-    ev.AddReplace("ipAddress", dev.GetExternalIp())
-    ev.AddReplace("displayType", dev.GetDisplayType())
-    ev.AddReplace("displayMode", dev.GetDisplayMode())
-    ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
-    ev.AddReplace("videoMode", dev.GetVideoMode())
-    ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
-    ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)    
-    app = CreateObject("roAppInfo")
-    appid = app.GetID().ToInt()
-    if appid = 0 then appid = 1
-    ev.AddReplace("appId", appid)
-    ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
-    ev.AddReplace("appName", app.GetTitle())
-    ev.AddReplace("appDevId", app.GetDevID())
-    appbuild = app.GetValue("build_version").ToInt()
-    if appbuild = 0 then appbuild = 1
-    ev.AddReplace("appBuild", appbuild)
-    
-    return ev
 end function
 
 function __nrHeartbeatHandler() as Void
