@@ -6,9 +6,9 @@
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
 
-'==========================
+'========================='
 ' General Agent functions '
-'==========================
+'========================='
 
 'Must be called from Main
 function NewRelic(account as String, apikey as String, screen as Object) as Void
@@ -21,9 +21,11 @@ function NewRelic(account as String, apikey as String, screen as Object) as Void
     m.global.addFields({"nrInsightsApiKey": apikey})
     m.global.addFields({"nrSessionId": __nrGenerateId()})
     m.global.addFields({"nrEventArray": []})
+    m.global.addFields({"nrEventGroupsConnect": CreateObject("roAssociativeArray")})
+    m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.9.0"})
+    m.global.addFields({"nrAgentVersion": "0.10.0"})
     m.global.addFields({"nrLogsState": false})
     
     m.syslog = nrStartSysTracker(screen.GetMessagePort())
@@ -53,60 +55,14 @@ function NewRelicWait(port as Object, foo as Function) as Void
     end while
 end function
 
-function nrStartSysTracker(port) as Object
-    syslog = CreateObject("roSystemLog")
-    syslog.SetMessagePort(port)
-    syslog.EnableType("http.error")
-    syslog.EnableType("http.connect")
-    syslog.EnableType("bandwidth.minute")
-    syslog.EnableType("http.complete")
-    return syslog
-end function
-
-function nrProcessMessage(msg as Object) as Boolean
-    msgType = type(msg)
-    if msgType = "roSystemLogEvent" Then
-        i = msg.GetInfo()
-        if i.LogType = "http.error"
-            nrSendHTTPError(i)
-            return true
-        else if i.LogType = "http.connect"
-            nrSendHTTPConnect(i)
-            return true
-        else if i.LogType = "http.complete"
-            nrSendHTTPComplete(i)
-            return true
-        else if i.LogType = "bandwidth.minute"
-            nrSendBandwidth(i)
-            return true
-        end If
-    end if
-    
-    return false
-end function
-
 function nrSendHTTPError(info as Object) as Void
-    attr = {
-        "httpCode": info["HttpCode"],
-        "method": info["Method"],
-        "origUrl": info["OrigUrl"],
-        "status": info["Status"],
-        "targetIp": info["TargetIp"],
-        "url": info["Url"]
-    }   
+    attr = nrAddCommonHTTPAttr(info)   
     nrSendCustomEvent("RokuEvent", "HTTP_ERROR", attr)
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
-    attr = {
-        "httpCode": info["HttpCode"],
-        "method": info["Method"],
-        "origUrl": info["OrigUrl"],
-        "status": info["Status"],
-        "targetIp": info["TargetIp"],
-        "url": info["Url"]
-    }
-    nrSendCustomEvent("RokuEvent", "HTTP_CONNECT", attr)
+    attr = nrAddCommonHTTPAttr(info)
+    nrGroupNewEvent(attr, "HTTP_CONNECT")
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -118,16 +74,12 @@ function nrSendHTTPComplete(info as Object) as Void
         "dnsLookupTime": info["DNSLookupTime"],
         "downloadSpeed": info["DownloadSpeed"],
         "firstByteTime": info["FirstByteTime"],
-        "httpCode": info["HttpCode"],
-        "method": info["Method"],
-        "origUrl": info["OrigUrl"],
-        "status": info["Status"],
-        "targetIp": info["TargetIp"],
         "transferTime": info["TransferTime"],
         "uploadSpeed": info["UploadSpeed"],
-        "url": info["Url"]
     }
-    nrSendCustomEvent("RokuEvent", "HTTP_COMPLETE", attr)
+    commonAttr = nrAddCommonHTTPAttr(info)
+    attr.Append(commonAttr)
+    nrGroupNewEvent(attr, "HTTP_COMPLETE")
 end function
 
 function nrSendBandwidth(info as Object) as Void
@@ -137,11 +89,11 @@ function nrSendBandwidth(info as Object) as Void
     nrSendCustomEvent("RokuEvent", "BANDWIDTH_MINUTE", attr)
 end function
 
-'========================
+'======================='
 ' Video Agent functions '
-'========================
+'======================='
 
-function NewRelicVideoStart(videoObject as Object)
+function NewRelicVideoStart(videoObject as Object) as Void
     nrLog("NewRelicVideoStart") 
 
     'Current state
@@ -173,22 +125,6 @@ function NewRelicVideoStart(videoObject as Object)
     'Player Ready
     nrSendPlayerReady()
     
-end function
-
-function nrAction(action as String) as String
-    if m.nrIsAd = true
-        return "AD_" + action
-    else
-        return "CONTENT_" + action
-    end if
-end function
-
-function nrAttr(attribute as String) as String
-    if m.nrIsAd = true
-        return "ad" + attribute
-    else
-        return "content" + attribute
-    end if
 end function
 
 function nrSendPlayerReady() as Void
@@ -242,46 +178,192 @@ end function
 'Used by all video senders
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     ev = nrCreateEvent("RokuVideoEvent", actionName)
-    ev = __nrAddVideoAttributes(ev)
+    ev = nrAddVideoAttributes(ev)
     if type(attr) = "roAssociativeArray"
        ev.Append(attr)
     end if
     nrRecordEvent(ev)
 end function
 
-'Used to send generic events
-function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
-    ev = nrCreateEvent(eventType, actionName)
-    ev.Append(attr)
-    nrRecordEvent(ev)
+'=================='
+' Helper functions '
+'=================='
+
+function nrStartSysTracker(port) as Object
+    syslog = CreateObject("roSystemLog")
+    
+    syslog.SetMessagePort(port)
+    syslog.EnableType("http.error")
+    syslog.EnableType("http.connect")
+    syslog.EnableType("bandwidth.minute")
+    syslog.EnableType("http.complete")
+    
+    return syslog
 end function
 
-function nrCreateEvent(eventType as String, actionName as String) as Object
-    ev = CreateObject("roAssociativeArray")
-    if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
-    if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
-    timestamp& = CreateObject("roDateTime").asSeconds()
-    timestampMS& = timestamp& * 1000
-    
-    if timestamp& = m.global.nrLastTimestamp
-        m.global.nrTicks = m.global.nrTicks + 1
-    else
-        m.global.nrTicks = 0
+function nrProcessMessage(msg as Object) as Boolean
+    msgType = type(msg)
+    if msgType = "roSystemLogEvent" Then
+        i = msg.GetInfo()
+        if i.LogType = "http.error"
+            nrSendHTTPError(i)
+            return true
+        else if i.LogType = "http.connect"
+            nrSendHTTPConnect(i)
+            return true
+        else if i.LogType = "http.complete"
+            nrSendHTTPComplete(i)
+            return true
+        else if i.LogType = "bandwidth.minute"
+            nrSendBandwidth(i)
+            return true
+        end If
     end if
     
-    timestampMS& = timestampMS& + m.global.nrTicks
+    return false
+end function
+
+function nrAddCommonHTTPAttr(info as Object) as Object
+    attr = {
+        "httpCode": info["HttpCode"],
+        "method": info["Method"],
+        "origUrl": info["OrigUrl"],
+        "status": info["Status"],
+        "targetIp": info["TargetIp"],
+        "url": info["Url"]
+    }
+    return attr
+end function
+
+function nrAction(action as String) as String
+    if m.nrIsAd = true
+        return "AD_" + action
+    else
+        return "CONTENT_" + action
+    end if
+end function
+
+function nrAttr(attribute as String) as String
+    if m.nrIsAd = true
+        return "ad" + attribute
+    else
+        return "content" + attribute
+    end if
+end function
+
+function nrAddVideoAttributes(ev as Object) as Object
+    ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
+    ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
+    ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
+    if m.nrVideoObject.streamInfo <> invalid
+        'BUG: when using playlists reach the end and restart it, the src remains in the last track
+        ev.AddReplace(nrAttr("Src"), m.nrVideoObject.streamInfo["streamUrl"])
+        'Generate Id from Src (hashing it)
+        ba = CreateObject("roByteArray")
+        ba.FromAsciiString(m.nrVideoObject.streamInfo["streamUrl"])
+        ev.AddReplace(nrAttr("Id"), ba.GetCRC32())
+        ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
+        ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
+    end if
+    if m.nrVideoObject.streamingSegment <> invalid
+        ev.AddReplace(nrAttr("SegmentBitrate"), m.nrVideoObject.streamingSegment["segBitrateBps"])
+    end if
+    ev.AddReplace("playerName", "RokuVideoPlayer")
+    dev = CreateObject("roDeviceInfo")
+    ev.AddReplace("playerVersion", dev.GetVersion())
+    ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
+    ev.AddReplace("videoId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
+    ev.AddReplace("trackerName", "rokutracker")
+    ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
+    'Add counters
+    ev.AddReplace("numberOfVideos", m.nrVideoCounter + 1)
+    ev.AddReplace("numberOfErrors", m.nrNumberOfErrors)
     
-    ev["timestamp"] = timestampMS&
-    m.global.nrLastTimestamp = timestamp&
-    
-    ev = __nrAddAttributes(ev)
+    'Add timeSince attributes
+    'TODO:
+    'timeSinceLastAd -> all
+    'totalPlaytime -> all
+    if Right(ev["actionName"], 11) = "_BUFFER_END"
+        ev.AddReplace("timeSinceBufferBegin", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceBufferBegin)
+    end if
+    if Right(ev["actionName"], 7) = "_RESUME"
+        ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
+    end if
+    ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
+    ev.AddReplace("timeSinceLoad", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLoad)
+    ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
+    ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
+    ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
     
     return ev
 end function
 
-'=====================
-' Internal functions '
-'=====================
+function nrGroupNewEvent(ev as Object, actionName as String) as Void
+    if ev["Url"] = invalid then return
+    urlKey = ev["Url"]
+    matchUrl = nrParseVideoStreamUrl(urlKey)
+    if matchUrl <> "" then urlKey = matchUrl
+    ev["actionName"] = actionName
+    
+    if actionName = "HTTP_COMPLETE"
+        m.global.nrEventGroupsComplete = nrGroupMergeEvent(urlKey, m.global.nrEventGroupsComplete, ev)
+    else if actionName = "HTTP_CONNECT"
+        m.global.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.global.nrEventGroupsConnect, ev)
+    end if
+end function
+
+function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as Object
+    evGroup = group[urlKey]
+    if evGroup = invalid
+        'Create new group from event
+        ev["counter"] = 1
+        ev["initialTimestamp"] = nrTimestamp()
+        ev["finalTimestamp"] = ev["initialTimestamp"]
+        group[urlKey] = ev
+    else
+        'Add new event to existing group
+        evGroup["counter"] = evGroup["counter"] + 1
+        evGroup["finalTimestamp"] = nrTimestamp()
+        
+        'Add all numeric values
+        if ev["actionName"] = "HTTP_COMPLETE"
+            'Summations
+            evGroup["bytesDownloaded"] = evGroup["bytesDownloaded"] + ev["bytesDownloaded"]
+            evGroup["bytesUploaded"] = evGroup["bytesUploaded"] + ev["bytesUploaded"]
+            'Averages, we will divide it by count right before sending the event
+            evGroup["transferTime"] = evGroup["transferTime"] + ev["transferTime"]
+            evGroup["connectTime"] = evGroup["connectTime"] + ev["connectTime"]
+            evGroup["dnsLookupTime"] = evGroup["dnsLookupTime"] + ev["dnsLookupTime"]
+            evGroup["downloadSpeed"] = evGroup["downloadSpeed"] + ev["downloadSpeed"]
+            evGroup["uploadSpeed"] = evGroup["uploadSpeed"] + ev["uploadSpeed"]
+            evGroup["firstByteTime"] = evGroup["firstByteTime"] + ev["firstByteTime"]
+        end if 
+        
+        group[urlKey] = evGroup
+    end if
+    return group
+end function
+
+function nrParseVideoStreamUrl(url as String) as String
+    r = CreateObject("roRegex", "\/\/|\/", "")
+    arr = r.Split(url)
+    
+    if arr.Count() = 0 then return ""
+    if arr[0] <> "http:" and arr[0] <> "https:" then return ""
+    
+    lastItem = arr[arr.Count() - 1]
+    r = CreateObject("roRegex", "^\w+\.\w+$", "")
+    
+    if r.IsMatch(lastItem) = false then return ""
+    
+    matchUrl = Left(url, url.Len() - lastItem.Len())
+    
+    return matchUrl
+end function
+
+'========================'
+' Observers and Handlers '
+'========================'
 
 function __nrStateObserver() as Void
     nrLog("---------- State Observer ----------")
@@ -337,103 +419,6 @@ function __nrIndexObserver() as Void
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrSendVideoEvent(nrAction("NEXT"))
     
-end function
-
-'TODO: some attributes are not going to change, we can create it only once and then add every time
-
-function __nrAddVideoAttributes(ev as Object) as Object
-    ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
-    ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
-    ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
-    if m.nrVideoObject.streamInfo <> invalid
-        'BUG: when using playlists reach the end and restart it, the src remains in the last track
-        ev.AddReplace(nrAttr("Src"), m.nrVideoObject.streamInfo["streamUrl"])
-        'Generate Id from Src (hashing it)
-        ba = CreateObject("roByteArray")
-        ba.FromAsciiString(m.nrVideoObject.streamInfo["streamUrl"])
-        ev.AddReplace(nrAttr("Id"), ba.GetCRC32())
-        ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
-        ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
-    end if
-    if m.nrVideoObject.streamingSegment <> invalid
-        ev.AddReplace(nrAttr("SegmentBitrate"), m.nrVideoObject.streamingSegment["segBitrateBps"])
-    end if
-    ev.AddReplace("playerName", "RokuVideoPlayer")
-    dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("playerVersion", dev.GetVersion())
-    ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
-    ev.AddReplace("videoId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
-    ev.AddReplace("trackerName", "rokutracker")
-    ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
-    'Add counters
-    ev.AddReplace("numberOfVideos", m.nrVideoCounter + 1)
-    ev.AddReplace("numberOfErrors", m.nrNumberOfErrors)
-    
-    'Add timeSince attributes
-    ev = __nrAddTimeSinceAttributes(ev)
-    
-    return ev
-end function
-
-'TODO:
-'timeSinceLastAd -> all
-'totalPlaytime -> all
-
-function __nrAddTimeSinceAttributes(ev as Object) as Object
-    if Right(ev["actionName"], 11) = "_BUFFER_END"
-        ev.AddReplace("timeSinceBufferBegin", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceBufferBegin)
-    end if
-    if Right(ev["actionName"], 7) = "_RESUME"
-        ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
-    end if
-    ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
-    ev.AddReplace("timeSinceLoad", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLoad)
-    ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
-    ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
-    ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
-    return ev
-end function
-
-function __nrAddAttributes(ev as Object) as Object
-    ev.AddReplace("newRelicAgent", "RokuAgent")
-    ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
-    ev.AddReplace("sessionId", m.global.nrSessionId)
-    hdmi = CreateObject("roHdmiStatus")
-    ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
-    ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
-    dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
-    ev.AddReplace("device", dev.GetModelDisplayName())
-    ev.AddReplace("deviceGroup", "Roku")
-    ev.AddReplace("deviceManufacturer", "Roku")
-    ev.AddReplace("deviceModel", dev.GetModel())
-    ev.AddReplace("deviceType", dev.GetModelType())
-    ev.AddReplace("osName", "RokuOS")
-    ev.AddReplace("osVersion", dev.GetVersion())
-    ev.AddReplace("countryCode", dev.GetUserCountryCode())
-    ev.AddReplace("timeZone", dev.GetTimeZone())
-    ev.AddReplace("locale", dev.GetCurrentLocale())
-    ev.AddReplace("memoryLevel", dev.GetGeneralMemoryLevel())
-    ev.AddReplace("connectionType", dev.GetConnectionType())
-    ev.AddReplace("ipAddress", dev.GetExternalIp())
-    ev.AddReplace("displayType", dev.GetDisplayType())
-    ev.AddReplace("displayMode", dev.GetDisplayMode())
-    ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
-    ev.AddReplace("videoMode", dev.GetVideoMode())
-    ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
-    ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)    
-    app = CreateObject("roAppInfo")
-    appid = app.GetID().ToInt()
-    if appid = 0 then appid = 1
-    ev.AddReplace("appId", appid)
-    ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
-    ev.AddReplace("appName", app.GetTitle())
-    ev.AddReplace("appDevId", app.GetDevID())
-    appbuild = app.GetValue("build_version").ToInt()
-    if appbuild = 0 then appbuild = 1
-    ev.AddReplace("appBuild", appbuild)
-    
-    return ev
 end function
 
 function __nrHeartbeatHandler() as Void

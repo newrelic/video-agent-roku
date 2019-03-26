@@ -16,7 +16,8 @@
 		<![CDATA[
 		function nrTaskMain()
 			while true
-				sleep(5000)
+				sleep(10000)
+				nrProcessGroupedEvents()
 				nrEventProcessor()
 			end while
 		end function
