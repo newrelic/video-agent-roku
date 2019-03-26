@@ -132,9 +132,20 @@ function nrProcessGroupedEvents() as Void
 end function
 
 function nrConvertGroupsToEvents(group as Object) as Void
-    'TODO: convert grouped events into events in the Event Array. Calculate means for numeric values
     for each item in group.Items()
         item.value["matchUrl"] = item.key
+
+        'Calculate averages
+        if item.value["actionName"] = "HTTP_COMPLETE"
+            counter = Cdbl(item.value["counter"])
+            item.value["transferTime"] = item.value["transferTime"] / counter
+            item.value["connectTime"] = item.value["connectTime"] / counter
+            item.value["dnsLookupTime"] = item.value["dnsLookupTime"] / counter
+            item.value["downloadSpeed"] = item.value["downloadSpeed"] / counter
+            item.value["uploadSpeed"] = item.value["uploadSpeed"] / counter
+            item.value["firstByteTime"] = item.value["firstByteTime"] / counter
+        end if
+        
         nrSendCustomEvent("RokuEvent", item.value["actionName"], item.value)
     end for
 end function

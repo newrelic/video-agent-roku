@@ -251,8 +251,6 @@ function nrAttr(attribute as String) as String
     end if
 end function
 
-'TODO: some attributes are not going to change, we can create it only once and then add every time
-
 function nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
     ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
@@ -312,8 +310,6 @@ function nrGroupNewEvent(ev as Object, actionName as String) as Void
     else if actionName = "HTTP_CONNECT"
         m.global.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.global.nrEventGroupsConnect, ev)
     end if
-    
-    '__logEvGroups()
 end function
 
 function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as Object
@@ -328,7 +324,21 @@ function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as O
         'Add new event to existing group
         evGroup["counter"] = evGroup["counter"] + 1
         evGroup["finalTimestamp"] = nrTimestamp()
-        'TODO: merge event to existing group -> add numeric values and we will divide by counter to get the mean when creating the insights event 
+        
+        'Add all numeric values
+        if ev["actionName"] = "HTTP_COMPLETE"
+            'Summations
+            evGroup["bytesDownloaded"] = evGroup["bytesDownloaded"] + ev["bytesDownloaded"]
+            evGroup["bytesUploaded"] = evGroup["bytesUploaded"] + ev["bytesUploaded"]
+            'Averages, we will divide it by count right before sending the event
+            evGroup["transferTime"] = evGroup["transferTime"] + ev["transferTime"]
+            evGroup["connectTime"] = evGroup["connectTime"] + ev["connectTime"]
+            evGroup["dnsLookupTime"] = evGroup["dnsLookupTime"] + ev["dnsLookupTime"]
+            evGroup["downloadSpeed"] = evGroup["downloadSpeed"] + ev["downloadSpeed"]
+            evGroup["uploadSpeed"] = evGroup["uploadSpeed"] + ev["uploadSpeed"]
+            evGroup["firstByteTime"] = evGroup["firstByteTime"] + ev["firstByteTime"]
+        end if 
+        
         group[urlKey] = evGroup
     end if
     return group
