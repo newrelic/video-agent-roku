@@ -313,7 +313,7 @@ function nrGroupNewEvent(ev as Object, actionName as String) as Void
         m.global.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.global.nrEventGroupsConnect, ev)
     end if
     
-    __logEvGroups()
+    '__logEvGroups()
 end function
 
 function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as Object
@@ -448,16 +448,4 @@ function __logVideoInfo() as Void
     end if
     nrLog(["Manifest data = ", m.nrVideoObject.manifestData])
     nrLog("====================================")
-end function
-
-function __logEvGroups() as Void
-    nrLog("============ Event Groups HTTP_CONNECT ===========")
-    for each item in m.global.nrEventGroupsConnect.Items()
-        print item.key, item.value
-    end for
-    nrLog("=========== Event Groups HTTP_COMPLETE ===========")
-    for each item in m.global.nrEventGroupsComplete.Items()
-        print item.key, item.value
-    end for
-    nrLog("==================================================")
 end function

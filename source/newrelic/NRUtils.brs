@@ -111,8 +111,10 @@ function nrEventProcessor() as Void
 end function
 
 function nrProcessGroupedEvents() as Void
-    nrLog("-- Process Grouped Events --")
     'Convert groups into custom events and flush the groups dictionaries
+    
+    nrLog("-- Process Grouped Events --")
+    __logEvGroups()
     
     if m.global.nrEventGroupsConnect.Count() > 0
         nrConvertGroupsToEvents(m.global.nrEventGroupsConnect)
@@ -169,4 +171,16 @@ end function
 
 function nrActivateLogging(state as Boolean) as Void
     m.global.nrLogsState = state
+end function
+
+function __logEvGroups() as Void
+    nrLog("============ Event Groups HTTP_CONNECT ===========")
+    for each item in m.global.nrEventGroupsConnect.Items()
+        print item.key, item.value
+    end for
+    nrLog("=========== Event Groups HTTP_COMPLETE ===========")
+    for each item in m.global.nrEventGroupsComplete.Items()
+        print item.key, item.value
+    end for
+    nrLog("==================================================")
 end function
