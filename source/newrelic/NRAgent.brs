@@ -11,7 +11,7 @@
 '========================='
 
 'Must be called from Main
-function NewRelic(account as String, apikey as String, screen as Object) as Void
+function NewRelicInit(account as String, apikey as String, screen as Object) as Void
     
     m.global = screen.getGlobalNode()
     
