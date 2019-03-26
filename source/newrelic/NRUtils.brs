@@ -36,6 +36,14 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     ev = CreateObject("roAssociativeArray")
     if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
     if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
+    
+    ev["timestamp"] = nrTimestamp()
+    ev = nrAddAttributes(ev)
+    
+    return ev
+end function
+
+function nrTimestamp() as LongInteger
     timestamp& = CreateObject("roDateTime").asSeconds()
     timestampMS& = timestamp& * 1000
     
@@ -46,13 +54,9 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     end if
     
     timestampMS& = timestampMS& + m.global.nrTicks
-    
-    ev["timestamp"] = timestampMS&
     m.global.nrLastTimestamp = timestamp&
     
-    ev = nrAddAttributes(ev)
-    
-    return ev
+    return timestampMS&
 end function
 
 function nrAddAttributes(ev as Object) as Object
