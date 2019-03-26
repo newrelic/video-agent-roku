@@ -321,10 +321,13 @@ function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as O
     if evGroup = invalid
         'Create new group from event
         ev["counter"] = 1
+        ev["initialTimestamp"] = nrTimestamp()
+        ev["finalTimestamp"] = ev["initialTimestamp"]
         group[urlKey] = ev
     else
         'Add new event to existing group
         evGroup["counter"] = evGroup["counter"] + 1
+        evGroup["finalTimestamp"] = nrTimestamp()
         'TODO: merge event to existing group -> add numeric values and we will divide by counter to get the mean when creating the insights event 
         group[urlKey] = evGroup
     end if
