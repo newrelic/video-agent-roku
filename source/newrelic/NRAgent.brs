@@ -14,8 +14,6 @@
 function NewRelicInit(account as String, apikey as String, screen as Object) as Void
     
     m.global = screen.getGlobalNode()
-    
-    nrLog("NewRelic")
 
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
