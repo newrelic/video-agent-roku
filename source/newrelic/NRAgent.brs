@@ -23,7 +23,7 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.10.0"})
+    m.global.addFields({"nrAgentVersion": "0.11.0"})
     m.global.addFields({"nrLogsState": false})
     
     m.syslog = nrStartSysTracker(screen.GetMessagePort())
@@ -270,7 +270,8 @@ function nrAddVideoAttributes(ev as Object) as Object
     dev = CreateObject("roDeviceInfo")
     ev.AddReplace("playerVersion", dev.GetVersion())
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
-    ev.AddReplace("videoId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
+    ev.AddReplace("viewId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
+    ev.AddReplace("viewSession", m.global.nrSessionId)
     ev.AddReplace("trackerName", "rokutracker")
     ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
     'Add counters
