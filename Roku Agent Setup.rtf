@@ -25,13 +25,15 @@ SELECT * from RokuEvent\
 SELECT * from RokuVideoEvent\
 \
 
-\b Required Data
-\b0 \
+\b Requirements\
 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 To initialize the agent you need an ACCOUNT ID and an API KEY. \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 \
+
+\b0 Sending both system events and video events requires an Insights Pro subscription.   Insights Free accounts permit only one event type per API key.   If you are using an Insights Free account, you can enable only one type of Roku event capture at a time (system or video).    See 
+\i \'92Start New Relic Agents 
+\i0 below.   \
+\
+To initialize the agent you need an ACCOUNT ID and an API KEY. \
+\
 	The ACCOUNT ID indicates the New Relic account to which you would like to send the Roku data.   For example, https://insights.newrelic.com/accounts/xxx.  Where \'93xxx\'94 is the Account ID.\
 \
 	To register the API Key, follow the instructions found here:\
@@ -176,7 +178,7 @@ And the following code inside the \'93sub init()\'94:\
 \f1 \cf0     
 \f3\i \cf6 'Start New Relic agents
 \f1\i0 \cf0 \
-    NewRelicStart()\
+    NewRelicStart() \'91\
     NewRelicVideoStart(video)
 \f0 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
