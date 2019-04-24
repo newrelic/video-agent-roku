@@ -1,36 +1,37 @@
-{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf600
-{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Menlo-Regular;\f2\fnil\fcharset0 Menlo-Bold;
-\f3\fnil\fcharset0 Menlo-Italic;}
-{\colortbl;\red255\green255\blue255;\red50\green100\blue100;\red40\green0\blue200;\red75\green0\blue240;
-\red50\green205\blue50;\red102\green205\blue170;\red225\green75\blue25;\red63\green95\blue191;\red0\green128\blue128;
-\red63\green127\blue127;\red127\green0\blue127;\red42\green0\blue255;}
-{\*\expandedcolortbl;;\csgenericrgb\c19608\c39216\c39216;\csgenericrgb\c15686\c0\c78431;\csgenericrgb\c29412\c0\c94118;
-\csgenericrgb\c19608\c80392\c19608;\csgenericrgb\c40000\c80392\c66667;\csgenericrgb\c88235\c29412\c9804;\csgenericrgb\c24706\c37255\c74902;\csgenericrgb\c0\c50196\c50196;
-\csgenericrgb\c24706\c49804\c49804;\csgenericrgb\c49804\c0\c49804;\csgenericrgb\c16471\c0\c100000;}
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf400
+{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\fswiss\fcharset0 Helvetica;\f2\fswiss\fcharset0 Helvetica-Oblique;
+\f3\froman\fcharset0 Times-Roman;\f4\fnil\fcharset0 Menlo-Regular;\f5\fnil\fcharset0 Menlo-Bold;
+\f6\fnil\fcharset0 Menlo-Italic;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue233;\red50\green100\blue100;\red40\green0\blue200;
+\red75\green0\blue240;\red50\green205\blue50;\red102\green205\blue170;\red225\green75\blue25;\red63\green95\blue191;
+\red0\green128\blue128;\red63\green127\blue127;\red127\green0\blue127;\red42\green0\blue255;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c93333;\csgenericrgb\c19608\c39216\c39216;\csgenericrgb\c15686\c0\c78431;
+\csgenericrgb\c29412\c0\c94118;\csgenericrgb\c19608\c80392\c19608;\csgenericrgb\c40000\c80392\c66667;\csgenericrgb\c88235\c29412\c9804;\csgenericrgb\c24706\c37255\c74902;
+\csgenericrgb\c0\c50196\c50196;\csgenericrgb\c24706\c49804\c49804;\csgenericrgb\c49804\c0\c49804;\csgenericrgb\c16471\c0\c100000;}
 \paperw11900\paperh16840\margl1440\margr1440\vieww22640\viewh14400\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
 \f0\b\fs24 \cf0 New Relic Roku Agent\
 
-\b0 \
+\f1\b0 \
 The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events (essentially networking) and one to monitor video related events (for apps that use a video player).\
 \
 Internally, it uses the Insights API to send events using the REST interface. It sends two types of events: 
-\b RokuEvent
-\b0  for system events and 
-\b RokuVideoEvent
-\b0  for video events. After the agent has sent some data you will be able to see it in Insights with a simple NRQL request like:\
+\f0\b RokuEvent
+\f1\b0  for system events and 
+\f0\b RokuVideoEvent
+\f1\b0  for video events. After the agent has sent some data you will be able to see it in Insights with a simple NRQL request like:\
 \
 SELECT * from RokuEvent\
 SELECT * from RokuVideoEvent\
 \
 
-\b Requirements\
+\f0\b Requirements\
 \
 
-\b0 Sending both system events and video events requires an Insights Pro subscription.   Insights Free accounts permit only one event type per API key.   If you are using an Insights Free account, you can enable only one type of Roku event capture at a time (system or video).    See 
-\i \'92Start New Relic Agents 
-\i0 below.   \
+\f1\b0 Sending both system events and video events requires an Insights Pro subscription.   Insights Free accounts permit only one event type per API key.   If you are using an Insights Free account, you can enable only one type of Roku event capture at a time (system or video).    See 
+\f2\i \'92Start New Relic Agents 
+\f1\i0 below.   \
 \
 To initialize the agent you need an ACCOUNT ID and an API KEY. \
 \
@@ -38,11 +39,13 @@ To initialize the agent you need an ACCOUNT ID and an API KEY. \
 \
 	To register the API Key, follow the instructions found here:\
 \
-		https://docs.newrelic.com/docs/insights/insights-api/get-data/query-insights-event-data-api#register\
+		{\field{\*\fldinst{HYPERLINK "https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/send-custom-events-event-api#register"}}{\fldrslt 
+\f3 \cf2 \expnd0\expndtw0\kerning0
+\ul \ulc2 \outl0\strokewidth0 \strokec2 https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/send-custom-events-event-api#register}}\
 
-\b \
+\f0\b \
 Installation
-\b0 \
+\f1\b0 \
 \
 1. Download the Roku Video Agent and unzip it. Inside the package you will find the following file structure:\
 \
@@ -55,132 +58,132 @@ Installation
 2. Open your Roku app project\'92s directory and copy the \'93NRTask.xml\'94 to \'93components\'94 folder and \'93newrelic\'94 folder to \'93source\'94 folder.\
 \
 
-\b Usage
-\b0 \
+\f0\b Usage
+\f1\b0 \
 \
 Inside the \'93sub Main()\'94 add the following  code:\
 \
 \pard\pardeftab720\partightenfactor0
 
-\f1 \cf0     NewRelicInit(\cf2 \'93ACCOUNT ID\'93\cf0 , \cf2 \'93API KEY\'93\cf0 , screen)
-\f0 \
+\f4 \cf0     NewRelicInit(\cf3 \'93ACCOUNT ID\'93\cf0 , \cf3 \'93API KEY\'93\cf0 , screen)
+\f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
 After the screen and port initialization. And this:\
 \
 \pard\pardeftab720\partightenfactor0
 
-\f1 \cf0     waitFunction = 
-\f2\b \cf3 Function
-\f1\b0 \cf0 (msg 
-\f2\b \cf3 as
-\f1\b0 \cf0  
-\f3\i \cf4 Object
-\f1\i0 \cf0 )\
+\f4 \cf0     waitFunction = 
+\f5\b \cf4 Function
+\f4\b0 \cf0 (msg 
+\f5\b \cf4 as
+\f4\b0 \cf0  
+\f6\i \cf5 Object
+\f4\i0 \cf0 )\
         
-\f2\b \cf3 print
-\f1\b0 \cf0  \cf2 "\ul \ulc2 msg\ulnone  = "\cf0  msg\
+\f5\b \cf4 print
+\f4\b0 \cf0  \cf3 "\ul \ulc3 msg\ulnone  = "\cf0  msg\
     
-\f2\b \cf3 end
-\f1\b0 \cf0  
-\f2\b \cf3 function
-\f1\b0 \cf0 \
+\f5\b \cf4 end
+\f4\b0 \cf0  
+\f5\b \cf4 function
+\f4\b0 \cf0 \
     \
     NewRelicWait(m.port, waitFunction)
-\f0 \
+\f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
 At the end, in place of the wait event loop. So the Main should look like:\
 \
 \pard\pardeftab720\partightenfactor0
 
-\f2\b \cf3 sub
-\f1\b0 \cf0  
-\f2\b \cf5 Main
-\f1\b0 \cf0 ()\
+\f5\b \cf4 sub
+\f4\b0 \cf0  
+\f5\b \cf6 Main
+\f4\b0 \cf0 ()\
     
-\f2\b \cf3 print
-\f1\b0 \cf0  \cf2 "Main"\cf0 \
+\f5\b \cf4 print
+\f4\b0 \cf0  \cf3 "Main"\cf0 \
 \
     
-\f3\i \cf6 'The screen and port must be initialized before starting the NewRelic agent
-\f1\i0 \cf0 \
+\f6\i \cf7 'The screen and port must be initialized before starting the NewRelic agent
+\f4\i0 \cf0 \
     screen = 
-\f3\i \cf7 CreateObject
-\f1\i0 \cf0 (\cf2 "roSGScreen"\cf0 )\
+\f6\i \cf8 CreateObject
+\f4\i0 \cf0 (\cf3 "roSGScreen"\cf0 )\
     m.port = 
-\f3\i \cf7 CreateObject
-\f1\i0 \cf0 (\cf2 "roMessagePort"\cf0 )\
+\f6\i \cf8 CreateObject
+\f4\i0 \cf0 (\cf3 "roMessagePort"\cf0 )\
     screen.setMessagePort(m.port)\
     \
-    NewRelicInit(\cf2 \'93ACCOUNT ID\'93\cf0 , \cf2 \'93API KEY\'93\cf0 , screen)\
+    NewRelicInit(\cf3 \'93ACCOUNT ID\'93\cf0 , \cf3 \'93API KEY\'93\cf0 , screen)\
     
-\f3\i \cf6 \'91To activate New Relic Agent logs
-\f1\i0 \cf0 \
+\f6\i \cf7 \'91To activate New Relic Agent logs
+\f4\i0 \cf0 \
     nrActivateLogging(
-\f2\b \cf3 true
-\f1\b0 \cf0 )\
+\f5\b \cf4 true
+\f4\b0 \cf0 )\
 \
     
-\f3\i \cf6 \'91Init the first scene
-\f1\i0 \cf0 \
-    scene = screen.CreateScene(\cf2 "NRVideoAgentExample"\cf0 )\
+\f6\i \cf7 \'91Init the first scene
+\f4\i0 \cf0 \
+    scene = screen.CreateScene(\cf3 "NRVideoAgentExample"\cf0 )\
     screen.show()\
     \
     waitFunction = 
-\f2\b \cf3 Function
-\f1\b0 \cf0 (msg 
-\f2\b \cf3 as
-\f1\b0 \cf0  
-\f3\i \cf4 Object
-\f1\i0 \cf0 )\
+\f5\b \cf4 Function
+\f4\b0 \cf0 (msg 
+\f5\b \cf4 as
+\f4\b0 \cf0  
+\f6\i \cf5 Object
+\f4\i0 \cf0 )\
         
-\f2\b \cf3 print
-\f1\b0 \cf0  \cf2 "\ul msg\ulnone  = "\cf0  msg\
+\f5\b \cf4 print
+\f4\b0 \cf0  \cf3 "\ul msg\ulnone  = "\cf0  msg\
     
-\f2\b \cf3 end
-\f1\b0 \cf0  
-\f2\b \cf3 function
-\f1\b0 \cf0 \
+\f5\b \cf4 end
+\f4\b0 \cf0  
+\f5\b \cf4 function
+\f4\b0 \cf0 \
     \
     NewRelicWait(m.port, waitFunction)\
     \
 
-\f2\b \cf3 end
-\f1\b0 \cf0  
-\f2\b \cf3 sub
-\f1\b0 \cf0 \
+\f5\b \cf4 end
+\f4\b0 \cf0  
+\f5\b \cf4 sub
+\f4\b0 \cf0 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 
-\f0 \cf0 \
+\f1 \cf0 \
 Add the following code to any Scene component XML you have in your app:\
 \
 \pard\pardeftab720\partightenfactor0
 
-\f1 \cf0 	\cf8 <!-- Setup New Relic Agent -->\cf0 \
-	\cf9 <\cf10 script\cf0  \cf11 type\cf0 =
-\f3\i \cf12 "text/brightscript"
-\f1\i0 \cf0  \cf11 uri\cf0 =
-\f3\i \cf12 "pkg:/source/newrelic/NRUtils.brs"
-\f1\i0 \cf9 />\cf0 \
-	\cf9 <\cf10 script\cf0  \cf11 type\cf0 =
-\f3\i \cf12 "text/brightscript"
-\f1\i0 \cf0  \cf11 uri\cf0 =
-\f3\i \cf12 "pkg:/source/newrelic/NRAgent.brs"
-\f1\i0 \cf9 />
-\f0 \cf0 \
+\f4 \cf0 	\cf9 <!-- Setup New Relic Agent -->\cf0 \
+	\cf10 <\cf11 script\cf0  \cf12 type\cf0 =
+\f6\i \cf13 "text/brightscript"
+\f4\i0 \cf0  \cf12 uri\cf0 =
+\f6\i \cf13 "pkg:/source/newrelic/NRUtils.brs"
+\f4\i0 \cf10 />\cf0 \
+	\cf10 <\cf11 script\cf0  \cf12 type\cf0 =
+\f6\i \cf13 "text/brightscript"
+\f4\i0 \cf0  \cf12 uri\cf0 =
+\f6\i \cf13 "pkg:/source/newrelic/NRAgent.brs"
+\f4\i0 \cf10 />
+\f1 \cf0 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
 And the following code inside the \'93sub init()\'94:\
 \
 \pard\pardeftab720\partightenfactor0
 
-\f1 \cf0     
-\f3\i \cf6 'Start New Relic agents
-\f1\i0 \cf0 \
+\f4 \cf0     
+\f6\i \cf7 'Start New Relic agents
+\f4\i0 \cf0 \
     NewRelicStart() \'91\
     NewRelicVideoStart(video)
-\f0 \
+\f1 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
 \cf0 \
 Where \'93video\'94 is the Video node.\
