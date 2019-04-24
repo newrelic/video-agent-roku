@@ -23,7 +23,7 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.11.0"})
+    m.global.addFields({"nrAgentVersion": "0.12.0"})
     m.global.addFields({"nrLogsState": false})
     
     m.syslog = nrStartSysTracker(screen.GetMessagePort())
@@ -85,6 +85,15 @@ function nrSendBandwidth(info as Object) as Void
         "bandwidth": info["bandwidth"]
     }
     nrSendCustomEvent("RokuEvent", "BANDWIDTH_MINUTE", attr)
+end function
+
+function nrAppStarted(aa as Object) as Void
+    attr = {
+        "lastExitOrTerminationReason": aa["lastExitOrTerminationReason"],
+        "splashTime": aa["splashTime"],
+        "instantOnRunMode": aa["instant_on_run_mode"]
+    }
+    nrSendCustomEvent("RokuEvent", "APP_STARTED", attr)
 end function
 
 '======================='

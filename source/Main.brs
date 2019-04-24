@@ -1,7 +1,7 @@
 'NR Video Agent Example - Main'
 
-sub Main()
-    print "Main"
+sub Main(aa as Object)
+    print "Main" aa
 
     'The screen and port must be initialized before starting the NewRelic agent
     screen = CreateObject("roSGScreen")
@@ -18,6 +18,8 @@ sub Main()
     waitFunction = Function(msg as Object)
         print "msg = " msg
     end function
+    
+    nrAppStarted(aa)
     
     NewRelicWait(m.port, waitFunction)
     
