@@ -146,7 +146,7 @@ function nrConvertGroupsToEvents(group as Object) as Void
             item.value["firstByteTime"] = item.value["firstByteTime"] / counter
         end if
         
-        nrSendCustomEvent("RokuEvent", item.value["actionName"], item.value)
+        nrSendCustomEvent("RokuSystem", item.value["actionName"], item.value)
     end for
 end function
 

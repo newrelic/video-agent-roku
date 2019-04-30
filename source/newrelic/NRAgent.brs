@@ -23,7 +23,7 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.12.0"})
+    m.global.addFields({"nrAgentVersion": "0.13.0"})
     m.global.addFields({"nrLogsState": false})
     
     m.syslog = nrStartSysTracker(screen.GetMessagePort())
@@ -55,7 +55,7 @@ end function
 
 function nrSendHTTPError(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)   
-    nrSendCustomEvent("RokuEvent", "HTTP_ERROR", attr)
+    nrSendCustomEvent("RokuSystem", "HTTP_ERROR", attr)
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
@@ -84,7 +84,7 @@ function nrSendBandwidth(info as Object) as Void
     attr = {
         "bandwidth": info["bandwidth"]
     }
-    nrSendCustomEvent("RokuEvent", "BANDWIDTH_MINUTE", attr)
+    nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
 end function
 
 function nrAppStarted(aa as Object) as Void
@@ -93,7 +93,7 @@ function nrAppStarted(aa as Object) as Void
         "splashTime": aa["splashTime"],
         "instantOnRunMode": aa["instant_on_run_mode"]
     }
-    nrSendCustomEvent("RokuEvent", "APP_STARTED", attr)
+    nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
 end function
 
 '======================='
@@ -184,7 +184,7 @@ end function
 
 'Used by all video senders
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
-    ev = nrCreateEvent("RokuVideoEvent", actionName)
+    ev = nrCreateEvent("RokuVideo", actionName)
     ev = nrAddVideoAttributes(ev)
     if type(attr) = "roAssociativeArray"
        ev.Append(attr)
