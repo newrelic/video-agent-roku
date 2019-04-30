@@ -3,8 +3,8 @@
 sub init()
     m.top.setFocus(true)
     'Setup video player
-    setupVideoPlaylist()
-    'setupVideo()
+    'setupVideoPlaylist()
+    setupVideo()
     'Start New Relic agents
     NewRelicStart()
     NewRelicVideoStart(m.video)
@@ -17,6 +17,7 @@ function setupVideo() as void
     bunny = "https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4"
     hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
     dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
+    long = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
     
     jellyContent = createObject("RoSGNode", "ContentNode")
     jellyContent.url = jelly
@@ -34,9 +35,13 @@ function setupVideo() as void
     dashContent.url = dash
     dashContent.title = "DASH"
     
+    longContent = createObject("RoSGNode", "ContentNode")
+    longContent.url = long
+    longContent.title = "LONG"
+    
     m.video = m.top.findNode("myVideo")
-    m.video.content = dashContent
-    'm.video.control = "play"
+    m.video.content = longContent
+    m.video.control = "play"
 end function
 
 function setupVideoPlaylist() as void
