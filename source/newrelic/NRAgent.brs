@@ -23,7 +23,7 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.13.0"})
+    m.global.addFields({"nrAgentVersion": "0.14.0"})
     m.global.addFields({"nrLogsState": false})
     
     m.syslog = nrStartSysTracker(screen.GetMessagePort())
@@ -94,6 +94,25 @@ function nrAppStarted(aa as Object) as Void
         "instantOnRunMode": aa["instant_on_run_mode"]
     }
     nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
+end function
+
+function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String)
+    
+    dictName = actionName
+    if dictName = "" then dictName = "GENERAL_ATTR"
+    
+    if m.global[dictName] = invalid
+        m.global.addField(dictName, "assocarray", false)
+        m.global[dictName] = CreateObject("roAssociativeArray")
+    end if
+    
+    actionDict = m.global[dictName]
+    
+    actionDict[key] = value
+    m.global[dictName] = actionDict
+    
+    nrLog(["Custom Attributes: ", m.global[dictName]])
+    
 end function
 
 '======================='

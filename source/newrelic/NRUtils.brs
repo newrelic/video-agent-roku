@@ -98,6 +98,13 @@ function nrAddAttributes(ev as Object) as Object
     if appbuild = 0 then appbuild = 1
     ev.AddReplace("appBuild", appbuild)
     
+    'Add custom attributes
+    genCustomAttr = m.global["GENERAL_ATTR"]
+    if genCustomAttr <> invalid then ev.Append(genCustomAttr)
+    actionName = ev["actionName"]
+    actionCustomAttr = m.global[actionName]
+    if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
+    
     return ev
 end function
 

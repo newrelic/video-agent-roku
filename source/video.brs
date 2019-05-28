@@ -8,6 +8,9 @@ sub init()
     'Start New Relic agents
     NewRelicStart()
     NewRelicVideoStart(m.video)
+    
+    nrSetCustomAttribute("customGeneral", "Aloooo")
+    nrSetCustomAttribute("customEnd", "Byee!", "CONTENT_PAUSE")
 end sub
 
 function setupVideo() as void
