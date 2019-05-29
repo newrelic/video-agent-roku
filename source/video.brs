@@ -9,9 +9,15 @@ sub init()
     NewRelicStart()
     NewRelicVideoStart(m.video)
     
-    nrSetCustomAttribute("customGeneral", "Aloooo")
-    nrSetCustomAttribute("customEnd", "Byee!", "CONTENT_PAUSE")
+    m.pauseCounter = 0
+    updateCustomAttr()
 end sub
+
+function updateCustomAttr() as Void
+    nrSetCustomAttribute("customGeneralString", "Value")
+    nrSetCustomAttribute("customGeneralNumber", 123)
+    nrSetCustomAttribute("customNumPause", m.pauseCounter, "CONTENT_PAUSE")
+end function
 
 function setupVideo() as void
     print "Prepare video player with single video"
@@ -89,6 +95,8 @@ function videoAction(key as String) as Boolean
         return true
     else if key = "play"
         if m.video.state = "playing"
+            m.pauseCounter = m.pauseCounter + 1
+            updateCustomAttr()
             m.video.control = "pause"
             return true
         else if m.video.state = "paused"

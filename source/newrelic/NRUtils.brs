@@ -198,11 +198,11 @@ end function
 function __logEvGroups() as Void
     nrLog("============ Event Groups HTTP_CONNECT ===========")
     for each item in m.global.nrEventGroupsConnect.Items()
-        print item.key, item.value
+        nrLog([item.key, item.value])
     end for
     nrLog("=========== Event Groups HTTP_COMPLETE ===========")
     for each item in m.global.nrEventGroupsComplete.Items()
-        print item.key, item.value
+        nrLog([item.key, item.value])
     end for
     nrLog("==================================================")
 end function

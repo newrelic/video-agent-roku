@@ -23,7 +23,7 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.14.0"})
+    m.global.addFields({"nrAgentVersion": "0.15.0"})
     m.global.addFields({"nrLogsState": false})
     
     m.syslog = nrStartSysTracker(screen.GetMessagePort())
@@ -97,7 +97,12 @@ function nrAppStarted(aa as Object) as Void
 end function
 
 function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String)
-    
+    dict = CreateObject("roAssociativeArray")
+    dict[key] = value
+    nrSetCustomAttributeList(dict, actionName)
+end function
+
+function nrSetCustomAttributeList(attr as Object, actionName = "" as String)
     dictName = actionName
     if dictName = "" then dictName = "GENERAL_ATTR"
     
@@ -108,11 +113,10 @@ function nrSetCustomAttribute(key as String, value as Object, actionName = "" as
     
     actionDict = m.global[dictName]
     
-    actionDict[key] = value
+    actionDict.Append(attr)
     m.global[dictName] = actionDict
     
     nrLog(["Custom Attributes: ", m.global[dictName]])
-    
 end function
 
 '======================='
