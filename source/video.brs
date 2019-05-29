@@ -17,6 +17,8 @@ function updateCustomAttr() as Void
     nrSetCustomAttribute("customGeneralString", "Value")
     nrSetCustomAttribute("customGeneralNumber", 123)
     nrSetCustomAttribute("customNumPause", m.pauseCounter, "CONTENT_PAUSE")
+    dict = {"key0":"val0", "key1":"val1"}
+    nrSetCustomAttributeList(dict, "CONTENT_HEARTBEAT")
 end function
 
 function setupVideo() as void
