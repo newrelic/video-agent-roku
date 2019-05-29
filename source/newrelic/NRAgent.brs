@@ -96,13 +96,13 @@ function nrAppStarted(aa as Object) as Void
     nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
 end function
 
-function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String)
+function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String) as Void
     dict = CreateObject("roAssociativeArray")
     dict[key] = value
     nrSetCustomAttributeList(dict, actionName)
 end function
 
-function nrSetCustomAttributeList(attr as Object, actionName = "" as String)
+function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as Void
     dictName = actionName
     if dictName = "" then dictName = "GENERAL_ATTR"
     
