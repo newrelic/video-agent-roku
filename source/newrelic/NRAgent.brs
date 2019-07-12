@@ -91,7 +91,8 @@ function nrAppStarted(aa as Object) as Void
     attr = {
         "lastExitOrTerminationReason": aa["lastExitOrTerminationReason"],
         "splashTime": aa["splashTime"],
-        "instantOnRunMode": aa["instant_on_run_mode"]
+        "instantOnRunMode": aa["instant_on_run_mode"],
+        "launchSource": aa["source"]
     }
     nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
 end function
