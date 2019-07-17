@@ -40,9 +40,7 @@ function NewRelicStart() as Void
         
     'Init event processor
     m.bgTask = createObject("roSGNode", "NRTask")
-    m.bgTask.functionName = "nrTaskMain"
     m.bgTask.control = "RUN"
-    
 end function
 
 function NewRelicWait(port as Object, foo as Function) as Void

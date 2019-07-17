@@ -14,6 +14,10 @@
 	<script type="text/brightscript" uri="pkg:/source/newrelic/NRUtils.brs"/>
 	<script type = "text/brightscript" >
 		<![CDATA[
+		sub init()
+  			m.top.functionName = "nrTaskMain"
+		end sub
+		
 		function nrTaskMain()
 			while true
 				sleep(10000)
