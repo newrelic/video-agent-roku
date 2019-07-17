@@ -13,7 +13,9 @@
 'Must be called from Main
 function NewRelicInit(account as String, apikey as String, screen as Object) as Void
     
-    m.global = screen.getGlobalNode()
+    if m.global = invalid
+        m.global = screen.getGlobalNode()
+    end if
 
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
