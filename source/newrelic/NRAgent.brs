@@ -28,8 +28,6 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrAgentVersion": "0.15.0"})
     m.global.addFields({"nrLogsState": false})
     
-    m.syslog = nrStartSysTracker(screen.GetMessagePort())
-    
 end function
 
 function NewRelicStart() as Void
@@ -44,6 +42,8 @@ function NewRelicStart() as Void
 end function
 
 function NewRelicWait(port as Object, foo as Function) as Void
+    syslog = nrStartSysTracker(port)
+
     while(true)
         msg = wait(0, port)
         if nrProcessMessage(msg) = false
