@@ -234,7 +234,7 @@ end function
 
 function nrProcessMessage(msg as Object) as Boolean
     msgType = type(msg)
-    if msgType = "roSystemLogEvent" Then
+    if msgType = "roSystemLogEvent" then
         i = msg.GetInfo()
         if i.LogType = "http.error"
             nrSendHTTPError(i)
