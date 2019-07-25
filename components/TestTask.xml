@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name = "TestTask" extends = "Task">
+	<script type = "text/brightscript" >
+		<![CDATA[
+		sub init()
+  			m.top.functionName = "TestTaskMain"
+		end sub
+		
+		function TestTaskMain()
+			while true
+				sleep(5000)
+				search = "hola"
+				_url = box("https://www.google.com/search?source=hp&q=" + search)
+			
+			    urlReq = CreateObject("roUrlTransfer")
+			
+			    urlReq.SetUrl(_url)
+			    urlReq.RetainBodyOnError(true)
+			    urlReq.EnablePeerVerification(false)
+			    urlReq.EnableHostVerification(false)
+			    
+			    'TODO: we have to assign the message port to be able to capture HTTP logs
+			    'urlReq.SetMessagePort(m.top.messagePort)
+			
+			    resp = urlReq.GetToString()
+			    
+			    print "---------> TestTask request response"
+				
+			end while
+		end function
+		]]>
+	</script>
+</component>
