@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component name = "TestTask" extends = "Task">
+	<interface>
+		<field id="taskNum" type="int" />
+	</interface>
 	<script type = "text/brightscript" >
 		<![CDATA[
 		sub init()
@@ -9,7 +12,7 @@
 		function TestTaskMain()
 			while true
 				sleep(5000)
-				search = "hola"
+				search = "number_" + str(m.top.taskNum)
 				_url = box("https://www.google.com/search?source=hp&q=" + search)
 			
 			    urlReq = CreateObject("roUrlTransfer")
@@ -24,7 +27,7 @@
 			
 			    resp = urlReq.GetToString()
 			    
-			    print "---------> TestTask request response"
+			    print "---------> TestTask request response from task num = " + str(m.top.taskNum)
 				
 			end while
 		end function

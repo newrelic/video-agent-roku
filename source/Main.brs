@@ -21,14 +21,18 @@ sub Main(aa as Object)
     
     nrAppStarted(aa)
     
-    'Create task and make HTTP requests
-    createTask()
-        
+    'Create tasks to make HTTP requests
+    createTask(1)
+    createTask(2)
+    createTask(3)
+    
+    'Wait loop
     NewRelicWait(m.port, waitFunction)
     
 end sub
 
-function createTask()
+function createTask(num as Integer)
     task = createObject("roSGNode", "TestTask")
+    task.setField("taskNum", num)
     task.control = "RUN"
 end function
