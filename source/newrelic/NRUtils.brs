@@ -192,7 +192,11 @@ function nrLog(msg as Dynamic) as Void
 end function
 
 function nrActivateLogging(state as Boolean) as Void
-    m.global.nrLogsState = state
+    if m.global.nrLogsState = invalid
+        m.global.addFields({"nrLogsState": state})
+    else 
+        m.global.nrLogsState = state
+    end if
 end function
 
 function __logEvGroups() as Void

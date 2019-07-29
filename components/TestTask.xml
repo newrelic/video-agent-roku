@@ -28,6 +28,7 @@
 			    resp = urlReq.GetToString()
 			    
 			    print "---------> TestTask request response from task num = " + str(m.top.taskNum)
+			    print "     Global = " m.global
 				
 			end while
 		end function
