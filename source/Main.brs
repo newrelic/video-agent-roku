@@ -22,7 +22,18 @@ sub Main(aa as Object)
         print "msg = " msg
     end function
     
+    'Create test tasks to make HTTP requests
+    createTask("usa")
+    createTask("brazil")
+    createTask("china")
+    
     'Wait loop
     NewRelicWait(m.port, waitFunction)
     
 end sub
+
+function createTask(search as String)
+    task = createObject("roSGNode", "TestTask")
+    task.setField("searchString", search)
+    task.control = "RUN"
+end function
