@@ -25,7 +25,7 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.15.0"})
+    m.global.addFields({"nrAgentVersion": "0.16.0"})
     if m.global.nrLogsState = invalid
         m.global.addFields({"nrLogsState": false})
     end if
@@ -241,8 +241,7 @@ function nrProcessMessage(msg as Object) as Boolean
         if i.LogType = "http.error"
             nrSendHTTPError(i)
             return true
-        else if i.LogType = "http.connect"
-            'print "----> HTTP.CONNECT " i 
+        else if i.LogType = "http.connect" 
             nrSendHTTPConnect(i)
             return true
         else if i.LogType = "http.complete"
