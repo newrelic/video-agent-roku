@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component name = "TestTask" extends = "Task">
+<component name = "SearchTask" extends = "Task">
 	<interface>
 		<field id="searchString" type="string" />
 	</interface>
 	
 	<script type="text/brightscript" uri="pkg:/source/newrelic/NRUtils.brs"/>
-	<script type="text/brightscript" uri="pkg:/source/TestTask.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/SearchTask.brs"/>
 	
 	<script type = "text/brightscript" >
 		<![CDATA[
 		sub init()
-  			m.top.functionName = "TestTaskMain"
+  			m.top.functionName = "SearchTaskMain"
 		end sub
 		]]>
 	</script>

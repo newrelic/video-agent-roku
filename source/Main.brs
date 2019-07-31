@@ -23,17 +23,17 @@ sub Main(aa as Object)
     end function
     
     'Create test tasks to make HTTP requests
-    createTask("usa")
-    createTask("brazil")
-    createTask("china")
+    searchTask("usa")
+    searchTask("brazil")
+    searchTask("china")
     
     'Wait loop
     NewRelicWait(m.port, waitFunction)
     
 end sub
 
-function createTask(search as String)
-    task = createObject("roSGNode", "TestTask")
+function searchTask(search as String)
+    task = createObject("roSGNode", "SearchTask")
     task.setField("searchString", search)
     task.control = "RUN"
 end function

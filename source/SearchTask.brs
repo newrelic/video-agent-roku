@@ -1,5 +1,5 @@
 'Code for TestTask Task
-function TestTaskMain()
+function SearchTaskMain()
     while true
         _url = box("https://www.google.com/search?source=hp&q=" + m.top.searchString)
         urlReq = CreateObject("roUrlTransfer")
