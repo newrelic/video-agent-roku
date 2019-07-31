@@ -13,5 +13,5 @@
     <script type="text/brightscript" uri="pkg:/source/newrelic/NRUtils.brs"/>
 	<script type="text/brightscript" uri="pkg:/source/newrelic/NRAgent.brs"/>
 
-	<script type="text/brightscript" uri="pkg:/source/video.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/VideoScene.brs"/>
 </component>
