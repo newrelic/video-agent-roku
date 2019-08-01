@@ -2,9 +2,12 @@
 
 sub init()
     m.top.setFocus(true)
-    'Setup video player
-    'setupVideoPlaylist()
-    setupVideo()
+    
+    'Setup video player with a playlist
+    setupVideoPlaylist()
+    'Setup video player with a single video
+    'setupVideo()
+    
     'Start New Relic agents
     NewRelicStart()
     NewRelicVideoStart(m.video)
@@ -23,32 +26,12 @@ end function
 
 function setupVideo() as void
     print "Prepare video player with single video"
-
-    jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    bunny = "https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4"
-    hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
-    dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
-    long = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
     
-    jellyContent = createObject("RoSGNode", "ContentNode")
-    jellyContent.url = jelly
-    jellyContent.title = "Jelly"
-    
-    bunnyContent = createObject("RoSGNode", "ContentNode")
-    bunnyContent.url = bunny
-    bunnyContent.title = "Bunny"
-    
-    hlsContent = createObject("RoSGNode", "ContentNode")
-    hlsContent.url = hls
-    hlsContent.title = "HLS"
-    
-    dashContent = createObject("RoSGNode", "ContentNode")
-    dashContent.url = dash
-    dashContent.title = "DASH"
+    bunny = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
     
     longContent = createObject("RoSGNode", "ContentNode")
-    longContent.url = long
-    longContent.title = "LONG"
+    longContent.url = bunny
+    longContent.title = "Bunny"
     
     m.video = m.top.findNode("myVideo")
     m.video.content = longContent
@@ -59,7 +42,7 @@ function setupVideoPlaylist() as void
     print "Prepare video player with Playlist"
 
     jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    bunny = "https://www.quirksmode.org/html5/videos/big_buck_bunny.mp4"
+    bunny = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
     hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
     dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
 
