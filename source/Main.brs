@@ -23,9 +23,7 @@ sub Main(aa as Object)
     end function
     
     'Create test tasks to make HTTP requests
-    searchTask("usa")
-    searchTask("brazil")
-    searchTask("china")
+    searchTask("hello")
     
     'Wait loop
     NewRelicWait(m.port, waitFunction)
