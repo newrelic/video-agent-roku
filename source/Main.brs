@@ -8,10 +8,8 @@ sub Main(aa as Object)
     m.port = CreateObject("roMessagePort")
     screen.setMessagePort(m.port)
     
-    m.global = screen.getGlobalNode()
-    nrActivateLogging(true)
-    
     NewRelicInit("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", screen)
+    nrActivateLogging(true)
     nrAppStarted(aa)
 
     'Create a scene and load /components/nrvideoagent.xml'
