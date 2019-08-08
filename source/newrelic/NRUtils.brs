@@ -142,10 +142,11 @@ function nrEventProcessor() as Void
         ev = nrExtractEvent()
         if ev = invalid then exit while
         res = nrInsertInsightsData(ev)
-        nrLog("-- nrEventProcessor: insert insights data --")
         if res <> 200
-            'Failed, reinsert event and will retry later
+            nrLog("-- nrEventProcessor: FAILED, retry later --")
             nrRecordEvent(ev)
+        else
+            nrLog("-- nrEventProcessor: insert insights data --")
         end if
     end while
 end function
