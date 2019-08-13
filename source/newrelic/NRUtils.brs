@@ -208,6 +208,24 @@ function nrExtractEvent() as Object
     return res
 end function
 
+function nrEventArrayToJson(eventArray as Object) as String
+    json = FormatJson(eventArray)
+    return json
+end function
+
+function nrJsonToEventArray(json as String) as Object
+    eventArray = ParseJson(json)
+    return eventArray
+end function
+
+function nrJsonToFile(json as String, file as String) as Void
+    'TODO: write json to file, overwritting previous contents
+end function
+
+function nrFileToJson(file as String) as String
+    'TODO: read json from file
+end function
+
 function nrLog(msg as Dynamic) as Void
     if m.global.nrLogsState = true
         if type(msg) = "roArray"         

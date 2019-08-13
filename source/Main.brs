@@ -1,5 +1,29 @@
 'NR Video Agent Example - Main'
 
+sub x_Main()
+    fs = createObject("roFileSystem")
+    vols = fs.GetVolumeList()
+    print "Volumes = " vols
+    
+    ba = CreateObject("roByteArray")
+    
+    dir = "cachefs:/"
+    file = "salut.txt"
+    path = dir + file
+    
+    if fs.Exists(path)
+        ba.ReadFile(path)
+        print "File '" + path + "' exists! Content = " ba
+    else
+        print "File do not exist, create it!"
+        ba.FromAsciiString("hola")
+        ba.WriteFile(path)
+    end if
+    
+    var = fs.GetDirectoryListing(dir)
+    print "Dir listing = " var
+end sub
+
 sub Main(aa as Object)
     print "Main" aa
 
@@ -25,7 +49,6 @@ sub Main(aa as Object)
     
     'Wait loop
     NewRelicWait(m.port, waitFunction)
-    
 end sub
 
 function searchTask(search as String)
