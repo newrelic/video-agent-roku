@@ -19,9 +19,9 @@
 The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events (essentially networking) and one to monitor video related events (for apps that use a video player).  The events and attributes captured by the New Relic Roku Agent can be viewed {\field{\*\fldinst{HYPERLINK "https://docs.google.com/document/d/e/2PACX-1vSm6YaYJ5-kHSIHwXd5nHBTe-CXCj-7xjYOEhi-n_snujZoaRx9-qEgdxHO-Ig48eSUouPbuPpPdwU9/pub"}}{\fldrslt here}}.\
 \
 Internally, it uses the Insights API to send events using the REST interface. It sends two types of events: 
-\f0\b RokuSystem
+\f0\b RokuEvent
 \f1\b0  for system events and 
-\f0\b RokuVideo
+\f0\b RokuVideoEvent
 \f1\b0  for video events. After the agent has sent some data you will be able to see it in Insights with a simple NRQL request like:\
 \
 SELECT * from RokuSystem\
