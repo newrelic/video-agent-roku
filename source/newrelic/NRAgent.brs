@@ -161,7 +161,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
 end function
 
 function nrSendPlayerReady() as Void
-    m.nrTimeSinceLoad = m.nrTimer.TotalMilliseconds()
+    m.nrTimeSinceLoad = m.nrTimer.TotalMilliseconds() / 1000.0
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent("PLAYER_READY")
 end function
@@ -324,7 +324,7 @@ function nrAddVideoAttributes(ev as Object) as Object
         ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
     end if
     ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
-    ev.AddReplace("timeSinceLoad", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLoad)
+    ev.AddReplace("timeSinceLoad", (m.nrTimer.TotalMilliseconds() / 1000.0) - m.nrTimeSinceLoad)
     ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
     ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
     ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
