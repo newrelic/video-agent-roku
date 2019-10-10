@@ -178,8 +178,8 @@ function nrSendStart() as Void
 end function
 
 function nrSendEnd() as Void
-    m.nrVideoCounter = m.nrVideoCounter + 1
     nrSendVideoEvent(nrAction("END"))
+    m.nrVideoCounter = m.nrVideoCounter + 1
 end function
 
 function nrSendPause() as Void
