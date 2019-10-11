@@ -473,26 +473,3 @@ function __nrGenerateId() as String
     result = digest.Process(ba)
     return result
 end function
-
-function __logVideoInfo() as Void
-    nrLog("====================================")
-    nrLog(["Player state = ", m.nrVideoObject.state])
-    nrLog(["Current position = ", m.nrVideoObject.position])
-    nrLog(["Current duration = ", m.nrVideoObject.duration])
-    nrLog(["Muted = ", m.nrVideoObject.mute])
-    if m.nrVideoObject.streamInfo <> invalid
-        nrLog(["Stream URL = ", m.nrVideoObject.streamInfo["streamUrl"]])
-        nrLog(["Stream Bitrate = ", m.nrVideoObject.streamInfo["streamBitrate"]])
-        nrLog(["Stream Measured Bitrate = ", m.nrVideoObject.streamInfo["measuredBitrate"]])
-        nrLog(["Stream isResumed = ", m.nrVideoObject.streamInfo["isResumed"]])
-        nrLog(["Stream isUnderrun = ", m.nrVideoObject.streamInfo["isUnderrun"]])
-    end if
-    if m.nrVideoObject.streamingSegment <> invalid
-        nrLog(["Segment URL = ", m.nrVideoObject.streamingSegment["segUrl"]])
-        nrLog(["Segment Bitrate = ", m.nrVideoObject.streamingSegment["segBitrateBps"]])
-        nrLog(["Segment Sequence = ", m.nrVideoObject.streamingSegment["segSequence"]])
-        nrLog(["Segment Start time = ", m.nrVideoObject.streamingSegment["segStartTime"]])
-    end if
-    nrLog(["Manifest data = ", m.nrVideoObject.manifestData])
-    nrLog("====================================")
-end function

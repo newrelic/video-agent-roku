@@ -194,7 +194,8 @@ function nrRecordEvent(event as Object) as Void
         arr.Push(event)
         m.global.nrEventArray = arr
         
-        nrLog(["Record New Event = ", event])
+        nrLog(["Record New Event = ", event["actionName"]])
+        __logVideoInfo()
     else
         nrLog("Events overflow, discard event")
     end if
@@ -239,4 +240,44 @@ function __logEvGroups() as Void
         nrLog([item.key, item.value])
     end for
     nrLog("==================================================")
+end function
+
+function __logVideoInfo() as Void
+    nrLog("====================================")
+    if (m.nrVideoObject <> invalid)
+        nrLog(["Player state = ", m.nrVideoObject.state])
+        nrLog(["Current position = ", m.nrVideoObject.position])
+        nrLog(["Current duration = ", m.nrVideoObject.duration])
+        if (m.nrVideoObject.contentIsPlaylist)
+            nrLog(["Video content playlist size = ", m.nrVideoObject.content.getChildCount()])
+            nrLog(["Video content index = ", m.nrVideoObject.contentIndex])
+            currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
+            if currentChild <> invalid
+                nrLog(["Current child url = ", currentChild.url])
+                nrLog(["Current child title = ", currentChild.title])
+            else
+                nrLog("Current child is invalid")
+            end if
+        else
+            nrLog("Content is not a playlist")
+        end if
+        nrLog(["Muted = ", m.nrVideoObject.mute])
+        if m.nrVideoObject.streamInfo <> invalid
+            nrLog(["Stream URL = ", m.nrVideoObject.streamInfo["streamUrl"]])
+            nrLog(["Stream Bitrate = ", m.nrVideoObject.streamInfo["streamBitrate"]])
+            nrLog(["Stream Measured Bitrate = ", m.nrVideoObject.streamInfo["measuredBitrate"]])
+            nrLog(["Stream isResumed = ", m.nrVideoObject.streamInfo["isResumed"]])
+            nrLog(["Stream isUnderrun = ", m.nrVideoObject.streamInfo["isUnderrun"]])
+        end if
+        if m.nrVideoObject.streamingSegment <> invalid
+            nrLog(["Segment URL = ", m.nrVideoObject.streamingSegment["segUrl"]])
+            nrLog(["Segment Bitrate = ", m.nrVideoObject.streamingSegment["segBitrateBps"]])
+            nrLog(["Segment Sequence = ", m.nrVideoObject.streamingSegment["segSequence"]])
+            nrLog(["Segment Start time = ", m.nrVideoObject.streamingSegment["segStartTime"]])
+        end if
+        nrLog(["Manifest data = ", m.nrVideoObject.manifestData])
+    else
+        nrLog("m.nrVideoObject is invalid")
+    end if
+    nrLog("====================================")
 end function
