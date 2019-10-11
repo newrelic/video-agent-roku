@@ -409,13 +409,10 @@ function __nrStateObserver() as Void
         __nrStateTransitionPaused()
     else if m.nrVideoObject.state = "buffering"
         __nrStateTransitionBuffering()
-    else if m.nrVideoObject.state = "finished"
-        nrSendEnd()
-    else if m.nrVideoObject.state = "stopped"
-        nrSendEnd()
+    else if m.nrVideoObject.state = "finished" or m.nrVideoObject.state = "stopped"
+        __nrStateTransitionEnd()
     else if m.nrVideoObject.state = "error"
-        m.nrNumberOfErrors = m.nrNumberOfErrors + 1
-        nrSendError(m.nrVideoObject.errorMsg)
+        __nrStateTransitionError()
     end if
     
     m.nrLastVideoState = m.nrVideoObject.state
@@ -444,6 +441,21 @@ function __nrStateTransitionBuffering() as Void
         nrSendRequest()
     end if
     nrSendBufferStart()
+end function
+
+function __nrStateTransitionEnd() as Void
+    if m.nrLastVideoState = "buffering"
+        nrSendBufferEnd()
+    end if
+    nrSendEnd()
+end function
+
+function __nrStateTransitionError() as Void
+    if m.nrLastVideoState = "buffering"
+        nrSendBufferEnd()
+    end if
+    m.nrNumberOfErrors = m.nrNumberOfErrors + 1
+    nrSendError(m.nrVideoObject.errorMsg)
 end function
 
 function __nrIndexObserver() as Void
@@ -475,17 +487,16 @@ function __nrGenerateId() as String
 end function
 
 function __nrGenerateStreamUrl() as String
-    if (m.nrVideoObject.contentIsPlaylist)
-        currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
-        if currentChild <> invalid
-            'Get url from content child
-            return currentChild.url
-        end if
-    end if
-    
     if m.nrVideoObject.streamInfo <> invalid
         return m.nrVideoObject.streamInfo["streamUrl"]
     else
-        return ""
+        if (m.nrVideoObject.contentIsPlaylist)
+            currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
+            if currentChild <> invalid
+                'Get url from content child
+                return currentChild.url
+            end if
+        end if
     end if
+    return ""
 end function
