@@ -25,7 +25,7 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.16.0"})
+    m.global.addFields({"nrAgentVersion": "0.17.0"})
     if m.global.nrLogsState = invalid
         m.global.addFields({"nrLogsState": false})
     end if
@@ -289,7 +289,6 @@ function nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
     ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
     streamUrl = __nrGenerateStreamUrl()
-    'BUG: when using playlists reach the end and restart it, the src remains in the last track
     ev.AddReplace(nrAttr("Src"), streamUrl)
     'Generate Id from Src (hashing it)
     ba = CreateObject("roByteArray")
