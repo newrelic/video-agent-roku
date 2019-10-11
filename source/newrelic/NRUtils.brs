@@ -194,8 +194,10 @@ function nrRecordEvent(event as Object) as Void
         arr.Push(event)
         m.global.nrEventArray = arr
         
-        nrLog(["Record New Event = ", event["actionName"]])
-        __logVideoInfo()
+        nrLog("====================================")
+        nrLog(["RECORD NEW EVENT = ", event])
+        nrLog("====================================")
+        '__logVideoInfo()
     else
         nrLog("Events overflow, discard event")
     end if
