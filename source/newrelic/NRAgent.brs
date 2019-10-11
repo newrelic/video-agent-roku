@@ -288,13 +288,14 @@ function nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
     ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
     ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
+    streamUrl = __nrGenerateStreamUrl()
+    'BUG: when using playlists reach the end and restart it, the src remains in the last track
+    ev.AddReplace(nrAttr("Src"), streamUrl)
+    'Generate Id from Src (hashing it)
+    ba = CreateObject("roByteArray")
+    ba.FromAsciiString(streamUrl)
+    ev.AddReplace(nrAttr("Id"), ba.GetCRC32())
     if m.nrVideoObject.streamInfo <> invalid
-        'BUG: when using playlists reach the end and restart it, the src remains in the last track
-        ev.AddReplace(nrAttr("Src"), m.nrVideoObject.streamInfo["streamUrl"])
-        'Generate Id from Src (hashing it)
-        ba = CreateObject("roByteArray")
-        ba.FromAsciiString(m.nrVideoObject.streamInfo["streamUrl"])
-        ev.AddReplace(nrAttr("Id"), ba.GetCRC32())
         ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
         ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
     end if
@@ -472,4 +473,20 @@ function __nrGenerateId() as String
     digest.Setup("md5")
     result = digest.Process(ba)
     return result
+end function
+
+function __nrGenerateStreamUrl() as String
+    if (m.nrVideoObject.contentIsPlaylist)
+        currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
+        if currentChild <> invalid
+            'Get url from content child
+            return currentChild.url
+        end if
+    end if
+    
+    if m.nrVideoObject.streamInfo <> invalid
+        return m.nrVideoObject.streamInfo["streamUrl"]
+    else
+        return ""
+    end if
 end function
