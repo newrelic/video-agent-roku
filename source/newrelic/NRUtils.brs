@@ -126,6 +126,7 @@ function nrAddAttributes(ev as Object) as Object
     appbuild = app.GetValue("build_version").ToInt()
     if appbuild = 0 then appbuild = 1
     ev.AddReplace("appBuild", appbuild)
+    if (m.nrVideoObject <> invalid) then ev.AddReplace("isPlaylist", m.nrVideoObject.contentIsPlaylist)
     
     'Add custom attributes
     genCustomAttr = m.global["GENERAL_ATTR"]
