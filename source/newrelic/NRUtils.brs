@@ -102,7 +102,10 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("deviceModel", dev.GetModel())
     ev.AddReplace("deviceType", dev.GetModelType())
     ev.AddReplace("osName", "RokuOS")
-    ev.AddReplace("osVersion", dev.GetVersion())
+    ver = __nrParseVersion(dev.GetVersion())
+    ev.AddReplace("osVersionString", dev.GetVersion())
+    ev.AddReplace("osVersion", ver["version"])
+    ev.AddReplace("osBuild", ver["build"])
     ev.AddReplace("countryCode", dev.GetUserCountryCode())
     ev.AddReplace("timeZone", dev.GetTimeZone())
     ev.AddReplace("locale", dev.GetCurrentLocale())
@@ -283,4 +286,8 @@ function __logVideoInfo() as Void
         nrLog("m.nrVideoObject is invalid")
     end if
     nrLog("====================================")
+end function
+
+function __nrParseVersion(verStr as String) as Object
+    return {version: verStr.Mid(2, 4), build: verStr.Mid(8, 4)}
 end function

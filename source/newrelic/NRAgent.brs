@@ -303,7 +303,8 @@ function nrAddVideoAttributes(ev as Object) as Object
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
     dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("playerVersion", dev.GetVersion())
+    ver = __nrParseVersion(dev.GetVersion())
+    ev.AddReplace("playerVersion", ver["version"])
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
     ev.AddReplace("viewId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
     ev.AddReplace("viewSession", m.global.nrSessionId)
