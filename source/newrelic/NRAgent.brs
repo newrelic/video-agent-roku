@@ -133,6 +133,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrLastVideoState = "none"
     m.nrIsAd = false
     m.nrVideoCounter = 0
+    m.nrIsInitialBuffering = false
     'Setup event listeners 
     videoObject.observeField("state", "__nrStateObserver")
     videoObject.observeField("contentIndex", "__nrIndexObserver")
@@ -193,11 +194,22 @@ end function
 
 function nrSendBufferStart() as Void
     m.nrTimeSinceBufferBegin = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent(nrAction("BUFFER_START"))
+    
+    if m.nrTimeSinceStarted = 0
+        m.nrIsInitialBuffering = true
+    else
+        m.nrIsInitialBuffering = false
+    end if
+    nrSendVideoEvent(nrAction("BUFFER_START"), {"isInitialBuffering": m.nrIsInitialBuffering})
 end function
 
 function nrSendBufferEnd() as Void
-    nrSendVideoEvent(nrAction("BUFFER_END"))
+    if m.nrTimeSinceStarted = 0
+        m.nrIsInitialBuffering = true
+    else
+        m.nrIsInitialBuffering = false
+    end if
+    nrSendVideoEvent(nrAction("BUFFER_END"), {"isInitialBuffering": m.nrIsInitialBuffering})
 end function
 
 function nrSendError(msg as String) as Void
