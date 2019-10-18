@@ -23,6 +23,7 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrEventArray": []})
     m.global.addFields({"nrEventGroupsConnect": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
+    m.global.addFields({"nrBackupAttributes": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
     m.global.addFields({"nrAgentVersion": "0.18.0"})
@@ -228,6 +229,8 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
        ev.Append(attr)
     end if
     nrRecordEvent(ev)
+    'Backup attributes
+    m.global.nrBackupAttributes = ev
 end function
 
 '=================='
