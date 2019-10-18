@@ -233,6 +233,26 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     m.global.nrBackupAttributes = ev
 end function
 
+function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
+    ev = nrCreateEvent("RokuVideo", actionName)
+    ev = nrAddVideoAttributes(ev)
+    if type(attr) = "roAssociativeArray"
+       ev.Append(attr)
+    end if
+    'TODO: use attributes in the backup (m.global.nrBackupAttributes) and recalculate some of them:
+    '- Set correct actionName
+    '- Set current timestamp
+    '- Recalculate playhead, adding timestamp offset, except if last action is PAUSE
+    '- Recalculate all timeSinceXXX, adding timestamp offset
+    '- Regen memory level
+    '- Regen is muted
+    '- Regen HDMI connected
+    '- Regen IP (not likely to change)
+    'PROBLEMS:
+    '- Custom attributes remains the same, could be problematic depending on the app
+    '- 
+end function
+
 '=================='
 ' Helper functions '
 '=================='
