@@ -234,23 +234,39 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
 end function
 
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
-    ev = nrCreateEvent("RokuVideo", actionName)
-    ev = nrAddVideoAttributes(ev)
-    if type(attr) = "roAssociativeArray"
-       ev.Append(attr)
-    end if
-    'TODO: use attributes in the backup (m.global.nrBackupAttributes) and recalculate some of them:
+    'Use attributes in the backup (m.global.nrBackupAttributes) and recalculate some of them.
+    ev = m.global.nrBackupAttributes
+    
     '- Set correct actionName
+    backupActionName = ev["actionName"]
+    ev["actionName"] = actionName
     '- Set current timestamp
+    backupTimestamp = ev["timestamp"]
+    ev["timestamp"] = nrTimestamp()
     '- Recalculate playhead, adding timestamp offset, except if last action is PAUSE
-    '- Recalculate all timeSinceXXX, adding timestamp offset
+    if not isAction("PAUSE", backupActionName)
+        offsetTime = ev["timestamp"] - backupTimestamp
+        print "Offset time = ", offsetTime
+        if ev["contentPlayhead"] <> invalid then ev["contentPlayhead"] = ev["contentPlayhead"] + offsetTime
+        if ev["adPlayhead"] <> invalid then ev["adPlayhead"] = ev["adPlayhead"] + offsetTime
+    end if
     '- Regen memory level
+    dev = CreateObject("roDeviceInfo")
+    ev["memoryLevel"] = dev.GetGeneralMemoryLevel()
     '- Regen is muted
+    if m.nrVideoObject <> invalid
+        if ev["contentIsMuted"] <> invalid then ev["contentIsMuted"] = m.nrVideoObject.mute
+        if ev["adIsMuted"] <> invalid then ev["adIsMuted"] = m.nrVideoObject.mute
+    end if
     '- Regen HDMI connected
-    '- Regen IP (not likely to change)
+    hdmi = CreateObject("roHdmiStatus")
+    ev["hdmiIsConnected"] = hdmi.IsConnected()
+    'TODO:- Recalculate all timeSinceXXX, adding timestamp offset
+    
     'PROBLEMS:
     '- Custom attributes remains the same, could be problematic depending on the app
-    '- 
+    print "nrSendBackupVideoEvent =>"
+    print ev
 end function
 
 '=================='
@@ -309,6 +325,12 @@ function nrAction(action as String) as String
     else
         return "CONTENT_" + action
     end if
+end function
+
+function isAction(name as String, action as String) as Boolean
+    regExp = "(CONTENT|AD)_" + name
+    r = CreateObject("roRegex", regExp, "")
+    return r.isMatch(action)
 end function
 
 function nrAttr(attribute as String) as String
