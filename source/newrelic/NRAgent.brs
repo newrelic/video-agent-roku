@@ -263,7 +263,7 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["hdmiIsConnected"] = hdmi.IsConnected()
     '- Recalculate all timeSinceXXX, adding timestamp offset
     ev["timeSinceLastHeartbeat"] = ev["timeSinceLastHeartbeat"] + offsetTime '(ms)
-    ev["timeSinceLastKeypress"] = ev["timeSinceLastKeypress"] + offsetTime '(ms)
+    ev["timeSinceLastKeypress"] = dev.TimeSinceLastKeypress() * 1000
     ev["timeSinceLoad"] = ev["timeSinceLoad"] + offsetTime/1000 ' (s)
     ev["timeSinceRequested"] = ev["timeSinceRequested"] + offsetTime ' (ms)
     ev["timeSinceStarted"] = ev["timeSinceStarted"] + offsetTime ' (ms)
