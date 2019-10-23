@@ -261,7 +261,13 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     '- Regen HDMI connected
     hdmi = CreateObject("roHdmiStatus")
     ev["hdmiIsConnected"] = hdmi.IsConnected()
-    'TODO:- Recalculate all timeSinceXXX, adding timestamp offset
+    '- Recalculate all timeSinceXXX, adding timestamp offset
+    ev["timeSinceLastHeartbeat"] = ev["timeSinceLastHeartbeat"] + offsetTime '(ms)
+    ev["timeSinceLastKeypress"] = ev["timeSinceLastKeypress"] + offsetTime '(ms)
+    ev["timeSinceLoad"] = ev["timeSinceLoad"] + offsetTime/1000 ' (s)
+    ev["timeSinceRequested"] = ev["timeSinceRequested"] + offsetTime ' (ms)
+    ev["timeSinceStarted"] = ev["timeSinceStarted"] + offsetTime ' (ms)
+    ev["timeSinceTrackerReady"] = ev["timeSinceTrackerReady"] + offsetTime ' (ms)
     
     'PROBLEMS:
     '- Custom attributes remains the same, could be problematic depending on the app
