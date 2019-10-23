@@ -246,7 +246,7 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     '- Recalculate playhead, adding timestamp offset, except if last action is PAUSE
     if not isAction("PAUSE", backupActionName)
         offsetTime = ev["timestamp"] - backupTimestamp
-        print "Offset time = ", offsetTime
+        nrLog(["Offset time = ", offsetTime])
         if ev["contentPlayhead"] <> invalid then ev["contentPlayhead"] = ev["contentPlayhead"] + offsetTime
         if ev["adPlayhead"] <> invalid then ev["adPlayhead"] = ev["adPlayhead"] + offsetTime
     end if
@@ -268,11 +268,13 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["timeSinceRequested"] = ev["timeSinceRequested"] + offsetTime ' (ms)
     ev["timeSinceStarted"] = ev["timeSinceStarted"] + offsetTime ' (ms)
     ev["timeSinceTrackerReady"] = ev["timeSinceTrackerReady"] + offsetTime ' (ms)
-    
     'PROBLEMS:
     '- Custom attributes remains the same, could be problematic depending on the app
-    print "nrSendBackupVideoEvent =>"
-    print ev
+    
+    nrLog(["nrSendBackupVideoEvent => ", ev])
+    
+    nrRecordEvent(ev)
+    
 end function
 
 '=================='
