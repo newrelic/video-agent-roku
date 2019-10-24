@@ -524,13 +524,17 @@ function __nrStateTransitionError() as Void
     nrSendError(m.nrVideoObject.errorMsg)
 end function
 
+'This corresponds to the NEXT event, it happens when the playlist index changes
 function __nrIndexObserver() as Void
     nrLog("---------- Index Observer ----------")
     __logVideoInfo()
     
+    '- Use nrSendBackupVideoEvent to send the END using previous video attributes
+    nrSendBackupVideoEvent(nrAction("END"))
+    '- Send REQUEST and START using normal send, with current video attributes
     m.nrVideoCounter = m.nrVideoCounter + 1
-    nrSendVideoEvent(nrAction("NEXT"))
-    
+    nrSendRequest()
+    nrSendStart()
 end function
 
 function __nrHeartbeatHandler() as Void
