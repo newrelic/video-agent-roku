@@ -42,7 +42,7 @@ function setupVideoPlaylist() as void
     print "Prepare video player with Playlist"
 
     httprange = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    hls0 = "https://bitmovin-a.akamaihd.net/content/playhouse-vr/m3u8s/105560.m3u8"
+    'hls0 = "https://bitmovin-a.akamaihd.net/content/playhouse-vr/m3u8s/105560.m3u8"
     hls1 = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
     dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
 
@@ -53,10 +53,10 @@ function setupVideoPlaylist() as void
     httprangeContent.title = "HTTP Range"
     playlistContent.appendChild(httprangeContent)
     
-    hls0Content = createObject("RoSGNode", "ContentNode")
-    hls0Content.url = hls0
-    hls0Content.title = "HLS 0"
-    playlistContent.appendChild(hls0Content)
+    'hls0Content = createObject("RoSGNode", "ContentNode")
+    'hls0Content.url = hls0
+    'hls0Content.title = "HLS 0"
+    'playlistContent.appendChild(hls0Content)
     
     hls1Content = createObject("RoSGNode", "ContentNode")
     hls1Content.url = hls1
@@ -99,6 +99,7 @@ function videoAction(key as String) as Boolean
         return true
     else if key = "right"
         m.video.control = "skipcontent"
+        nrLog("SKIP CONTENT")
         return true
     else if key = "left"
         if m.video.contentIndex > 0

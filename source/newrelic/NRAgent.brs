@@ -486,23 +486,30 @@ function __nrStateObserver() as Void
 end function
 
 function __nrStateTransitionPlaying() as Void
+    nrLog("__nrStateTransitionPlaying")
     if m.nrLastVideoState = "paused"
         nrSendResume()
     else if m.nrLastVideoState = "buffering"
+        'if current Src is equal to previous, send start, otherwise not
+        currentSrc = __nrGenerateStreamUrl()
+        lastSrc = m.global.nrBackupAttributes["contentSrc"]
+        if lastSrc = invalid then lastSrc = m.global.nrBackupAttributes["adSrc"]         
         nrSendBufferEnd()
-        if m.nrVideoObject.position = 0
+        if m.nrVideoObject.position = 0 AND lastSrc = currentSrc
             nrSendStart()
         end if
     end if
 end function
 
 function __nrStateTransitionPaused() as Void
+    nrLog("__nrStateTransitionPaused")
     if m.nrLastVideoState = "playing"
         nrSendPause()
     end if
 end function
 
 function __nrStateTransitionBuffering() as Void
+    nrLog("__nrStateTransitionBuffering")
     if m.nrLastVideoState = "none"
         nrSendRequest()
     end if
@@ -510,6 +517,7 @@ function __nrStateTransitionBuffering() as Void
 end function
 
 function __nrStateTransitionEnd() as Void
+    nrLog("__nrStateTransitionEnd")
     if m.nrLastVideoState = "buffering"
         nrSendBufferEnd()
     end if
@@ -517,6 +525,7 @@ function __nrStateTransitionEnd() as Void
 end function
 
 function __nrStateTransitionError() as Void
+    nrLog("__nrStateTransitionError")
     if m.nrLastVideoState = "buffering"
         nrSendBufferEnd()
     end if
