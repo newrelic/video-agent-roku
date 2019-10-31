@@ -23,9 +23,10 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrEventArray": []})
     m.global.addFields({"nrEventGroupsConnect": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
+    m.global.addFields({"nrBackupAttributes": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.18.0"})
+    m.global.addFields({"nrAgentVersion": "0.19.0"})
     if m.global.nrLogsState = invalid
         m.global.addFields({"nrLogsState": false})
     end if
@@ -228,6 +229,52 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
        ev.Append(attr)
     end if
     nrRecordEvent(ev)
+    'Backup attributes
+    m.global.nrBackupAttributes = ev
+end function
+
+function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
+    'Use attributes in the backup (m.global.nrBackupAttributes) and recalculate some of them.
+    ev = m.global.nrBackupAttributes
+    
+    '- Set correct actionName
+    backupActionName = ev["actionName"]
+    ev["actionName"] = actionName
+    '- Set current timestamp
+    backupTimestamp = ev["timestamp"]
+    ev["timestamp"] = nrTimestamp()
+    '- Recalculate playhead, adding timestamp offset, except if last action is PAUSE
+    if not isAction("PAUSE", backupActionName)
+        offsetTime = ev["timestamp"] - backupTimestamp
+        nrLog(["Offset time = ", offsetTime])
+        if ev["contentPlayhead"] <> invalid then ev["contentPlayhead"] = ev["contentPlayhead"] + offsetTime
+        if ev["adPlayhead"] <> invalid then ev["adPlayhead"] = ev["adPlayhead"] + offsetTime
+    end if
+    '- Regen memory level
+    dev = CreateObject("roDeviceInfo")
+    ev["memoryLevel"] = dev.GetGeneralMemoryLevel()
+    '- Regen is muted
+    if m.nrVideoObject <> invalid
+        if ev["contentIsMuted"] <> invalid then ev["contentIsMuted"] = m.nrVideoObject.mute
+        if ev["adIsMuted"] <> invalid then ev["adIsMuted"] = m.nrVideoObject.mute
+    end if
+    '- Regen HDMI connected
+    hdmi = CreateObject("roHdmiStatus")
+    ev["hdmiIsConnected"] = hdmi.IsConnected()
+    '- Recalculate all timeSinceXXX, adding timestamp offset
+    ev["timeSinceLastHeartbeat"] = ev["timeSinceLastHeartbeat"] + offsetTime '(ms)
+    ev["timeSinceLastKeypress"] = dev.TimeSinceLastKeypress() * 1000
+    ev["timeSinceLoad"] = ev["timeSinceLoad"] + offsetTime/1000 ' (s)
+    ev["timeSinceRequested"] = ev["timeSinceRequested"] + offsetTime ' (ms)
+    ev["timeSinceStarted"] = ev["timeSinceStarted"] + offsetTime ' (ms)
+    ev["timeSinceTrackerReady"] = ev["timeSinceTrackerReady"] + offsetTime ' (ms)
+    'PROBLEMS:
+    '- Custom attributes remains the same, could be problematic depending on the app
+    
+    nrLog(["nrSendBackupVideoEvent => ", ev])
+    
+    nrRecordEvent(ev)
+    
 end function
 
 '=================='
@@ -286,6 +333,12 @@ function nrAction(action as String) as String
     else
         return "CONTENT_" + action
     end if
+end function
+
+function isAction(name as String, action as String) as Boolean
+    regExp = "(CONTENT|AD)_" + name
+    r = CreateObject("roRegex", regExp, "")
+    return r.isMatch(action)
 end function
 
 function nrAttr(attribute as String) as String
@@ -433,23 +486,30 @@ function __nrStateObserver() as Void
 end function
 
 function __nrStateTransitionPlaying() as Void
+    nrLog("__nrStateTransitionPlaying")
     if m.nrLastVideoState = "paused"
         nrSendResume()
     else if m.nrLastVideoState = "buffering"
+        'if current Src is equal to previous, send start, otherwise not
+        currentSrc = __nrGenerateStreamUrl()
+        lastSrc = m.global.nrBackupAttributes["contentSrc"]
+        if lastSrc = invalid then lastSrc = m.global.nrBackupAttributes["adSrc"]         
         nrSendBufferEnd()
-        if m.nrVideoObject.position = 0
+        if m.nrVideoObject.position = 0 AND lastSrc = currentSrc
             nrSendStart()
         end if
     end if
 end function
 
 function __nrStateTransitionPaused() as Void
+    nrLog("__nrStateTransitionPaused")
     if m.nrLastVideoState = "playing"
         nrSendPause()
     end if
 end function
 
 function __nrStateTransitionBuffering() as Void
+    nrLog("__nrStateTransitionBuffering")
     if m.nrLastVideoState = "none"
         nrSendRequest()
     end if
@@ -457,6 +517,7 @@ function __nrStateTransitionBuffering() as Void
 end function
 
 function __nrStateTransitionEnd() as Void
+    nrLog("__nrStateTransitionEnd")
     if m.nrLastVideoState = "buffering"
         nrSendBufferEnd()
     end if
@@ -464,6 +525,7 @@ function __nrStateTransitionEnd() as Void
 end function
 
 function __nrStateTransitionError() as Void
+    nrLog("__nrStateTransitionError")
     if m.nrLastVideoState = "buffering"
         nrSendBufferEnd()
     end if
@@ -471,13 +533,17 @@ function __nrStateTransitionError() as Void
     nrSendError(m.nrVideoObject.errorMsg)
 end function
 
+'This corresponds to the NEXT event, it happens when the playlist index changes
 function __nrIndexObserver() as Void
     nrLog("---------- Index Observer ----------")
     __logVideoInfo()
     
+    '- Use nrSendBackupVideoEvent to send the END using previous video attributes
+    nrSendBackupVideoEvent(nrAction("END"))
+    '- Send REQUEST and START using normal send, with current video attributes
     m.nrVideoCounter = m.nrVideoCounter + 1
-    nrSendVideoEvent(nrAction("NEXT"))
-    
+    nrSendRequest()
+    nrSendStart()
 end function
 
 function __nrHeartbeatHandler() as Void

@@ -29,39 +29,39 @@ function setupVideo() as void
     
     bunny = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
     
-    longContent = createObject("RoSGNode", "ContentNode")
-    longContent.url = bunny
-    longContent.title = "Bunny"
+    videoContent = createObject("RoSGNode", "ContentNode")
+    videoContent.url = bunny
+    videoContent.title = "Bunny"
     
     m.video = m.top.findNode("myVideo")
-    m.video.content = longContent
+    m.video.content = videoContent
     m.video.control = "play"
 end function
 
 function setupVideoPlaylist() as void
     print "Prepare video player with Playlist"
 
-    jelly = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    bunny = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
-    hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+    httprange = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
+    'hls0 = "https://bitmovin-a.akamaihd.net/content/playhouse-vr/m3u8s/105560.m3u8"
+    hls1 = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
     dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
 
     playlistContent = createObject("RoSGNode", "ContentNode")
     
-    jellyContent = createObject("RoSGNode", "ContentNode")
-    jellyContent.url = jelly
-    jellyContent.title = "Jelly"
-    playlistContent.appendChild(jellyContent)
+    httprangeContent = createObject("RoSGNode", "ContentNode")
+    httprangeContent.url = httprange
+    httprangeContent.title = "HTTP Range"
+    playlistContent.appendChild(httprangeContent)
     
-    bunnyContent = createObject("RoSGNode", "ContentNode")
-    bunnyContent.url = bunny
-    bunnyContent.title = "Bunny"
-    playlistContent.appendChild(bunnyContent)
+    'hls0Content = createObject("RoSGNode", "ContentNode")
+    'hls0Content.url = hls0
+    'hls0Content.title = "HLS 0"
+    'playlistContent.appendChild(hls0Content)
     
-    hlsContent = createObject("RoSGNode", "ContentNode")
-    hlsContent.url = hls
-    hlsContent.title = "HLS"
-    playlistContent.appendChild(hlsContent)
+    hls1Content = createObject("RoSGNode", "ContentNode")
+    hls1Content.url = hls1
+    hls1Content.title = "HLS 1"
+    playlistContent.appendChild(hls1Content)
     
     dashContent = createObject("RoSGNode", "ContentNode")
     dashContent.url = dash
@@ -99,6 +99,7 @@ function videoAction(key as String) as Boolean
         return true
     else if key = "right"
         m.video.control = "skipcontent"
+        nrLog("SKIP CONTENT")
         return true
     else if key = "left"
         if m.video.contentIndex > 0
