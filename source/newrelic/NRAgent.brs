@@ -375,6 +375,7 @@ function nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace("viewSession", m.global.nrSessionId)
     ev.AddReplace("trackerName", "rokutracker")
     ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
+    if (m.nrVideoObject <> invalid) then ev.AddReplace("isPlaylist", m.nrVideoObject.contentIsPlaylist)
     'Add counters
     ev.AddReplace("numberOfVideos", m.nrVideoCounter + 1)
     ev.AddReplace("numberOfErrors", m.nrNumberOfErrors)
