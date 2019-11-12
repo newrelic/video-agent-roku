@@ -100,6 +100,10 @@ function nrAppStarted(aa as Object) as Void
     nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
 end function
 
+function nrSceneLoaded(sceneName as String) as Void
+    nrSendCustomEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
+end function
+
 function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String) as Void
     dict = CreateObject("roAssociativeArray")
     dict[key] = value

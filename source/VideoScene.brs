@@ -4,9 +4,9 @@ sub init()
     m.top.setFocus(true)
     
     'Setup video player with a playlist
-    setupVideoPlaylist()
+    'setupVideoPlaylist()
     'Setup video player with a single video
-    'setupVideo()
+    setupVideo()
     
     'Start New Relic agents
     NewRelicStart()
@@ -14,6 +14,8 @@ sub init()
     
     m.pauseCounter = 0
     updateCustomAttr()
+    
+    nrSceneLoaded("MyVideoScene")
 end sub
 
 function updateCustomAttr() as Void
@@ -27,11 +29,12 @@ end function
 function setupVideo() as void
     print "Prepare video player with single video"
     
-    bunny = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
+    'singleVideo = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
+    singleVideo = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
     
     videoContent = createObject("RoSGNode", "ContentNode")
-    videoContent.url = bunny
-    videoContent.title = "Bunny"
+    videoContent.url = singleVideo
+    videoContent.title = "Single Video"
     
     m.video = m.top.findNode("myVideo")
     m.video.content = videoContent

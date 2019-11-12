@@ -26,9 +26,12 @@ function nrInsertInsightsData(attributes as Object) as Object
 end function
 
 'Used to send generic events
-function nrSendCustomEvent(eventType as String, actionName as String, attr as Object) as Void
+function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
+    nrLog("nrSendCustomEvent")
     ev = nrCreateEvent(eventType, actionName)
-    ev.Append(attr)
+    if attr <> invalid
+        ev.Append(attr)
+    end if
     nrRecordEvent(ev)
 end function
 
