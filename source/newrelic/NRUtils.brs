@@ -140,6 +140,10 @@ function nrAddAttributes(ev as Object) as Object
     actionCustomAttr = m.global[actionName]
     if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
     
+    'Time Since Load
+    date = CreateObject("roDateTime")
+    ev.AddReplace("timeSinceLoad", date.AsSeconds() - m.global.nrInitTimestamp)
+    
     return ev
 end function
 

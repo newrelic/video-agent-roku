@@ -31,6 +31,9 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
         m.global.addFields({"nrLogsState": false})
     end if
     
+    date = CreateObject("roDateTime")
+    m.global.addFields({"nrInitTimestamp": date.AsSeconds()})
+    
 end function
 
 function NewRelicStart() as Void
@@ -153,7 +156,6 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Timestamps for timeSince attributes
     m.nrTimeSinceBufferBegin = 0.0
     m.nrTimeSinceLastHeartbeat = 0.0
-    m.nrTimeSinceLoad = 0.0
     m.nrTimeSincePaused = 0.0
     m.nrTimeSinceRequested = 0.0
     m.nrTimeSinceStarted = 0.0
@@ -167,7 +169,6 @@ function NewRelicVideoStart(videoObject as Object) as Void
 end function
 
 function nrSendPlayerReady() as Void
-    m.nrTimeSinceLoad = m.nrTimer.TotalMilliseconds() / 1000.0
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent("PLAYER_READY")
 end function
@@ -396,7 +397,6 @@ function nrAddVideoAttributes(ev as Object) as Object
         ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
     end if
     ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
-    ev.AddReplace("timeSinceLoad", (m.nrTimer.TotalMilliseconds() / 1000.0) - m.nrTimeSinceLoad)
     ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
     ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
     ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
