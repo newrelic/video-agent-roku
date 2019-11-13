@@ -504,6 +504,10 @@ function __nrStateTransitionPlaying() as Void
         if m.nrVideoObject.position = 0 AND lastSrc = currentSrc
             nrSendStart()
         end if
+        
+        if (not m.nrVideoObject.contentIsPlaylist)
+            nrSendStart()
+        end if
     end if
 end function
 
