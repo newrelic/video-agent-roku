@@ -499,14 +499,17 @@ function __nrStateTransitionPlaying() as Void
         'if current Src is equal to previous, send start, otherwise not
         currentSrc = __nrGenerateStreamUrl()
         lastSrc = m.global.nrBackupAttributes["contentSrc"]
-        if lastSrc = invalid then lastSrc = m.global.nrBackupAttributes["adSrc"]         
-        nrSendBufferEnd()
-        if m.nrVideoObject.position = 0 AND lastSrc = currentSrc
-            nrSendStart()
-        end if
+        if lastSrc = invalid then lastSrc = m.global.nrBackupAttributes["adSrc"]
         
-        if (not m.nrVideoObject.contentIsPlaylist)
-            nrSendStart()
+        'Store intial buffering state and send buffer end
+        shouldSendStart = m.nrIsInitialBuffering
+        nrSendBufferEnd()
+        
+        if m.nrVideoObject.position = 0
+            if lastSrc = currentSrc OR m.nrVideoObject.contentIsPlaylist = false
+                'Send Start only if initial start not sent already
+                if shouldSendStart then nrSendStart()
+            end if
         end if
     end if
 end function
