@@ -4,9 +4,10 @@ sub init()
     m.top.setFocus(true)
     
     'Setup video player with a playlist
-    'setupVideoPlaylist()
+    setupVideoPlaylist()
+    'setupVideoPlaylistShort()
     'Setup video player with a single video
-    setupVideo()
+    'setupVideo()
     
     'Start New Relic agents
     NewRelicStart()
@@ -77,6 +78,36 @@ function setupVideoPlaylist() as void
     m.video.control = "play"
 end function
 
+function setupVideoPlaylistShort() as void
+    print "Prepare video player with Playlist Short"
+
+    httprange1 = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
+    httprange2 = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
+    httprange3 = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
+
+    playlistContent = createObject("RoSGNode", "ContentNode")
+    
+    httprangeContent1 = createObject("RoSGNode", "ContentNode")
+    httprangeContent1.url = httprange1
+    httprangeContent1.title = "HTTP Range 1"
+    playlistContent.appendChild(httprangeContent1)
+    
+    httprangeContent2 = createObject("RoSGNode", "ContentNode")
+    httprangeContent2.url = httprange2
+    httprangeContent2.title = "HTTP Range 2"
+    playlistContent.appendChild(httprangeContent2)
+    
+    httprangeContent3 = createObject("RoSGNode", "ContentNode")
+    httprangeContent3.url = httprange3
+    httprangeContent3.title = "HTTP Range"
+    playlistContent.appendChild(httprangeContent3)
+    
+    m.video = m.top.findNode("myVideo")
+    m.video.content = playlistContent
+    m.video.contentIsPlaylist = True
+    m.video.control = "play"
+end function
+
 function videoAction(key as String) as Boolean
     if key = "replay"
         m.video.control = "replay"
@@ -102,12 +133,15 @@ function videoAction(key as String) as Boolean
         return true
     else if key = "right"
         m.video.control = "skipcontent"
-        nrLog("SKIP CONTENT")
+        'Cusom event, Skip Content
+        nrSendVideoEvent("SKIP_CONTENT")
         return true
     else if key = "left"
         if m.video.contentIndex > 0
             m.video.nextContentIndex = m.video.contentIndex - 1
             m.video.control = "skipcontent"
+            'Cusom event, Previous Content
+            nrSendVideoEvent("PREV_CONTENT")
         end if
         return true
     end if
