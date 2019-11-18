@@ -24,11 +24,11 @@ sub Main(aa as Object)
     'searchTask("hello")
     
     'Wait loop
-    'NewRelicWait(m.port, waitFunction)
+    NewRelicWait(m.port, waitFunction)
     
-    while(true)
-        msg = wait(0, m.port)
-    end while
+'    while(true)
+'        msg = wait(0, m.port)
+'    end while
     
 end sub
 
