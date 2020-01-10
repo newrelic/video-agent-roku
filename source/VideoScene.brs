@@ -109,9 +109,6 @@ function setupVideoPlaylistShort() as void
 end function
 
 function videoAction(key as String) as Boolean
-    'Send button to message port
-    m.top.getScene().setField("moteButton", key)
-        
     if key = "replay"
         m.video.control = "replay"
         return true
@@ -157,9 +154,13 @@ end function
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if press = True
         print "Key Press --> " key
-        return videoAction(key)
+        ret = videoAction(key)
+        'Send button to message port
+        m.top.setField("moteButton", key)
+        return ret
     else
-        'print "Key Release --> " key
+        print "Key Release --> " key
+        m.top.setField("moteButton", "")
         return false
     end if
 end function
