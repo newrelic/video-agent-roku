@@ -15,20 +15,19 @@ sub Main(aa as Object)
     'Create a scene and load /components/nrvideoagent.xml'
     scene = screen.CreateScene("NRVideoAgentExample")
     screen.show()
+    scene.ObserveField("moteButton", m.port)
     
     waitFunction = Function(msg as Object)
-        print "msg = " msg
+        print "Custom msg received = " msg
+        if msg.getField() = "moteButton" AND msg.getData() = "back" then return false
+        return true
     end function
     
     'Create test tasks to make HTTP requests
-    'searchTask("hello")
+    searchTask("hello")
     
     'Wait loop
     NewRelicWait(m.port, waitFunction)
-    
-'    while(true)
-'        msg = wait(0, m.port)
-'    end while
     
 end sub
 

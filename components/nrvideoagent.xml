@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="NRVideoAgentExample" extends="Scene"> 
+	<interface>
+		<field id="moteButton" type="string" />
+	</interface>
+	
 	<children>
 		<Video
 			id="myVideo"

@@ -54,7 +54,8 @@ function NewRelicWait(port as Object, foo as Function) as Void
         msg = wait(0, port)
         if nrProcessMessage(msg) = false
             'handle message manually
-            foo(msg)
+            res = foo(msg)
+            if res = false then return
         end if
     end while
 end function

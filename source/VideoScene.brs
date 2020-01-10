@@ -109,6 +109,9 @@ function setupVideoPlaylistShort() as void
 end function
 
 function videoAction(key as String) as Boolean
+    'Send button to message port
+    m.top.getScene().setField("moteButton", key)
+        
     if key = "replay"
         m.video.control = "replay"
         return true
@@ -143,6 +146,9 @@ function videoAction(key as String) as Boolean
             'Cusom event, Previous Content
             nrSendVideoEvent("PREV_CONTENT")
         end if
+        return true
+    else if key = "back"
+        print "BACK BUTTON PRESSED, QUIT"
         return true
     end if
     return false
