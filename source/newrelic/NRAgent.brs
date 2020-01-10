@@ -26,7 +26,7 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     m.global.addFields({"nrBackupAttributes": CreateObject("roAssociativeArray")})
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
-    m.global.addFields({"nrAgentVersion": "0.20.0"})
+    m.global.addFields({"nrAgentVersion": "0.21.0"})
     if m.global.nrLogsState = invalid
         m.global.addFields({"nrLogsState": false})
     end if
