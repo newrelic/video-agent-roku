@@ -295,5 +295,5 @@ function __logVideoInfo() as Void
 end function
 
 function __nrParseVersion(verStr as String) as Object
-    return {version: verStr.Mid(2, 4), build: verStr.Mid(8, 4)}
+    return {version: verStr.Mid(2, 3) + "." + verStr.Mid(5, 1), build: verStr.Mid(8, 4)}
 end function
