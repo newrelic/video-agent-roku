@@ -114,7 +114,7 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("locale", dev.GetCurrentLocale())
     ev.AddReplace("memoryLevel", dev.GetGeneralMemoryLevel())
     ev.AddReplace("connectionType", dev.GetConnectionType())
-    ev.AddReplace("ipAddress", dev.GetExternalIp())
+    'ev.AddReplace("ipAddress", dev.GetExternalIp())
     ev.AddReplace("displayType", dev.GetDisplayType())
     ev.AddReplace("displayMode", dev.GetDisplayMode())
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
