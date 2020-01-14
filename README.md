@@ -5,8 +5,7 @@ The New Relic Roku Agent tracks the behavior of a Roku App. It contains two part
 Internally, it uses the Insights API to send events using the REST interface. It sends two types of events: RokuSystem for system events and RokuVideo for video events. After the agent has sent some data you will be able to see it in Insights with a simple NRQL request like:
 
 ```
-SELECT * from RokuSystem
-SELECT * from RokuVideo
+SELECT * from RokuSystem, RokuVideo
 ```
 
 ### Requirements
@@ -47,7 +46,9 @@ To enable automatic event capture perform the following steps which are detailed
 	
 Inside the “sub Main()” add the following code at the end in place fo the wait event loop :
 
-`NewRelicInit(“ACCOUNT ID“, “API KEY“, screen)`
+```
+NewRelicInit(“ACCOUNT ID“, “API KEY“, screen)
+```
 
 #### 2) Adding a waitFunction in place of the wait event loop
 		
@@ -106,15 +107,15 @@ And the following code inside the “sub init()”:
 
 ```
  'Start New Relic agents
- NewRelicStart() ‘
+ NewRelicStart()
  NewRelicVideoStart(video)
 ```
 
 Where `video` is the Video node.
 
-##### (Optional) Enabling only system or video event capture
+#### (Optional) Enabling only system or video event capture
 
-Calling NewRelicStart() and NewRelicVideoStart(video)activates event capture for system and video respectively. The agent permits to capture only one type of event, if desired or necessary (e.g. when using an Insights Free account).  
+Calling NewRelicStart() and NewRelicVideoStart(video) activates event capture for system and video respectively. The agent permits to capture only one type of event, if desired or necessary (e.g. when using an Insights Free account).  
 
 To disable video events and capture only system events, simply omit the call to the NewRelicVideoStart function. 
 
