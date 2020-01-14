@@ -1,4 +1,4 @@
-#New Relic Roku Agent
+# New Relic Roku Agent
 
 The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events (essentially networking) and one to monitor video related events (for apps that use a video player).  The events and attributes captured by the New Relic Roku Agent can be viewed here.
 
@@ -9,7 +9,7 @@ SELECT * from RokuSystem
 SELECT * from RokuVideo
 ```
 
-###Requirements
+### Requirements
 
 Sending both system events and video events requires an Insights Pro subscription.   Insights Free accounts permit only one event type per API key.   If you are using an Insights Free account, you can enable only one type of Roku event capture at a time (system or video).
 
@@ -19,7 +19,7 @@ The ACCOUNT ID indicates the New Relic account to which you would like to send t
 
 To register the API Key, follow the instructions found [here](https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/send-custom-events-event-api#register).
 
-###Installation
+### Installation
 
 1. Download the Roku Video Agent and unzip it. Inside the package you will find the following file structure:
 
@@ -33,7 +33,7 @@ source/newrelic/
 
 2. Open your Roku app project’s directory and copy the “NRTask.xml” to “components” folder and “newrelic” folder to “source” folder.
 
-###Usage
+### Usage
 
 To enable automatic event capture perform the following steps which are detailed below.
 
@@ -42,14 +42,14 @@ To enable automatic event capture perform the following steps which are detailed
 3. Add two `<script>` tags to each Scene component XML
 4. Add calls to sub Init() to capture system and video events and attributes
 
-####1) Adding NewRelicInit() with arguments to sub Main()
+#### 1) Adding NewRelicInit() with arguments to sub Main()
 	
 	
 Inside the “sub Main()” add the following code at the end in place fo the wait event loop :
 
 `NewRelicInit(“ACCOUNT ID“, “API KEY“, screen)`
 
-####2) Adding a waitFunction in place of the wait event loop
+#### 2) Adding a waitFunction in place of the wait event loop
 		
 After the screen and port initialization. Add this:
 
@@ -90,7 +90,7 @@ sub Main()
 end sub
 ```
 
-####3) Adding two `<script>` tags to each Scene component XML
+#### 3) Adding two `<script>` tags to each Scene component XML
 
 Add the following code to any Scene component XML you have in your app:
 
@@ -100,7 +100,7 @@ Add the following code to any Scene component XML you have in your app:
 <script type="text/brightscript" uri="pkg:/source/newrelic/NRAgent.brs"/>
 ```
 
-####4) Adding calls to sub Init() to capture system and video events and attributes
+#### 4) Adding calls to sub Init() to capture system and video events and attributes
 
 And the following code inside the “sub init()”:
 
@@ -112,7 +112,7 @@ And the following code inside the “sub init()”:
 
 Where `video` is the Video node.
 
-#####(Optional) Enabling only system or video event capture
+##### (Optional) Enabling only system or video event capture
 
 Calling NewRelicStart() and NewRelicVideoStart(video)activates event capture for system and video respectively. The agent permits to capture only one type of event, if desired or necessary (e.g. when using an Insights Free account).  
 
