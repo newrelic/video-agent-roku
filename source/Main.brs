@@ -5,12 +5,12 @@ sub Main()
     m.port = CreateObject("roMessagePort")
     screen.setMessagePort(m.port)
     
-    scene = screen.CreateScene("VideoScene")
-    screen.show()
-    
     'Init New Relic Agent
     m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", true)
     print "Main m = ", m
+    
+    scene = screen.CreateScene("VideoScene")
+    screen.show()
     
     'Pass NewRelicAgent object to scene
     scene.setField("nr", m.nr)

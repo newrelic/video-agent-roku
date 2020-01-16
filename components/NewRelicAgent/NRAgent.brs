@@ -25,8 +25,9 @@ function NewRelicInit(account as String, apikey as String) as Void
     m.global.addFields({"nrLastTimestamp": 0})
     m.global.addFields({"nrTicks": 0})
     m.global.addFields({"nrAgentVersion": "0.22.0"})
-    if m.global.nrLogsState = invalid
-        m.global.addFields({"nrLogsState": false})
+    
+    if m.nrLogsState = invalid
+        m.nrLogsState = false
     end if
     
     date = CreateObject("roDateTime")

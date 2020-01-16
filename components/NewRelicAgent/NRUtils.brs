@@ -222,7 +222,7 @@ function nrExtractEvent() as Object
 end function
 
 function nrLog(msg as Dynamic) as Void
-    if m.global.nrLogsState = true
+    if m.nrLogsState = true
         if type(msg) = "roArray"         
             For i=0 To msg.Count() - 1 Step 1
                 print msg[i];
@@ -235,11 +235,7 @@ function nrLog(msg as Dynamic) as Void
 end function
 
 function nrActivateLogging(state as Boolean) as Void
-    if m.global.nrLogsState = invalid
-        m.global.addFields({"nrLogsState": state})
-    else 
-        m.global.nrLogsState = state
-    end if
+    m.nrLogsState = state
 end function
 
 function __logEvGroups() as Void

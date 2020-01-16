@@ -5,6 +5,10 @@
 ' Copyright 2020 New Relic Inc. All Rights Reserved. 
 '**********************************************************
 
+'------------------
+' Wrapper Functions
+'------------------
+
 function NewRelic(account as String, apikey as String, activeLogs = false as Boolean) as Object
     nr = CreateObject("roSGNode", "NewRelicAgent")
     nr.callFunc("nrActivateLogging", activeLogs)

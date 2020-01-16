@@ -8,8 +8,7 @@ end sub
 
 function nrRefUpdated()
     m.nr = m.top.getField("nr")
-
-    print "NewRelicAgent object reference updated, m = ", m
+    NewRelicStart(m.nr)
 end function
 
 sub x_init()

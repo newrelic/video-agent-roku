@@ -23,8 +23,11 @@
 		function nrTaskMain()
 			while true
 				sleep(10000)
-				nrProcessGroupedEvents()
-				nrEventProcessor()
+				
+				'nrProcessGroupedEvents()
+				'nrEventProcessor()
+				
+				print "nrTaskMain loop..."
 			end while
 		end function
 		]]>
