@@ -9,8 +9,9 @@ sub Main()
     screen.show()
     
     'Init New Relic Agent
-    m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", screen)
-    print m.nr
+    m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", screen, true)
+    print "m.nr component = ", m.nr
+    print "m = ", m
     
     scene.ObserveField("moteButton", m.port)
     
@@ -20,6 +21,11 @@ sub Main()
         if msg.getField() = "moteButton" AND msg.getData() = "back" then exit while
     end while
 end sub
+
+'--------------------------------------------------------------------------------------------------------
+'--------------------------------------------------------------------------------------------------------
+'--------------------------------------------------------------------------------------------------------
+'--------------------------------------------------------------------------------------------------------
 
 sub xx_Main(aa as Object)
     print "Main" aa

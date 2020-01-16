@@ -3,6 +3,7 @@
 sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
+    print "m of video scene = ", m
 end sub
 
 sub x_init()

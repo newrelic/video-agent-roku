@@ -13,6 +13,8 @@
 'Must be called from Main
 function NewRelicInit(account as String, apikey as String, screen as Object) as Void
     
+    'TODO: check if global stuff is still necessary now that we enclosed everything inside a component
+    
     if m.global = invalid
         m.global = screen.getGlobalNode()
     end if
@@ -33,6 +35,11 @@ function NewRelicInit(account as String, apikey as String, screen as Object) as 
     
     date = CreateObject("roDateTime")
     m.global.addFields({"nrInitTimestamp": date.AsSeconds()})
+    
+    nrLog("((( NewRelicInit")
+    nrLog(["global = ", m.global])
+    nrLog(["m = ", m])
+    nrLog("NewRelicInit )))")
     
 end function
 

@@ -3,9 +3,11 @@
 
 	<interface>
         <function name="NewRelicInit" />
+        <function name="NewRelicStart" />
+        <function name="nrActivateLogging" />
     </interface>
     
-	<!-- join both files into one -->
+	<!-- TODO: join both files into one -->
     <script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRUtils.brs"/>
 	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRAgent.brs"/>
 	
@@ -13,7 +15,7 @@
 		<![CDATA[
 		sub init()
   			'TODO: init component
-  			print "###### INIT NEW RELIC AGENT COMPONENT"
+  			nrLog("Run init() of NewRelicAgent component")
 		end sub
 		]]>
 	</script>
