@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="VideoScene" extends="Scene"> 
+	<interface>
+		<field id="moteButton" type="string" />
+		<field id="nr" type="node" />
+	</interface>
+	
+	<children>
+		<Video
+			id="myVideo"
+			translation="[0,0]"
+		/>
+    </children>
+
+	<script type="text/brightscript" uri="pkg:/components/VideoScene.brs"/>
+</component>

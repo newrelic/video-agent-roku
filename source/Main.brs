@@ -5,7 +5,7 @@ sub Main()
     m.port = CreateObject("roMessagePort")
     screen.setMessagePort(m.port)
     
-    scene = screen.CreateScene("NRVideoAgentExample")
+    scene = screen.CreateScene("VideoScene")
     screen.show()
     
     'Init New Relic Agent
