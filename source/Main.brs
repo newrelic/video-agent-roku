@@ -9,7 +9,7 @@ sub Main()
     screen.show()
     
     'Init New Relic Agent
-    m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", screen, true)
+    m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", true)
     print "m.nr component = ", m.nr
     print "m = ", m
     

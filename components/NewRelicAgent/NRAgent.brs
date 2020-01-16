@@ -11,13 +11,9 @@
 '========================='
 
 'Must be called from Main
-function NewRelicInit(account as String, apikey as String, screen as Object) as Void
+function NewRelicInit(account as String, apikey as String) as Void
     
     'TODO: check if global stuff is still necessary now that we enclosed everything inside a component
-    
-    if m.global = invalid
-        m.global = screen.getGlobalNode()
-    end if
 
     m.global.addFields({"nrAccountNumber": account})
     m.global.addFields({"nrInsightsApiKey": apikey})
