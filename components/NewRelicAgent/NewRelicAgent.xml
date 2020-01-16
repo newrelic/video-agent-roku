@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="NewRelicAgent" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+
+	<interface>
+        <function name="NewRelicInit" />
+    </interface>
+    
+	<!-- join both files into one -->
+    <script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRUtils.brs"/>
+	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRAgent.brs"/>
+	
+	<script type = "text/brightscript" >
+		<![CDATA[
+		sub init()
+  			'TODO: init component
+  			print "###### INIT NEW RELIC AGENT COMPONENT"
+		end sub
+		]]>
+	</script>
+</component>

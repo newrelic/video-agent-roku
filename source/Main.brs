@@ -1,6 +1,27 @@
 'NR Video Agent Example - Main'
 
-sub Main(aa as Object)
+sub Main()
+    screen = CreateObject("roSGScreen")
+    m.port = CreateObject("roMessagePort")
+    screen.setMessagePort(m.port)
+    
+    scene = screen.CreateScene("NRVideoAgentExample")
+    screen.show()
+    
+    'Init New Relic Agent
+    m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", screen)
+    print m.nr
+    
+    scene.ObserveField("moteButton", m.port)
+    
+    while(true)
+        msg = wait(0, m.port)
+        print "Msg = ", msg
+        if msg.getField() = "moteButton" AND msg.getData() = "back" then exit while
+    end while
+end sub
+
+sub xx_Main(aa as Object)
     print "Main" aa
 
     'The screen and port must be initialized before starting the NewRelic agent

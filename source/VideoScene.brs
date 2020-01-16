@@ -1,6 +1,11 @@
 'NR Video Agent Example - Video'
 
 sub init()
+    print "INIT VideoScene"
+    m.top.setFocus(true)
+end sub
+
+sub x_init()
     m.top.setFocus(true)
     
     'Setup video player with a playlist
