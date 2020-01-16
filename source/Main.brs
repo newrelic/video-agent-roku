@@ -10,14 +10,17 @@ sub Main()
     
     'Init New Relic Agent
     m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", true)
-    print "m.nr component = ", m.nr
-    print "m = ", m
+    print "Main m = ", m
     
-    scene.ObserveField("moteButton", m.port)
+    'Pass NewRelicAgent object to scene
+    scene.setField("nr", m.nr)
+    'Observe scene field "moreButton" to capture "back" button and abort the execution
+    scene.observeField("moteButton", m.port)
     
     while(true)
         msg = wait(0, m.port)
         print "Msg = ", msg
+        'User pressed back, abort execution
         if msg.getField() = "moteButton" AND msg.getData() = "back" then exit while
     end while
 end sub

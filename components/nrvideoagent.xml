@@ -2,6 +2,7 @@
 <component name="NRVideoAgentExample" extends="Scene"> 
 	<interface>
 		<field id="moteButton" type="string" />
+		<field id="nr" type="node" />
 	</interface>
 	
 	<children>

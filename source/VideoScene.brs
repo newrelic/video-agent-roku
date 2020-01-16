@@ -3,8 +3,14 @@
 sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
-    print "m of video scene = ", m
+    m.top.ObserveField("nr", "nrRefUpdated")
 end sub
+
+function nrRefUpdated()
+    m.nr = m.top.getField("nr")
+
+    print "NewRelicAgent object reference updated, m = ", m
+end function
 
 sub x_init()
     m.top.setFocus(true)
