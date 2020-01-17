@@ -11,9 +11,6 @@
 -->
 
 <component name = "NRTask" extends = "Task">
-<!-- 
-	<script type="text/brightscript" uri="pkg:/source/newrelic/NRUtils.brs"/>
- -->
 	<script type = "text/brightscript" >
 		<![CDATA[
 		sub init()

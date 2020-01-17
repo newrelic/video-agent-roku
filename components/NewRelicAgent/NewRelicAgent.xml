@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+'**********************************************************
+' NewRelicAgent.xml
+' New Relic Agent for Roku.
+'
+' Copyright 2020 New Relic Inc. All Rights Reserved. 
+'**********************************************************
+-->
+
 <component name="NewRelicAgent" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
 
 	<interface>
+		<!-- Properties -->
+		<field id="version" type="string" value="0.22.0"/>
+		<!-- Methods -->
         <function name="NewRelicInit" />
         <function name="NewRelicStart" />
         <function name="nrActivateLogging" />
@@ -14,7 +27,11 @@
 	<script type = "text/brightscript" >
 		<![CDATA[
 		sub init()
-  			'TODO: init component
+			m.nrAgentVersion = m.top.getField("version")
+			print "********************************************************"
+			print "   New Relic Agent for Roku v" + m.nrAgentVersion
+			print "   Copyright 2020 New Relic Inc. All Rights Reserved."
+			print "********************************************************"
 		end sub
 		]]>
 	</script>
