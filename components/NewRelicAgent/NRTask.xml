@@ -27,7 +27,7 @@
 				'nrProcessGroupedEvents()
 				'nrEventProcessor()
 				
-				print "nrTaskMain loop..."
+				print "TEST: nrTaskMain loop..."
 			end while
 		end function
 		]]>

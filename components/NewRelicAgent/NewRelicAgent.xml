@@ -15,7 +15,6 @@
 		<![CDATA[
 		sub init()
   			'TODO: init component
-  			nrLog("Run init() of NewRelicAgent component")
 		end sub
 		]]>
 	</script>

@@ -3,10 +3,10 @@
 sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
-    m.top.ObserveField("nr", "nrRefUpdated")
 end sub
 
 function nrRefUpdated()
+    print "Updated NR object reference"
     m.nr = m.top.getField("nr")
     NewRelicStart(m.nr)
 end function
@@ -157,6 +157,9 @@ function videoAction(key as String) as Boolean
         return true
     else if key = "back"
         print "BACK BUTTON PRESSED, QUIT"
+        return true
+    else if key = "OK"
+        print "OK BUTTON PRESSED, QUIT"
         return true
     end if
     return false

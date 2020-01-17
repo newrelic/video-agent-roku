@@ -1,6 +1,8 @@
 'NR Video Agent Example - Main'
 
-sub Main()
+sub Main(aa as Object)
+    print "Main arg = ", aa
+    
     screen = CreateObject("roSGScreen")
     m.port = CreateObject("roMessagePort")
     screen.setMessagePort(m.port)
@@ -20,8 +22,17 @@ sub Main()
     while(true)
         msg = wait(0, m.port)
         print "Msg = ", msg
-        'User pressed back, abort execution
-        if msg.getField() = "moteButton" AND msg.getData() = "back" then exit while
+        if msg.getField() = "moteButton"
+            print "moteButton, data = ", msg.getData()
+            if msg.getData() = "back" 
+                exit while
+            end if
+            if msg.getData() = "OK"
+                'force crash
+                print "Crash!"
+                anyshit()
+            end if
+        end if
     end while
 end sub
 
