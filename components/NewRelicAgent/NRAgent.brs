@@ -39,7 +39,7 @@ function NewRelicInit(account as String, apikey as String) as Void
     m.nrTimer.Mark()
         
     'Init event processor task
-    m.bgTask = m.top.findNode("NRTask")
+    m.bgTask = m.top.findNode("nrTask")
     m.bgTask.control = "RUN"
     
     nrLog("((( NewRelicInit")

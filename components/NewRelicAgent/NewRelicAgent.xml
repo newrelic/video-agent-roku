@@ -9,7 +9,7 @@
 '**********************************************************
 -->
 
-<component name="NewRelicAgent" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+<component name="com.newrelic.NewRelicAgent" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
 
 	<interface>
 		<!-- Properties -->
@@ -40,6 +40,6 @@
 	</script>
 	
 	<children>
-		<NRTask id="NRTask"/>
+		<com.newrelic.NewRelicAgent.NRTask id="nrTask"/>
 	</children>
 </component>

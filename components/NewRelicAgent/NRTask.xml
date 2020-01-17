@@ -10,7 +10,7 @@
 **********************************************************
 -->
 
-<component name = "NRTask" extends = "Task">
+<component name="com.newrelic.NewRelicAgent.NRTask" extends="Task">
 	<script type = "text/brightscript" >
 		<![CDATA[
 		sub init()

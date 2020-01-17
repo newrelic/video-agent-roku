@@ -10,7 +10,7 @@
 '------------------
 
 function NewRelic(account as String, apikey as String, activeLogs = false as Boolean) as Object
-    nr = CreateObject("roSGNode", "NewRelicAgent")
+    nr = CreateObject("roSGNode", "com.newrelic.NewRelicAgent")
     nr.callFunc("nrActivateLogging", activeLogs)
     nr.callFunc("NewRelicInit", account, apikey)
     return nr
