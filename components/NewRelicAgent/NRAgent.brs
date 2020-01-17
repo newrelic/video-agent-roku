@@ -48,7 +48,7 @@ function NewRelicStart() as Void
     m.nrTimer.Mark()
         
     'Init event processor
-    m.bgTask = createObject("roSGNode", "NRTask")
+    m.bgTask = m.top.findNode("NRTask")
     m.bgTask.control = "RUN"
 end function
 

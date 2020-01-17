@@ -18,13 +18,15 @@
 		end sub
 		
 		function nrTaskMain()
+			'We assume that parent node is NewRelicAgent
+			m.nr = m.top.getParent()
 			while true
 				sleep(10000)
 				
 				'nrProcessGroupedEvents()
 				'nrEventProcessor()
 				
-				print "TEST: nrTaskMain loop..."
+				m.nr.callFunc("nrLog", "TEST: nrTaskMain loop...")
 			end while
 		end function
 		]]>

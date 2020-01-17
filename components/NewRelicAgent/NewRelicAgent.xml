@@ -14,10 +14,12 @@
 	<interface>
 		<!-- Properties -->
 		<field id="version" type="string" value="0.22.0"/>
-		<!-- Methods -->
+		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit" />
         <function name="NewRelicStart" />
         <function name="nrActivateLogging" />
+        <!-- Private Methods (not wrapped, but used from the outside by some internal components) -->
+        <function name="nrLog" />
     </interface>
     
 	<!-- TODO: join both files into one -->
@@ -35,4 +37,8 @@
 		end sub
 		]]>
 	</script>
+	
+	<children>
+		<NRTask id="NRTask"/>
+	</children>
 </component>
