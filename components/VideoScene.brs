@@ -174,7 +174,6 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return ret
     else
         print "Key Release --> " key
-        m.top.setField("moteButton", "")
         return false
     end if
 end function

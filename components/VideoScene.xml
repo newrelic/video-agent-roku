@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="VideoScene" extends="Scene"> 
 	<interface>
-		<field id="moteButton" type="string" />
+		<field id="moteButton" type="string" alwaysNotify="true"/>
 		<field id="nr" type="node" onChange="nrRefUpdated" />
 	</interface>
 	
