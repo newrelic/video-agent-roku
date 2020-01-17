@@ -23,11 +23,7 @@
 			while true
 				'TODO: provide a way to configure the hervest period
 				sleep(10000)
-				
-				'nrProcessGroupedEvents()
-				'nrEventProcessor()
-				
-				m.nr.callFunc("nrLog", "TEST: nrTaskMain loop...")
+				m.nr.callFunc("nrHarvest")
 			end while
 		end function
 		]]>

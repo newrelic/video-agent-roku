@@ -147,6 +147,13 @@ function nrAddAttributes(ev as Object) as Object
     return ev
 end function
 
+function nrHarvest() as Void
+    nrLog("Do Harvest...")
+    'TODO: uncomment lines below
+    'nrProcessGroupedEvents()
+    'nrEventProcessor()
+end function
+
 function nrEventProcessor() as Void
     while true
         ev = nrExtractEvent()
