@@ -16,6 +16,6 @@ function NewRelic(account as String, apikey as String, activeLogs = false as Boo
     return nr
 end function
 
-function NewRelicStart(nr as Object) as Void
-    nr.callFunc("NewRelicStart")
+function NewRelicVideoStart(nr as Object, video as Object) as Void
+    nr.callFunc("NewRelicVideoStart", video)
 end function

@@ -10,7 +10,7 @@
 ' General Agent functions '
 '========================='
 
-'Must be called from Main
+'Must be called from Main after scene creation
 function NewRelicInit(account as String, apikey as String) as Void
     
     'TODO: check if global stuff is still necessary now that we enclosed everything inside a component
@@ -34,6 +34,14 @@ function NewRelicInit(account as String, apikey as String) as Void
     date = CreateObject("roDateTime")
     m.global.addFields({"nrInitTimestamp": date.AsSeconds()})
     
+    'Init main timer
+    m.nrTimer = CreateObject("roTimespan")
+    m.nrTimer.Mark()
+        
+    'Init event processor task
+    m.bgTask = m.top.findNode("NRTask")
+    m.bgTask.control = "RUN"
+    
     nrLog("((( NewRelicInit")
     nrLog(["global = ", m.global])
     nrLog(["m = ", m])
@@ -41,17 +49,7 @@ function NewRelicInit(account as String, apikey as String) as Void
     
 end function
 
-function NewRelicStart() as Void
-    nrLog("NewRelicStart")
-    
-    m.nrTimer = CreateObject("roTimespan")
-    m.nrTimer.Mark()
-        
-    'Init event processor
-    m.bgTask = m.top.findNode("NRTask")
-    m.bgTask.control = "RUN"
-end function
-
+'TODO: deprecated, instead provide a function to process events to be called inside app event loop
 function NewRelicWait(port as Object, foo as Function) as Void
     syslog = nrStartSysTracker(port)
 

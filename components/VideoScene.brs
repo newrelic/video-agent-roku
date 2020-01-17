@@ -8,7 +8,7 @@ end sub
 function nrRefUpdated()
     print "Updated NR object reference"
     m.nr = m.top.getField("nr")
-    NewRelicStart(m.nr)
+    'NewRelicVideoStart(m.nr, m.video)
 end function
 
 sub x_init()
