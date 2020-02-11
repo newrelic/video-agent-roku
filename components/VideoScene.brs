@@ -9,7 +9,13 @@ end sub
 function nrRefUpdated()
     print "Updated NR object reference"
     m.nr = m.top.getField("nr")
-    'NewRelicVideoStart(m.nr, m.video)
+    NewRelicVideoStart(m.nr, m.video)
+    
+    m.pauseCounter = 0
+    updateCustomAttr()
+    
+    'TODO: expose this function
+    'nrSceneLoaded("MyVideoScene")
 end function
 
 sub x_init()
@@ -32,6 +38,8 @@ sub x_init()
 end sub
 
 function updateCustomAttr() as Void
+    'TODO: fix custom attributes and undo this 
+    return
     nrSetCustomAttribute("customGeneralString", "Value")
     nrSetCustomAttribute("customGeneralNumber", 123)
     nrSetCustomAttribute("customNumPause", m.pauseCounter, "CONTENT_PAUSE")

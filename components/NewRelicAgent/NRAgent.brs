@@ -13,39 +13,36 @@
 'Must be called from Main after scene creation
 function NewRelicInit(account as String, apikey as String) as Void
     
-    'TODO: check if global stuff is still necessary now that we enclosed everything inside a component
-
-    m.global.addFields({"nrAccountNumber": account})
-    m.global.addFields({"nrInsightsApiKey": apikey})
-    m.global.addFields({"nrSessionId": __nrGenerateId()})
-    m.global.addFields({"nrEventArray": []})
-    m.global.addFields({"nrEventGroupsConnect": CreateObject("roAssociativeArray")})
-    m.global.addFields({"nrEventGroupsComplete": CreateObject("roAssociativeArray")})
-    m.global.addFields({"nrBackupAttributes": CreateObject("roAssociativeArray")})
-    m.global.addFields({"nrLastTimestamp": 0})
-    m.global.addFields({"nrTicks": 0})
-    'TODO: delete version from global
-    m.global.addFields({"nrAgentVersion": m.nrAgentVersion})
+    m.nrAccountNumber = account
+    m.nrInsightsApiKey = apikey
+    m.nrSessionId = __nrGenerateId()
+    m.nrEventArray = []
+    m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
+    m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
+    m.nrBackupAttributes = CreateObject("roAssociativeArray")
+    m.nrLastTimestamp = 0
+    m.nrTicks = 0
     
     if m.nrLogsState = invalid
         m.nrLogsState = false
     end if
     
     date = CreateObject("roDateTime")
-    m.global.addFields({"nrInitTimestamp": date.AsSeconds()})
+    m.nrInitTimestamp = date.AsSeconds()
     
     'Init main timer
     m.nrTimer = CreateObject("roTimespan")
     m.nrTimer.Mark()
         
     'Init event processor task
-    m.bgTask = m.top.findNode("nrTask")
-    m.bgTask.control = "RUN"
+    'm.bgTask = m.top.findNode("nrTask")
+    'm.bgTask.control = "RUN"
     
-    nrLog("((( NewRelicInit")
-    nrLog(["global = ", m.global])
-    nrLog(["m = ", m])
-    nrLog("NewRelicInit )))")
+    m.nrHarvestTimer = m.top.findNode("nrHarvestTimer")
+    m.nrHarvestTimer.control = "start"
+    m.nrHarvestTimer.ObserveField("fire", "nrHarvestTimerHandler")
+    
+    nrLog(["NewRelicInit, m = ", m])
     
 end function
 
@@ -117,6 +114,7 @@ function nrSetCustomAttribute(key as String, value as Object, actionName = "" as
     nrSetCustomAttributeList(dict, actionName)
 end function
 
+'TODO: fix global stuff
 function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as Void
     dictName = actionName
     if dictName = "" then dictName = "GENERAL_ATTR"
@@ -239,12 +237,12 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     end if
     nrRecordEvent(ev)
     'Backup attributes
-    m.global.nrBackupAttributes = ev
+    m.nrBackupAttributes = ev
 end function
 
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
-    'Use attributes in the backup (m.global.nrBackupAttributes) and recalculate some of them.
-    ev = m.global.nrBackupAttributes
+    'Use attributes in the backup (m.nrBackupAttributes) and recalculate some of them.
+    ev = m.nrBackupAttributes
     
     '- Set correct actionName
     backupActionName = ev["actionName"]
@@ -380,10 +378,10 @@ function nrAddVideoAttributes(ev as Object) as Object
     ver = __nrParseVersion(dev.GetVersion())
     ev.AddReplace("playerVersion", ver["version"])
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
-    ev.AddReplace("viewId", m.global.nrSessionId + "-" + m.nrVideoCounter.ToStr())
-    ev.AddReplace("viewSession", m.global.nrSessionId)
+    ev.AddReplace("viewId", m.nrSessionId + "-" + m.nrVideoCounter.ToStr())
+    ev.AddReplace("viewSession", m.nrSessionId)
     ev.AddReplace("trackerName", "rokutracker")
-    ev.AddReplace("trackerVersion", m.global.nrAgentVersion)
+    ev.AddReplace("trackerVersion", m.nrAgentVersion)
     ev.AddReplace("videoFormat", m.nrVideoObject.videoFormat)
     if (m.nrVideoObject <> invalid) then ev.AddReplace("isPlaylist", m.nrVideoObject.contentIsPlaylist)
     'Add counters
@@ -416,9 +414,9 @@ function nrGroupNewEvent(ev as Object, actionName as String) as Void
     ev["actionName"] = actionName
     
     if actionName = "HTTP_COMPLETE"
-        m.global.nrEventGroupsComplete = nrGroupMergeEvent(urlKey, m.global.nrEventGroupsComplete, ev)
+        m.nrEventGroupsComplete = nrGroupMergeEvent(urlKey, m.nrEventGroupsComplete, ev)
     else if actionName = "HTTP_CONNECT"
-        m.global.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.global.nrEventGroupsConnect, ev)
+        m.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.nrEventGroupsConnect, ev)
     end if
 end function
 
@@ -475,6 +473,23 @@ end function
 ' Observers and Handlers '
 '========================'
 
+function nrHarvestTimerHandler() as Void
+    'TODO: generate attributes for Insights and execute thread
+    nrLog("nrHarvestTimerHandler!!!!!")
+    
+    nrProcessGroupedEvents()
+    'nrEventProcessor()
+    
+    'Run NRTask
+    m.bgTask = createObject("roSGNode", "com.newrelic.NewRelicAgent.NRTask")
+    m.bgTask.setField("accountNumber", m.nrAccountNumber)
+    m.bgTask.setField("apiKey", m.nrInsightsApiKey)
+    m.bgTask.control = "RUN"
+    
+    print "EVENT ARRAY:"
+    print m.nrEventArray
+end function
+
 function __nrStateObserver() as Void
     nrLog("---------- State Observer ----------")
     __logVideoInfo()
@@ -502,8 +517,8 @@ function __nrStateTransitionPlaying() as Void
     else if m.nrLastVideoState = "buffering"
         'if current Src is equal to previous, send start, otherwise not
         currentSrc = __nrGenerateStreamUrl()
-        lastSrc = m.global.nrBackupAttributes["contentSrc"]
-        if lastSrc = invalid then lastSrc = m.global.nrBackupAttributes["adSrc"]
+        lastSrc = m.nrBackupAttributes["contentSrc"]
+        if lastSrc = invalid then lastSrc = m.nrBackupAttributes["adSrc"]
         
         'Store intial buffering state and send buffer end
         shouldSendStart = m.nrIsInitialBuffering

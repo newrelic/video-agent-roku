@@ -6,25 +6,6 @@
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************
 
-function nrInsertInsightsData(attributes as Object) as Object
-    _url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.global.nrAccountNumber + "/events")
-    apikey = m.global.nrInsightsApiKey
-    jsonString = FormatJson(attributes)
-
-    urlReq = CreateObject("roUrlTransfer")
-
-    urlReq.SetUrl(_url)
-    urlReq.RetainBodyOnError(true)
-    urlReq.EnablePeerVerification(false)
-    urlReq.EnableHostVerification(false)
-    urlReq.AddHeader("Content-Type", "application/json")
-    urlReq.AddHeader("X-Insert-Key", apikey)
-
-    resp = urlReq.PostFromString(jsonString)
-    
-    return resp
-end function
-
 'Used to send generic events
 function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
     nrLog("nrSendCustomEvent")
@@ -78,22 +59,22 @@ function nrTimestamp() as LongInteger
     timestamp& = CreateObject("roDateTime").asSeconds()
     timestampMS& = timestamp& * 1000
     
-    if timestamp& = m.global.nrLastTimestamp
-        m.global.nrTicks = m.global.nrTicks + 1
+    if timestamp& = m.nrLastTimestamp
+        m.nrTicks = m.nrTicks + 1
     else
-        m.global.nrTicks = 0
+        m.nrTicks = 0
     end if
     
-    timestampMS& = timestampMS& + m.global.nrTicks
-    m.global.nrLastTimestamp = timestamp&
+    timestampMS& = timestampMS& + m.nrTicks
+    m.nrLastTimestamp = timestamp&
     
     return timestampMS&
 end function
 
 function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("newRelicAgent", "RokuAgent")
-    ev.AddReplace("newRelicVersion", m.global.nrAgentVersion)
-    ev.AddReplace("sessionId", m.global.nrSessionId)
+    ev.AddReplace("newRelicVersion", m.nrAgentVersion)
+    ev.AddReplace("sessionId", m.nrSessionId)
     hdmi = CreateObject("roHdmiStatus")
     ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
     ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
@@ -134,6 +115,7 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("appBuild", appbuild)
     
     'Add custom attributes
+    'TODO: fix global stuff
     genCustomAttr = m.global["GENERAL_ATTR"]
     if genCustomAttr <> invalid then ev.Append(genCustomAttr)
     actionName = ev["actionName"]
@@ -142,30 +124,9 @@ function nrAddAttributes(ev as Object) as Object
     
     'Time Since Load
     date = CreateObject("roDateTime")
-    ev.AddReplace("timeSinceLoad", date.AsSeconds() - m.global.nrInitTimestamp)
+    ev.AddReplace("timeSinceLoad", date.AsSeconds() - m.nrInitTimestamp)
     
     return ev
-end function
-
-function nrHarvest() as Void
-    nrLog("Do Harvest...")
-    'TODO: uncomment lines below
-    'nrProcessGroupedEvents()
-    'nrEventProcessor()
-end function
-
-function nrEventProcessor() as Void
-    while true
-        ev = nrExtractEvent()
-        if ev = invalid then exit while
-        res = nrInsertInsightsData(ev)
-        if res <> 200
-            nrLog("-- nrEventProcessor: FAILED, retry later --")
-            nrRecordEvent(ev)
-        else
-            nrLog("-- nrEventProcessor: insert insights data --")
-        end if
-    end while
 end function
 
 function nrProcessGroupedEvents() as Void
@@ -174,14 +135,14 @@ function nrProcessGroupedEvents() as Void
     nrLog("-- Process Grouped Events --")
     __logEvGroups()
     
-    if m.global.nrEventGroupsConnect.Count() > 0
-        nrConvertGroupsToEvents(m.global.nrEventGroupsConnect)
-        m.global.nrEventGroupsConnect = {}
+    if m.nrEventGroupsConnect.Count() > 0
+        nrConvertGroupsToEvents(m.nrEventGroupsConnect)
+        m.nrEventGroupsConnect = {}
     end if
     
-    if m.global.nrEventGroupsComplete.Count() > 0
-        nrConvertGroupsToEvents(m.global.nrEventGroupsComplete)
-        m.global.nrEventGroupsComplete = {}
+    if m.nrEventGroupsComplete.Count() > 0
+        nrConvertGroupsToEvents(m.nrEventGroupsComplete)
+        m.nrEventGroupsComplete = {}
     end if
 end function
 
@@ -206,10 +167,10 @@ end function
 
 'Record an event to the list. Takes an roAssociativeArray as argument 
 function nrRecordEvent(event as Object) as Void
-    if m.global.nrEventArray.Count() < 500
-        arr = m.global.nrEventArray
+    if m.nrEventArray.Count() < 500
+        arr = m.nrEventArray
         arr.Push(event)
-        m.global.nrEventArray = arr
+        m.nrEventArray = arr
         
         nrLog("====================================")
         nrLog(["RECORD NEW EVENT = ", event])
@@ -222,9 +183,9 @@ end function
 
 'Extracts the first event from the list. Returns an roAssociativeArray as argument
 function nrExtractEvent() as Object
-    arr = m.global.nrEventArray
+    arr = m.nrEventArray
     res = arr.Pop()
-    m.global.nrEventArray = arr
+    m.nrEventArray = arr
     return res
 end function
 
@@ -247,11 +208,11 @@ end function
 
 function __logEvGroups() as Void
     nrLog("============ Event Groups HTTP_CONNECT ===========")
-    for each item in m.global.nrEventGroupsConnect.Items()
+    for each item in m.nrEventGroupsConnect.Items()
         nrLog([item.key, item.value])
     end for
     nrLog("=========== Event Groups HTTP_COMPLETE ===========")
-    for each item in m.global.nrEventGroupsComplete.Items()
+    for each item in m.nrEventGroupsComplete.Items()
         nrLog([item.key, item.value])
     end for
     nrLog("==================================================")
