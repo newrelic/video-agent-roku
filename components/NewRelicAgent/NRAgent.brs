@@ -33,14 +33,11 @@ function NewRelicInit(account as String, apikey as String) as Void
     'Init main timer
     m.nrTimer = CreateObject("roTimespan")
     m.nrTimer.Mark()
-        
-    'Init event processor task
-    'm.bgTask = m.top.findNode("nrTask")
-    'm.bgTask.control = "RUN"
     
+    'Init harvest timer
     m.nrHarvestTimer = m.top.findNode("nrHarvestTimer")
-    m.nrHarvestTimer.control = "start"
     m.nrHarvestTimer.ObserveField("fire", "nrHarvestTimerHandler")
+    m.nrHarvestTimer.control = "start"
     
     nrLog(["NewRelicInit, m = ", m])
     
@@ -474,20 +471,15 @@ end function
 '========================'
 
 function nrHarvestTimerHandler() as Void
-    'TODO: generate attributes for Insights and execute thread
-    nrLog("nrHarvestTimerHandler!!!!!")
+    nrLog("--- nrHarvestTimerHandler ---")
     
     nrProcessGroupedEvents()
-    'nrEventProcessor()
     
     'Run NRTask
     m.bgTask = createObject("roSGNode", "com.newrelic.NewRelicAgent.NRTask")
     m.bgTask.setField("accountNumber", m.nrAccountNumber)
     m.bgTask.setField("apiKey", m.nrInsightsApiKey)
     m.bgTask.control = "RUN"
-    
-    print "EVENT ARRAY:"
-    print m.nrEventArray
 end function
 
 function __nrStateObserver() as Void

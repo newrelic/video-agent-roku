@@ -168,9 +168,7 @@ end function
 'Record an event to the list. Takes an roAssociativeArray as argument 
 function nrRecordEvent(event as Object) as Void
     if m.nrEventArray.Count() < 500
-        arr = m.nrEventArray
-        arr.Push(event)
-        m.nrEventArray = arr
+        m.nrEventArray.Push(event)
         
         nrLog("====================================")
         nrLog(["RECORD NEW EVENT = ", event])
@@ -183,9 +181,7 @@ end function
 
 'Extracts the first event from the list. Returns an roAssociativeArray as argument
 function nrExtractEvent() as Object
-    arr = m.nrEventArray
-    res = arr.Pop()
-    m.nrEventArray = arr
+    res = m.nrEventArray.Pop()
     return res
 end function
 

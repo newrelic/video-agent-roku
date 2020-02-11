@@ -31,7 +31,7 @@
 	<script type = "text/brightscript" >
 		<![CDATA[
 		sub init()
-			m.nrAgentVersion = m.top.getField("version")
+			m.nrAgentVersion = m.top.version
 			print "********************************************************"
 			print "   New Relic Agent for Roku v" + m.nrAgentVersion
 			print "   Copyright 2020 New Relic Inc. All Rights Reserved."
@@ -41,7 +41,6 @@
 	</script>
 	
 	<children>
-		<!-- <com.newrelic.NewRelicAgent.NRTask id="nrTask"/> -->
 		<Timer id="nrHarvestTimer" repeat="true" duration="10"/>
 	</children>
 </component>

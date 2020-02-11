@@ -50,8 +50,8 @@
 		        res = nrInsertInsightsData(ev)
 		        if res <> 200
 		            m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED, retry later --")
-		            'TODO: rerecord on fail
-		            'nrRecordEvent(ev)
+		            m.nr.callFunc("nrRecordEvent", ev)
+		            return
 		        else
 		            m.nr.callFunc("nrLog", "-- nrEventProcessor: insert insights data --")
 		        end if
