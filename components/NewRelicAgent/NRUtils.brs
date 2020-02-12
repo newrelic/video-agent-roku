@@ -52,11 +52,6 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     ev["timestamp"] = FormatJson(nrTimestamp())
     ev = nrAddAttributes(ev)
     
-    print "Type of timestamp =" , type(ev["timestamp"])
-    lint& = ParseJson(ev["timestamp"])
-    print "Lint& =", lint&
-    print "Type of lint& =" , type(lint&)
-    
     return ev
 end function
 
@@ -64,11 +59,6 @@ function nrTimestamp() as LongInteger
     timestamp = CreateObject("roDateTime").asSeconds()
     timestampLong& = timestamp
     timestampMS& = timestampLong& * 1000
-    
-    print "nrTimestamp: ", timestamp
-    print "   Current timestamp MS = ", timestampMS&
-    print "   Ticks = ", m.nrTicks
-    print "   Last Timestamp = ", m.nrLastTimestamp
     
     if timestamp = m.nrLastTimestamp
         m.nrTicks = m.nrTicks + 1
@@ -78,10 +68,6 @@ function nrTimestamp() as LongInteger
     
     timestampMS& = timestampMS& + m.nrTicks
     m.nrLastTimestamp = timestamp
-    
-    print "   Final timestamp MS = ", timestampMS&
-    print "   Final Ticks = ", m.nrTicks
-    print "   Final Last Timestamp = ", m.nrLastTimestamp
     
     return timestampMS&
 end function

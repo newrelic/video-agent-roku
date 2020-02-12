@@ -170,9 +170,6 @@ function NewRelicVideoStart(videoObject as Object) as Void
     
     'Player Ready
     nrSendPlayerReady()
-    
-    __logEventArray()
-    
 end function
 
 function nrSendPlayerReady() as Void
