@@ -92,9 +92,6 @@ function nrSendBandwidth(info as Object) as Void
 end function
 
 function nrAppStarted(aa as Object) as Void
-
-    PRINT "nrAppStarted m =", m
-     
     attr = {
         "lastExitOrTerminationReason": aa["lastExitOrTerminationReason"],
         "splashTime": aa["splashTime"],
@@ -172,9 +169,6 @@ function NewRelicVideoStart(videoObject as Object) as Void
 end function
 
 function nrSendPlayerReady() as Void
-    
-    PRINT "nrSendPlayerReady m =", m
-    
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent("PLAYER_READY")
 end function
@@ -397,10 +391,10 @@ function nrAddVideoAttributes(ev as Object) as Object
     'TODO:
     'timeSinceLastAd -> all
     'totalPlaytime -> all
-    if Right(ev["actionName"], 11) = "_BUFFER_END"
+    if isAction("BUFFER_END", ev["actionName"])
         ev.AddReplace("timeSinceBufferBegin", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceBufferBegin)
     end if
-    if Right(ev["actionName"], 7) = "_RESUME"
+    if isAction("RESUME", ev["actionName"])
         ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
     end if
     ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)

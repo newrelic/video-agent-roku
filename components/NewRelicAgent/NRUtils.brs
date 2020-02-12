@@ -65,7 +65,6 @@ function nrTimestamp() as LongInteger
     print "   Ticks = ", m.nrTicks
     print "   Last Timestamp = ", m.nrLastTimestamp
     
-    
     if timestamp = m.nrLastTimestamp
         m.nrTicks = m.nrTicks + 1
     else
