@@ -27,3 +27,18 @@ end function
 function nrAppStarted(nr as Object, obj as Object) as Void
     nr.callFunc("nrAppStarted", obj)
 end function
+
+function nrSendCustomEvent(nr as Object, eventType as String, actionName as String, attr = invalid as Object) as Void
+    nr.callFunc("nrSendCustomEvent", eventType, actionName, attr)
+end function
+
+function nrSendSystemEvent(nr as Object, actionName as String, attr = invalid) as Void
+    nr.callFunc("nrSendSystemEvent", actionName, attr)
+end function
+
+function nrSendVideoEvent(nr as Object, actionName as String, attr = invalid) as Void
+    nr.callFunc("nrSendVideoEvent", actionName, attr)
+end function
+
+'TODO: wrap nrSetCustomAttribute
+'TODO: wrap nrSetCustomAttributeList

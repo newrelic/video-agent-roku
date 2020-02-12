@@ -239,6 +239,10 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     m.nrBackupAttributes.Append(ev)
 end function
 
+function nrSendSystemEvent(actionName as String, attr = invalid) as Void
+    nrSendCustomEvent("RokuSystem", actionName, attr)
+end function
+
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     'Use attributes in the backup (m.nrBackupAttributes) and recalculate some of them.
     ev = m.nrBackupAttributes
@@ -478,6 +482,11 @@ function nrHarvestTimerHandler() as Void
     nrProcessGroupedEvents()
     
     'Run NRTask
+    if m.bgTask <> invalid
+        'NRTask still running
+        if m.bgTask.state = "RUN" then return
+    end if
+    
     m.bgTask = createObject("roSGNode", "com.newrelic.NewRelicAgent.NRTask")
     m.bgTask.setField("accountNumber", m.nrAccountNumber)
     m.bgTask.setField("apiKey", m.nrInsightsApiKey)
