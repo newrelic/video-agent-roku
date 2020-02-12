@@ -134,14 +134,14 @@ function videoAction(key as String) as Boolean
     else if key = "right"
         m.video.control = "skipcontent"
         'Cusom event, Skip Content
-        nrSendVideoEvent("SKIP_CONTENT")
+        'nrSendVideoEvent("SKIP_CONTENT")
         return true
     else if key = "left"
         if m.video.contentIndex > 0
             m.video.nextContentIndex = m.video.contentIndex - 1
             m.video.control = "skipcontent"
             'Cusom event, Previous Content
-            nrSendVideoEvent("PREV_CONTENT")
+            'nrSendVideoEvent("PREV_CONTENT")
         end if
         return true
     else if key = "back"

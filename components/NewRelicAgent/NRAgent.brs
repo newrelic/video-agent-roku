@@ -171,6 +171,8 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Player Ready
     nrSendPlayerReady()
     
+    __logEventArray()
+    
 end function
 
 function nrSendPlayerReady() as Void
@@ -257,10 +259,11 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["actionName"] = actionName
     '- Set current timestamp
     backupTimestamp = ev["timestamp"]
-    ev["timestamp"] = nrTimestamp()
+    ev["timestamp"] = FormatJson(nrTimestamp())
     '- Recalculate playhead, adding timestamp offset, except if last action is PAUSE
-    if not isAction("PAUSE", backupActionName)
-        offsetTime = ev["timestamp"] - backupTimestamp
+    if not isAction("PAUSE", backupActionName) 
+        lint& = ParseJson(ev["timestamp"]) - ParseJson(backupTimestamp)
+        offsetTime = lint&
         nrLog(["Offset time = ", offsetTime])
         if ev["contentPlayhead"] <> invalid then ev["contentPlayhead"] = ev["contentPlayhead"] + offsetTime
         if ev["adPlayhead"] <> invalid then ev["adPlayhead"] = ev["adPlayhead"] + offsetTime

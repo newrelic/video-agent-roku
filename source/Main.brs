@@ -12,6 +12,7 @@ sub Main(aa as Object)
     
     'Init New Relic Agent
     m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", true)
+    nrSendSystemEvent(m.nr, "TEST_ACTION")
     nrAppStarted(m.nr, aa)
     
     print "Main m = ", m

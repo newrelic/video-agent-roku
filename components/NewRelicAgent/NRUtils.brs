@@ -49,8 +49,13 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
     if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
     
-    ev["timestamp"] = nrTimestamp()
+    ev["timestamp"] = FormatJson(nrTimestamp())
     ev = nrAddAttributes(ev)
+    
+    print "Type of timestamp =" , type(ev["timestamp"])
+    lint& = ParseJson(ev["timestamp"])
+    print "Lint& =", lint&
+    print "Type of lint& =" , type(lint&)
     
     return ev
 end function
@@ -181,7 +186,7 @@ function nrRecordEvent(event as Object) as Void
         m.nrEventArray.Push(event)
         
         nrLog("====================================")
-        nrLog(["RECORD NEW EVENT = ", event])
+        nrLog(["RECORD NEW EVENT = ", m.nrEventArray.Peek()])
         nrLog(["EVENTARRAY SIZE = ", m.nrEventArray.Count()])
         nrLog("====================================")
         '__logVideoInfo()
@@ -262,6 +267,15 @@ function __logVideoInfo() as Void
     else
         nrLog("m.nrVideoObject is invalid")
     end if
+    nrLog("====================================")
+end function
+
+function __logEventArray() as Void
+    nrLog("=========== EVENT ARRAY ============")
+    for each ev in m.nrEventArray
+        nrLog(ev)
+        nrLog("----------------------------------")
+    end for
     nrLog("====================================")
 end function
 
