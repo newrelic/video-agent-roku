@@ -12,9 +12,7 @@ sub Main(aa as Object)
     
     'Init New Relic Agent
     m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", true)
-    
-    'TODO: expose this function
-    'nrAppStarted(aa)
+    nrAppStarted(m.nr, aa)
     
     print "Main m = ", m
     

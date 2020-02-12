@@ -54,6 +54,7 @@
 		            return
 		        else
 		            m.nr.callFunc("nrLog", "-- nrEventProcessor: insert insights data --")
+		            m.nr.callFunc("nrLog", ev["actionName"])
 		        end if
 		    end while
 		end function

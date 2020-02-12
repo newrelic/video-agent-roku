@@ -56,17 +56,28 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
 end function
 
 function nrTimestamp() as LongInteger
-    timestamp& = CreateObject("roDateTime").asSeconds()
-    timestampMS& = timestamp& * 1000
+    timestamp = CreateObject("roDateTime").asSeconds()
+    timestampLong& = timestamp
+    timestampMS& = timestampLong& * 1000
     
-    if timestamp& = m.nrLastTimestamp
+    print "nrTimestamp: ", timestamp
+    print "   Current timestamp MS = ", timestampMS&
+    print "   Ticks = ", m.nrTicks
+    print "   Last Timestamp = ", m.nrLastTimestamp
+    
+    
+    if timestamp = m.nrLastTimestamp
         m.nrTicks = m.nrTicks + 1
     else
         m.nrTicks = 0
     end if
     
     timestampMS& = timestampMS& + m.nrTicks
-    m.nrLastTimestamp = timestamp&
+    m.nrLastTimestamp = timestamp
+    
+    print "   Final timestamp MS = ", timestampMS&
+    print "   Final Ticks = ", m.nrTicks
+    print "   Final Last Timestamp = ", m.nrLastTimestamp
     
     return timestampMS&
 end function
@@ -116,11 +127,11 @@ function nrAddAttributes(ev as Object) as Object
     
     'Add custom attributes
     'TODO: fix global stuff
-    genCustomAttr = m.global["GENERAL_ATTR"]
-    if genCustomAttr <> invalid then ev.Append(genCustomAttr)
-    actionName = ev["actionName"]
-    actionCustomAttr = m.global[actionName]
-    if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
+    'genCustomAttr = m.global["GENERAL_ATTR"]
+    'if genCustomAttr <> invalid then ev.Append(genCustomAttr)
+    'actionName = ev["actionName"]
+    'actionCustomAttr = m.global[actionName]
+    'if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
     
     'Time Since Load
     date = CreateObject("roDateTime")
@@ -172,6 +183,7 @@ function nrRecordEvent(event as Object) as Void
         
         nrLog("====================================")
         nrLog(["RECORD NEW EVENT = ", event])
+        nrLog(["EVENTARRAY SIZE = ", m.nrEventArray.Count()])
         nrLog("====================================")
         '__logVideoInfo()
     else

@@ -19,3 +19,11 @@ end function
 function NewRelicVideoStart(nr as Object, video as Object) as Void
     nr.callFunc("NewRelicVideoStart", video)
 end function
+
+function nrSceneLoaded(nr as Object, sceneName as String) as Void
+    nr.callFunc("nrSceneLoaded", sceneName)
+end function
+
+function nrAppStarted(nr as Object, obj as Object) as Void
+    nr.callFunc("nrAppStarted", obj)
+end function

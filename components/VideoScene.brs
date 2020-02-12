@@ -8,34 +8,14 @@ end sub
 
 function nrRefUpdated()
     print "Updated NR object reference"
-    m.nr = m.top.getField("nr")
+    m.nr = m.top.nr
     NewRelicVideoStart(m.nr, m.video)
     
     m.pauseCounter = 0
     updateCustomAttr()
     
-    'TODO: expose this function
-    'nrSceneLoaded("MyVideoScene")
+    nrSceneLoaded(m.nr, "MyVideoScene")
 end function
-
-sub x_init()
-    m.top.setFocus(true)
-    
-    'Setup video player with a playlist
-    setupVideoPlaylist()
-    'setupVideoPlaylistShort()
-    'Setup video player with a single video
-    'setupVideo()
-    
-    'Start New Relic agents
-    NewRelicStart()
-    NewRelicVideoStart(m.video)
-    
-    m.pauseCounter = 0
-    updateCustomAttr()
-    
-    nrSceneLoaded("MyVideoScene")
-end sub
 
 function updateCustomAttr() as Void
     'TODO: fix custom attributes and undo this 

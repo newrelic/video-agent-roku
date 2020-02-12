@@ -92,6 +92,9 @@ function nrSendBandwidth(info as Object) as Void
 end function
 
 function nrAppStarted(aa as Object) as Void
+
+    PRINT "nrAppStarted m =", m
+     
     attr = {
         "lastExitOrTerminationReason": aa["lastExitOrTerminationReason"],
         "splashTime": aa["splashTime"],
@@ -113,6 +116,7 @@ end function
 
 'TODO: fix global stuff
 function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as Void
+    return
     dictName = actionName
     if dictName = "" then dictName = "GENERAL_ATTR"
     
@@ -134,7 +138,7 @@ end function
 '======================='
 
 function NewRelicVideoStart(videoObject as Object) as Void
-    nrLog("NewRelicVideoStart") 
+    nrLog("NewRelicVideoStart")
 
     'Current state
     m.nrLastVideoState = "none"
@@ -168,6 +172,9 @@ function NewRelicVideoStart(videoObject as Object) as Void
 end function
 
 function nrSendPlayerReady() as Void
+    
+    PRINT "nrSendPlayerReady m =", m
+    
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent("PLAYER_READY")
 end function
@@ -233,8 +240,9 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
        ev.Append(attr)
     end if
     nrRecordEvent(ev)
-    'Backup attributes
-    m.nrBackupAttributes = ev
+    'Backup attributes (cloning it)
+    m.nrBackupAttributes = {}
+    m.nrBackupAttributes.Append(ev)
 end function
 
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
