@@ -33,6 +33,11 @@ function NewRelicInit(account as String, apikey as String) as Void
     'Init main timer
     m.nrTimer = CreateObject("roTimespan")
     m.nrTimer.Mark()
+
+    'Create and configure NRTask
+    m.bgTask = m.top.findNode("NRTask")
+    m.bgTask.setField("accountNumber", m.nrAccountNumber)
+    m.bgTask.setField("apiKey", m.nrInsightsApiKey)
     
     'Init harvest timer
     m.nrHarvestTimer = m.top.findNode("nrHarvestTimer")
@@ -479,20 +484,13 @@ end function
 function nrHarvestTimerHandler() as Void
     nrLog("--- nrHarvestTimerHandler ---")
     
-    if m.bgTask <> invalid
-        'NRTask still running
-        if m.bgTask.state = "RUN"
-            nrLog("NRTask still running, abort")
-            return
-        end if
+    'NRTask still running
+    if m.bgTask.state = "RUN"
+        nrLog("NRTask still running, abort")
+        return
     end if
     
     nrProcessGroupedEvents()
-    
-    'Run NRTask
-    m.bgTask = createObject("roSGNode", "com.newrelic.NewRelicAgent.NRTask")
-    m.bgTask.setField("accountNumber", m.nrAccountNumber)
-    m.bgTask.setField("apiKey", m.nrInsightsApiKey)
     m.bgTask.control = "RUN"
 end function
 
