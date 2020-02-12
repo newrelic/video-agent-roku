@@ -18,6 +18,7 @@
 		<field id="apiKey" type="string" value=""/>
     </interface>
 
+	<!-- TODO: put this code in a NRTask.brs file -->
 	<script type = "text/brightscript" >
 		<![CDATA[
 		sub init()
@@ -54,7 +55,7 @@
 		            return
 		        else
 		            m.nr.callFunc("nrLog", "-- nrEventProcessor: insert insights data --")
-		            m.nr.callFunc("nrLog", ev["actionName"])
+		            m.nr.callFunc("nrLog", [ev["actionName"], " ", ev["timestamp"]])
 		        end if
 		    end while
 		end function

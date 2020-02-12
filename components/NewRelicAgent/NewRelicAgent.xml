@@ -9,6 +9,7 @@
 '**********************************************************
 -->
 
+<!-- TODO: rename component to com.newrelic.NRAgent to match the brs file name -->
 <component name="com.newrelic.NewRelicAgent" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
 
 	<interface>
@@ -29,10 +30,11 @@
         <function name="nrRecordEvent"/>
     </interface>
     
-	<!-- TODO: join both files into one -->
+	<!-- TODO: merge files into one (NRAgent.brs) -->
     <script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRUtils.brs"/>
 	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRAgent.brs"/>
 	
+	<!-- TODO: put this inside NRAgent.brs -->
 	<script type = "text/brightscript" >
 		<![CDATA[
 		sub init()
