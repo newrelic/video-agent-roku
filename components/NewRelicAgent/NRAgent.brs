@@ -479,14 +479,17 @@ end function
 function nrHarvestTimerHandler() as Void
     nrLog("--- nrHarvestTimerHandler ---")
     
+    if m.bgTask <> invalid
+        'NRTask still running
+        if m.bgTask.state = "RUN"
+            nrLog("NRTask still running, abort")
+            return
+        end if
+    end if
+    
     nrProcessGroupedEvents()
     
     'Run NRTask
-    if m.bgTask <> invalid
-        'NRTask still running
-        if m.bgTask.state = "RUN" then return
-    end if
-    
     m.bgTask = createObject("roSGNode", "com.newrelic.NewRelicAgent.NRTask")
     m.bgTask.setField("accountNumber", m.nrAccountNumber)
     m.bgTask.setField("apiKey", m.nrInsightsApiKey)
