@@ -33,15 +33,17 @@ sub Main(aa as Object)
         
         if nrProcessMessage(m.nr, msg) = false
             'Is not a system message captured by New Relic Agent
-            if msg.getField() = "moteButton"
-                print "moteButton, data = ", msg.getData()
-                if msg.getData() = "back" 
-                    exit while
-                end if
-                if msg.getData() = "OK"
-                    'force crash
-                    print "Crash!"
-                    anyshit()
+            if type(msg) = "roSGNodeEvent"
+                if msg.getField() = "moteButton"
+                    print "moteButton, data = ", msg.getData()
+                    if msg.getData() = "back" 
+                        exit while
+                    end if
+                    if msg.getData() = "OK"
+                        'force crash
+                        print "Crash!"
+                        anyshit()
+                    end if
                 end if
             end if
         end if
