@@ -18,7 +18,6 @@ end sub
 ' Public Wrapped Functions '
 '=========================='
 
-'Must be called from Main after scene creation
 function NewRelicInit(account as String, apikey as String) as Void
     
     m.nrAccountNumber = account
@@ -641,19 +640,6 @@ end function
 ' Observers, States and Handlers '
 '================================'
 
-function nrHarvestTimerHandler() as Void
-    nrLog("--- nrHarvestTimerHandler ---")
-    
-    'NRTask still running
-    if LCase(m.bgTask.state) = "run"
-        nrLog("NRTask still running, abort")
-        return
-    end if
-    
-    nrProcessGroupedEvents()
-    m.bgTask.control = "RUN"
-end function
-
 function nrStateObserver() as Void
     nrLog("---------- State Observer ----------")
     nrLogVideoInfo()
@@ -750,9 +736,22 @@ function nrHeartbeatHandler() as Void
     end if
 end function
 
-'========='
-' Logging '
-'========='
+function nrHarvestTimerHandler() as Void
+    nrLog("--- nrHarvestTimerHandler ---")
+    
+    'NRTask still running
+    if LCase(m.bgTask.state) = "run"
+        nrLog("NRTask still running, abort")
+        return
+    end if
+    
+    nrProcessGroupedEvents()
+    m.bgTask.control = "RUN"
+end function
+
+'=================='
+' Test and Logging '
+'=================='
 
 function nrLogEvGroups() as Void
     nrLog("============ Event Groups HTTP_CONNECT ===========")
