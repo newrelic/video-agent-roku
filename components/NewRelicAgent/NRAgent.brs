@@ -14,8 +14,6 @@ sub init()
     print "********************************************************"
 end sub
 
-'TODO: refactor all functions, reorder and rename, giving prevalence to "nrFooName" naming convention.
-
 '=========================='
 ' Public Wrapped Functions '
 '=========================='
@@ -25,7 +23,7 @@ function NewRelicInit(account as String, apikey as String) as Void
     
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
-    m.nrSessionId = __nrGenerateId()
+    m.nrSessionId = nrGenerateId()
     m.nrEventArray = []
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
@@ -63,15 +61,15 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrVideoCounter = 0
     m.nrIsInitialBuffering = false
     'Setup event listeners 
-    videoObject.observeField("state", "__nrStateObserver")
-    videoObject.observeField("contentIndex", "__nrIndexObserver")
+    videoObject.observeField("state", "nrStateObserver")
+    videoObject.observeField("contentIndex", "nrIndexObserver")
     'Store video object
     m.nrVideoObject = videoObject
     'Init heartbeat timer
     m.hbTimer = CreateObject("roSGNode", "Timer")
     m.hbTimer.repeat = true
     m.hbTimer.duration = 30
-    m.hbTimer.observeField("fire", "__nrHeartbeatHandler")
+    m.hbTimer.observeField("fire", "nrHeartbeatHandler")
     m.hbTimer.control = "start"
     'Timestamps for timeSince attributes
     m.nrTimeSinceBufferBegin = 0.0
@@ -186,7 +184,7 @@ function nrRecordEvent(event as Object) as Void
         nrLog(["RECORD NEW EVENT = ", m.nrEventArray.Peek()])
         nrLog(["EVENTARRAY SIZE = ", m.nrEventArray.Count()])
         nrLog("====================================")
-        '__logVideoInfo()
+        'nrLogVideoInfo()
     else
         nrLog("Events overflow, discard event")
     end if
@@ -256,7 +254,7 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("deviceModel", dev.GetModel())
     ev.AddReplace("deviceType", dev.GetModelType())
     ev.AddReplace("osName", "RokuOS")
-    ver = __nrParseVersion(dev.GetVersion())
+    ver = nrParseVersion(dev.GetVersion())
     ev.AddReplace("osVersionString", dev.GetVersion())
     ev.AddReplace("osVersion", ver["version"])
     ev.AddReplace("osBuild", ver["build"])
@@ -302,7 +300,7 @@ function nrProcessGroupedEvents() as Void
     'Convert groups into custom events and flush the groups dictionaries
     
     nrLog("-- Process Grouped Events --")
-    __logEvGroups()
+    nrLogEvGroups()
     
     if m.nrEventGroupsConnect.Count() > 0
         nrConvertGroupsToEvents(m.nrEventGroupsConnect)
@@ -503,7 +501,7 @@ function nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
     ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
     ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
-    streamUrl = __nrGenerateStreamUrl()
+    streamUrl = nrGenerateStreamUrl()
     ev.AddReplace(nrAttr("Src"), streamUrl)
     'Generate Id from Src (hashing it)
     ba = CreateObject("roByteArray")
@@ -518,7 +516,7 @@ function nrAddVideoAttributes(ev as Object) as Object
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
     dev = CreateObject("roDeviceInfo")
-    ver = __nrParseVersion(dev.GetVersion())
+    ver = nrParseVersion(dev.GetVersion())
     ev.AddReplace("playerVersion", ver["version"])
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
     ev.AddReplace("viewId", m.nrSessionId + "-" + m.nrVideoCounter.ToStr())
@@ -592,7 +590,7 @@ function nrParseVideoStreamUrl(url as String) as String
     return matchUrl
 end function
 
-function __nrGenerateId() as String
+function nrGenerateId() as String
     timestamp = CreateObject("roDateTime").asSeconds()
     randStr = "ID" + Str(timestamp) + Str(Rnd(0) * 1000.0)
     ba = CreateObject("roByteArray")
@@ -603,7 +601,7 @@ function __nrGenerateId() as String
     return result
 end function
 
-function __nrGenerateStreamUrl() as String
+function nrGenerateStreamUrl() as String
     if m.nrVideoObject.streamInfo <> invalid
         return m.nrVideoObject.streamInfo["streamUrl"]
     else
@@ -635,7 +633,7 @@ function nrTimestamp() as LongInteger
     return timestampMS&
 end function
 
-function __nrParseVersion(verStr as String) as Object
+function nrParseVersion(verStr as String) as Object
     return {version: verStr.Mid(2, 3) + "." + verStr.Mid(5, 1), build: verStr.Mid(8, 4)}
 end function
 
@@ -656,33 +654,33 @@ function nrHarvestTimerHandler() as Void
     m.bgTask.control = "RUN"
 end function
 
-function __nrStateObserver() as Void
+function nrStateObserver() as Void
     nrLog("---------- State Observer ----------")
-    __logVideoInfo()
+    nrLogVideoInfo()
 
     if m.nrVideoObject.state = "playing"
-        __nrStateTransitionPlaying()
+        nrStateTransitionPlaying()
     else if m.nrVideoObject.state = "paused"
-        __nrStateTransitionPaused()
+        nrStateTransitionPaused()
     else if m.nrVideoObject.state = "buffering"
-        __nrStateTransitionBuffering()
+        nrStateTransitionBuffering()
     else if m.nrVideoObject.state = "finished" or m.nrVideoObject.state = "stopped"
-        __nrStateTransitionEnd()
+        nrStateTransitionEnd()
     else if m.nrVideoObject.state = "error"
-        __nrStateTransitionError()
+        nrStateTransitionError()
     end if
     
     m.nrLastVideoState = m.nrVideoObject.state
 
 end function
 
-function __nrStateTransitionPlaying() as Void
-    nrLog("__nrStateTransitionPlaying")
+function nrStateTransitionPlaying() as Void
+    nrLog("nrStateTransitionPlaying")
     if m.nrLastVideoState = "paused"
         nrSendResume()
     else if m.nrLastVideoState = "buffering"
         'if current Src is equal to previous, send start, otherwise not
-        currentSrc = __nrGenerateStreamUrl()
+        currentSrc = nrGenerateStreamUrl()
         lastSrc = m.nrBackupAttributes["contentSrc"]
         if lastSrc = invalid then lastSrc = m.nrBackupAttributes["adSrc"]
         
@@ -699,31 +697,31 @@ function __nrStateTransitionPlaying() as Void
     end if
 end function
 
-function __nrStateTransitionPaused() as Void
-    nrLog("__nrStateTransitionPaused")
+function nrStateTransitionPaused() as Void
+    nrLog("nrStateTransitionPaused")
     if m.nrLastVideoState = "playing"
         nrSendPause()
     end if
 end function
 
-function __nrStateTransitionBuffering() as Void
-    nrLog("__nrStateTransitionBuffering")
+function nrStateTransitionBuffering() as Void
+    nrLog("nrStateTransitionBuffering")
     if m.nrLastVideoState = "none"
         nrSendRequest()
     end if
     nrSendBufferStart()
 end function
 
-function __nrStateTransitionEnd() as Void
-    nrLog("__nrStateTransitionEnd")
+function nrStateTransitionEnd() as Void
+    nrLog("nrStateTransitionEnd")
     if m.nrLastVideoState = "buffering"
         nrSendBufferEnd()
     end if
     nrSendEnd()
 end function
 
-function __nrStateTransitionError() as Void
-    nrLog("__nrStateTransitionError")
+function nrStateTransitionError() as Void
+    nrLog("nrStateTransitionError")
     if m.nrLastVideoState = "buffering"
         nrSendBufferEnd()
     end if
@@ -732,9 +730,9 @@ function __nrStateTransitionError() as Void
 end function
 
 'This corresponds to the NEXT event, it happens when the playlist index changes
-function __nrIndexObserver() as Void
+function nrIndexObserver() as Void
     nrLog("---------- Index Observer ----------")
-    __logVideoInfo()
+    nrLogVideoInfo()
     
     '- Use nrSendBackupVideoEvent to send the END using previous video attributes
     nrSendBackupVideoEvent(nrAction("END"))
@@ -744,7 +742,7 @@ function __nrIndexObserver() as Void
     nrSendStart()
 end function
 
-function __nrHeartbeatHandler() as Void
+function nrHeartbeatHandler() as Void
     'Only send while it is playing (state is not "none" or "finished")
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
         nrSendVideoEvent(nrAction("HEARTBEAT"))
@@ -756,7 +754,7 @@ end function
 ' Logging '
 '========='
 
-function __logEvGroups() as Void
+function nrLogEvGroups() as Void
     nrLog("============ Event Groups HTTP_CONNECT ===========")
     for each item in m.nrEventGroupsConnect.Items()
         nrLog([item.key, item.value])
@@ -768,7 +766,7 @@ function __logEvGroups() as Void
     nrLog("==================================================")
 end function
 
-function __logVideoInfo() as Void
+function nrLogVideoInfo() as Void
     nrLog("====================================")
     if (m.nrVideoObject <> invalid)
         nrLog(["Player state = ", m.nrVideoObject.state])
@@ -808,7 +806,7 @@ function __logVideoInfo() as Void
     nrLog("====================================")
 end function
 
-function __logEventArray() as Void
+function nrLogEventArray() as Void
     nrLog("=========== EVENT ARRAY ============")
     for each ev in m.nrEventArray
         nrLog(ev)
