@@ -22,18 +22,25 @@ sub Main(aa as Object)
     'Observe scene field "moreButton" to capture "back" button and abort the execution
     scene.observeField("moteButton", m.port)
     
+    'Activate system tracking
+    m.syslog = NewRelicSystemStart(m.nr, m.port)
+    
     while(true)
         msg = wait(0, m.port)
         print "Msg = ", msg
-        if msg.getField() = "moteButton"
-            print "moteButton, data = ", msg.getData()
-            if msg.getData() = "back" 
-                exit while
-            end if
-            if msg.getData() = "OK"
-                'force crash
-                print "Crash!"
-                anyshit()
+        
+        if nrProcessMessage(m.nr, msg) = false
+            'Is not a system message captured by New Relic Agent
+            if msg.getField() = "moteButton"
+                print "moteButton, data = ", msg.getData()
+                if msg.getData() = "back" 
+                    exit while
+                end if
+                if msg.getData() = "OK"
+                    'force crash
+                    print "Crash!"
+                    anyshit()
+                end if
             end if
         end if
     end while

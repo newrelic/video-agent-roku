@@ -15,6 +15,14 @@ sub init()
 end sub
 
 'TODO: refactor all functions, reorder and rename, giving prevalence to "nrFooName" naming convention.
+'TODO: Order:
+'TODO: - public wrapped functions
+'TODO: - public internal functions 
+'TODO: - base system functions
+'TODO: - video functions
+'TODO: - helper functions
+'TODO: - event handlers
+'TODO: - log and test functions  
 
 '========================='
 ' General Agent functions '
@@ -53,20 +61,6 @@ function NewRelicInit(account as String, apikey as String) as Void
     
     nrLog(["NewRelicInit, m = ", m])
     
-end function
-
-'TODO: deprecated, instead provide a function to process events to be called inside app event loop
-function NewRelicWait(port as Object, foo as Function) as Void
-    syslog = nrStartSysTracker(port)
-
-    while(true)
-        msg = wait(0, port)
-        if nrProcessMessage(msg) = false
-            'handle message manually
-            res = foo(msg)
-            if res = false then return
-        end if
-    end while
 end function
 
 function nrSendHTTPError(info as Object) as Void
@@ -299,40 +293,6 @@ end function
 '=================='
 ' Helper functions '
 '=================='
-
-function nrStartSysTracker(port) as Object
-    syslog = CreateObject("roSystemLog")
-    
-    syslog.SetMessagePort(port)
-    syslog.EnableType("http.error")
-    syslog.EnableType("http.connect")
-    syslog.EnableType("bandwidth.minute")
-    syslog.EnableType("http.complete")
-    
-    return syslog
-end function
-
-function nrProcessMessage(msg as Object) as Boolean
-    msgType = type(msg)
-    if msgType = "roSystemLogEvent" then
-        i = msg.GetInfo()
-        if i.LogType = "http.error"
-            nrSendHTTPError(i)
-            return true
-        else if i.LogType = "http.connect" 
-            nrSendHTTPConnect(i)
-            return true
-        else if i.LogType = "http.complete"
-            nrSendHTTPComplete(i)
-            return true
-        else if i.LogType = "bandwidth.minute"
-            nrSendBandwidth(i)
-            return true
-        end If
-    end if
-    
-    return false
-end function
 
 function nrAddCommonHTTPAttr(info as Object) as Object
     attr = {
