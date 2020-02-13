@@ -9,11 +9,10 @@ end sub
 function nrRefUpdated()
     print "Updated NR object reference"
     m.nr = m.top.nr
-    NewRelicVideoStart(m.nr, m.video)
-    
     m.pauseCounter = 0
     updateCustomAttr()
     
+    NewRelicVideoStart(m.nr, m.video)
     nrSceneLoaded(m.nr, "MyVideoScene")
 end function
 
