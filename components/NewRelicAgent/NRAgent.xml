@@ -9,8 +9,7 @@
 '**********************************************************
 -->
 
-<!-- TODO: rename component to com.newrelic.NRAgent to match the brs file name -->
-<component name="com.newrelic.NewRelicAgent" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+<component name="com.newrelic.NRAgent" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
 
 	<interface>
 		<!-- Properties -->
@@ -30,22 +29,7 @@
         <function name="nrRecordEvent"/>
     </interface>
     
-	<!-- TODO: merge files into one (NRAgent.brs) -->
-    <script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRUtils.brs"/>
 	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRAgent.brs"/>
-	
-	<!-- TODO: put this inside NRAgent.brs -->
-	<script type = "text/brightscript" >
-		<![CDATA[
-		sub init()
-			m.nrAgentVersion = m.top.version
-			print "********************************************************"
-			print "   New Relic Agent for Roku v" + m.nrAgentVersion
-			print "   Copyright 2020 New Relic Inc. All Rights Reserved."
-			print "********************************************************"
-		end sub
-		]]>
-	</script>
 	
 	<children>
 		<Timer id="nrHarvestTimer" repeat="true" duration="10"/>
