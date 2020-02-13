@@ -96,27 +96,25 @@ function nrSendHttpResponse(nr as Object, _url as String, msg = invalid as Objec
         "origUrl": _url
     }
     
-    if msg <> invalid
-        attr.AddReplace("httpCode", msg.GetResponseCode())
-        attr.AddReplace("httpResult", msg.GetFailureReason())
-        attr.AddReplace("transferIdentity", msg.GetSourceIdentity())
-        
-        header = msg.GetResponseHeaders()
-        
-        for each key in header
-            parts = key.Tokenize("-")
-            finalKey = "http"
-            finalValue = header[key]
-            for each part in parts
-                firstChar = Left(part, 1)
-                firstChar = UCase(firstChar)
-                restStr = Right(part, Len(part) - 1)
-                restStr = LCase(restStr)
-                finalKey = finalKey + firstChar + restStr
-            end for
-            attr.AddReplace(finalKey, finalValue)
+    attr.AddReplace("httpCode", msg.GetResponseCode())
+    attr.AddReplace("httpResult", msg.GetFailureReason())
+    attr.AddReplace("transferIdentity", msg.GetSourceIdentity())
+    
+    header = msg.GetResponseHeaders()
+    
+    for each key in header
+        parts = key.Tokenize("-")
+        finalKey = "http"
+        finalValue = header[key]
+        for each part in parts
+            firstChar = Left(part, 1)
+            firstChar = UCase(firstChar)
+            restStr = Right(part, Len(part) - 1)
+            restStr = LCase(restStr)
+            finalKey = finalKey + firstChar + restStr
         end for
-    end if
+        attr.AddReplace(finalKey, finalValue)
+    end for
     
     nrSendCustomEvent(nr, "RokuSystem", "HTTP_RESPONSE", attr)
 end function
