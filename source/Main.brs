@@ -10,7 +10,7 @@ sub Main(aa as Object)
     scene = screen.CreateScene("VideoScene")
     screen.show()
     
-    'Init New Relic Agent
+    'Init New Relic Agent (with "Video Demo" account credentials)
     m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", true)
     nrAppStarted(m.nr, aa)
     nrSendSystemEvent(m.nr, "TEST_ACTION")
@@ -25,7 +25,7 @@ sub Main(aa as Object)
     'Activate system tracking
     m.syslog = NewRelicSystemStart(m.nr, m.port)
     
-    searchTask("hello")
+    runSearchTask("hello")
     
     while(true)
         msg = wait(0, m.port)
@@ -51,7 +51,7 @@ sub Main(aa as Object)
 end sub
 
 'Test task to show how to generate http events
-function searchTask(search as String)
+function runSearchTask(search as String)
     task = createObject("roSGNode", "SearchTask")
     task.setField("nr", m.nr)
     task.setField("searchString", search)

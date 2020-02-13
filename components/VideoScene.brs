@@ -12,8 +12,10 @@ function nrRefUpdated()
     m.pauseCounter = 0
     updateCustomAttr()
     
-    NewRelicVideoStart(m.nr, m.video)
     nrSceneLoaded(m.nr, "MyVideoScene")
+    
+    'Activate video tracking
+    NewRelicVideoStart(m.nr, m.video)
 end function
 
 function updateCustomAttr() as Void

@@ -15,18 +15,10 @@ sub init()
 end sub
 
 'TODO: refactor all functions, reorder and rename, giving prevalence to "nrFooName" naming convention.
-'TODO: Order:
-'TODO: - public wrapped functions
-'TODO: - public internal functions 
-'TODO: - base system functions
-'TODO: - video functions
-'TODO: - helper functions
-'TODO: - event handlers
-'TODO: - log and test functions  
 
-'========================='
-' General Agent functions '
-'========================='
+'=========================='
+' Public Wrapped Functions '
+'=========================='
 
 'Must be called from Main after scene creation
 function NewRelicInit(account as String, apikey as String) as Void
@@ -60,11 +52,144 @@ function NewRelicInit(account as String, apikey as String) as Void
     m.nrHarvestTimer.control = "start"
     
     nrLog(["NewRelicInit, m = ", m])
+end function
+
+function NewRelicVideoStart(videoObject as Object) as Void
+    nrLog("NewRelicVideoStart")
+
+    'Current state
+    m.nrLastVideoState = "none"
+    m.nrIsAd = false
+    m.nrVideoCounter = 0
+    m.nrIsInitialBuffering = false
+    'Setup event listeners 
+    videoObject.observeField("state", "__nrStateObserver")
+    videoObject.observeField("contentIndex", "__nrIndexObserver")
+    'Store video object
+    m.nrVideoObject = videoObject
+    'Init heartbeat timer
+    m.hbTimer = CreateObject("roSGNode", "Timer")
+    m.hbTimer.repeat = true
+    m.hbTimer.duration = 30
+    m.hbTimer.observeField("fire", "__nrHeartbeatHandler")
+    m.hbTimer.control = "start"
+    'Timestamps for timeSince attributes
+    m.nrTimeSinceBufferBegin = 0.0
+    m.nrTimeSinceLastHeartbeat = 0.0
+    m.nrTimeSincePaused = 0.0
+    m.nrTimeSinceRequested = 0.0
+    m.nrTimeSinceStarted = 0.0
+    m.nrTimeSinceTrackerReady = 0.0
+    'Counters
+    m.nrNumberOfErrors = 0
     
+    'Player Ready
+    nrSendPlayerReady()
+end function
+
+function nrAppStarted(aa as Object) as Void
+    attr = {
+        "lastExitOrTerminationReason": aa["lastExitOrTerminationReason"],
+        "splashTime": aa["splashTime"],
+        "instantOnRunMode": aa["instant_on_run_mode"],
+        "launchSource": aa["source"]
+    }
+    nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
+end function
+
+function nrSceneLoaded(sceneName as String) as Void
+    nrSendCustomEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
+end function
+
+function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
+    nrLog("nrSendCustomEvent")
+    ev = nrCreateEvent(eventType, actionName)
+    if attr <> invalid
+        ev.Append(attr)
+    end if
+    nrRecordEvent(ev)
+end function
+
+function nrSendSystemEvent(actionName as String, attr = invalid) as Void
+    nrSendCustomEvent("RokuSystem", actionName, attr)
+end function
+
+function nrSendVideoEvent(actionName as String, attr = invalid) as Void
+    ev = nrCreateEvent("RokuVideo", actionName)
+    ev = nrAddVideoAttributes(ev)
+    if type(attr) = "roAssociativeArray"
+       ev.Append(attr)
+    end if
+    nrRecordEvent(ev)
+    'Backup attributes (cloning it)
+    m.nrBackupAttributes = {}
+    m.nrBackupAttributes.Append(ev)
+end function
+
+function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String) as Void
+    dict = CreateObject("roAssociativeArray")
+    dict[key] = value
+    nrSetCustomAttributeList(dict, actionName)
+end function
+
+function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as Void
+    dictName = actionName
+    if dictName = "" then dictName = "GENERAL_ATTR"
+    
+    if m.nrCustomAttributes[dictName] = invalid
+        m.nrCustomAttributes[dictName] = CreateObject("roAssociativeArray")
+    end if
+    
+    actionDict = m.nrCustomAttributes[dictName]
+    
+    actionDict.Append(attr)
+    m.nrCustomAttributes[dictName] = actionDict
+    
+    nrLog(["Custom Attributes: ", m.nrCustomAttributes[dictName]])
 end function
 
 function nrSetHarvestTime(seconds as Integer) as Void
     m.nrHarvestTimer.duration = seconds
+end function
+
+'=========================='
+' Public Internal Functions '
+'=========================='
+
+function nrActivateLogging(state as Boolean) as Void
+    m.nrLogsState = state
+end function
+
+function nrLog(msg as Dynamic) as Void
+    if m.nrLogsState = true
+        if type(msg) = "roArray"         
+            For i=0 To msg.Count() - 1 Step 1
+                print msg[i];
+            End For
+            print ""
+        else
+            print msg
+        end if
+    end if
+end function
+
+function nrExtractEvent() as Object
+    res = m.nrEventArray.Pop()
+    return res
+end function
+ 
+function nrRecordEvent(event as Object) as Void
+    if m.nrEventArray.Count() < 500
+        m.nrEventArray.Push(event)
+        
+        nrLog("====================================")
+        nrLog(["RECORD NEW EVENT = ", m.nrEventArray.Peek()])
+        nrLog(["EVENTARRAY SIZE = ", m.nrEventArray.Count()])
+        nrLog("====================================")
+        '__logVideoInfo()
+    else
+        nrLog("Events overflow, discard event")
+    end if
 end function
 
 function nrSendHTTPError(info as Object) as Void
@@ -101,78 +226,175 @@ function nrSendBandwidth(info as Object) as Void
     nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
 end function
 
-function nrAppStarted(aa as Object) as Void
-    attr = {
-        "lastExitOrTerminationReason": aa["lastExitOrTerminationReason"],
-        "splashTime": aa["splashTime"],
-        "instantOnRunMode": aa["instant_on_run_mode"],
-        "launchSource": aa["source"]
-    }
-    nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
-end function
+'=================='
+' System functions '
+'=================='
 
-function nrSceneLoaded(sceneName as String) as Void
-    nrSendCustomEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
-end function
-
-function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String) as Void
-    dict = CreateObject("roAssociativeArray")
-    dict[key] = value
-    nrSetCustomAttributeList(dict, actionName)
-end function
-
-function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as Void
-    dictName = actionName
-    if dictName = "" then dictName = "GENERAL_ATTR"
+function nrCreateEvent(eventType as String, actionName as String) as Object
+    ev = CreateObject("roAssociativeArray")
+    if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
+    if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
     
-    if m.nrCustomAttributes[dictName] = invalid
-        m.nrCustomAttributes[dictName] = CreateObject("roAssociativeArray")
+    ev["timestamp"] = FormatJson(nrTimestamp())
+    ev = nrAddAttributes(ev)
+    
+    return ev
+end function
+
+function nrAddAttributes(ev as Object) as Object
+    ev.AddReplace("newRelicAgent", "RokuAgent")
+    ev.AddReplace("newRelicVersion", m.nrAgentVersion)
+    ev.AddReplace("sessionId", m.nrSessionId)
+    hdmi = CreateObject("roHdmiStatus")
+    ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
+    ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
+    dev = CreateObject("roDeviceInfo")
+    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
+    ev.AddReplace("device", dev.GetModelDisplayName())
+    ev.AddReplace("deviceGroup", "Roku")
+    ev.AddReplace("deviceManufacturer", "Roku")
+    ev.AddReplace("deviceModel", dev.GetModel())
+    ev.AddReplace("deviceType", dev.GetModelType())
+    ev.AddReplace("osName", "RokuOS")
+    ver = __nrParseVersion(dev.GetVersion())
+    ev.AddReplace("osVersionString", dev.GetVersion())
+    ev.AddReplace("osVersion", ver["version"])
+    ev.AddReplace("osBuild", ver["build"])
+    ev.AddReplace("countryCode", dev.GetUserCountryCode())
+    ev.AddReplace("timeZone", dev.GetTimeZone())
+    ev.AddReplace("locale", dev.GetCurrentLocale())
+    ev.AddReplace("memoryLevel", dev.GetGeneralMemoryLevel())
+    ev.AddReplace("connectionType", dev.GetConnectionType())
+    'ev.AddReplace("ipAddress", dev.GetExternalIp())
+    ev.AddReplace("displayType", dev.GetDisplayType())
+    ev.AddReplace("displayMode", dev.GetDisplayMode())
+    ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
+    ev.AddReplace("videoMode", dev.GetVideoMode())
+    ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
+    ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)    
+    app = CreateObject("roAppInfo")
+    appid = app.GetID().ToInt()
+    if appid = 0 then appid = 1
+    ev.AddReplace("appId", appid)
+    ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
+    ev.AddReplace("appName", app.GetTitle())
+    ev.AddReplace("appDevId", app.GetDevID())
+    ev.AddReplace("appIsDev", app.IsDev())
+    appbuild = app.GetValue("build_version").ToInt()
+    if appbuild = 0 then appbuild = 1
+    ev.AddReplace("appBuild", appbuild)
+    
+    'Add custom attributes
+    genCustomAttr = m.nrCustomAttributes["GENERAL_ATTR"]
+    if genCustomAttr <> invalid then ev.Append(genCustomAttr)
+    actionName = ev["actionName"]
+    actionCustomAttr = m.nrCustomAttributes[actionName]
+    if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
+    
+    'Time Since Load
+    date = CreateObject("roDateTime")
+    ev.AddReplace("timeSinceLoad", date.AsSeconds() - m.nrInitTimestamp)
+    
+    return ev
+end function
+
+function nrProcessGroupedEvents() as Void
+    'Convert groups into custom events and flush the groups dictionaries
+    
+    nrLog("-- Process Grouped Events --")
+    __logEvGroups()
+    
+    if m.nrEventGroupsConnect.Count() > 0
+        nrConvertGroupsToEvents(m.nrEventGroupsConnect)
+        m.nrEventGroupsConnect = {}
     end if
     
-    actionDict = m.nrCustomAttributes[dictName]
-    
-    actionDict.Append(attr)
-    m.nrCustomAttributes[dictName] = actionDict
-    
-    nrLog(["Custom Attributes: ", m.nrCustomAttributes[dictName]])
+    if m.nrEventGroupsComplete.Count() > 0
+        nrConvertGroupsToEvents(m.nrEventGroupsComplete)
+        m.nrEventGroupsComplete = {}
+    end if
 end function
 
-'======================='
-' Video Agent functions '
-'======================='
+function nrConvertGroupsToEvents(group as Object) as Void
+    for each item in group.Items()
+        item.value["matchUrl"] = item.key
 
-function NewRelicVideoStart(videoObject as Object) as Void
-    nrLog("NewRelicVideoStart")
-
-    'Current state
-    m.nrLastVideoState = "none"
-    m.nrIsAd = false
-    m.nrVideoCounter = 0
-    m.nrIsInitialBuffering = false
-    'Setup event listeners 
-    videoObject.observeField("state", "__nrStateObserver")
-    videoObject.observeField("contentIndex", "__nrIndexObserver")
-    'Store video object
-    m.nrVideoObject = videoObject
-    'Init heartbeat timer
-    m.hbTimer = CreateObject("roSGNode", "Timer")
-    m.hbTimer.repeat = true
-    m.hbTimer.duration = 30
-    m.hbTimer.observeField("fire", "__nrHeartbeatHandler")
-    m.hbTimer.control = "start"
-    'Timestamps for timeSince attributes
-    m.nrTimeSinceBufferBegin = 0.0
-    m.nrTimeSinceLastHeartbeat = 0.0
-    m.nrTimeSincePaused = 0.0
-    m.nrTimeSinceRequested = 0.0
-    m.nrTimeSinceStarted = 0.0
-    m.nrTimeSinceTrackerReady = 0.0
-    'Counters
-    m.nrNumberOfErrors = 0
-    
-    'Player Ready
-    nrSendPlayerReady()
+        'Calculate averages
+        if item.value["actionName"] = "HTTP_COMPLETE"
+            counter = Cdbl(item.value["counter"])
+            item.value["transferTime"] = item.value["transferTime"] / counter
+            item.value["connectTime"] = item.value["connectTime"] / counter
+            item.value["dnsLookupTime"] = item.value["dnsLookupTime"] / counter
+            item.value["downloadSpeed"] = item.value["downloadSpeed"] / counter
+            item.value["uploadSpeed"] = item.value["uploadSpeed"] / counter
+            item.value["firstByteTime"] = item.value["firstByteTime"] / counter
+        end if
+        
+        nrSendCustomEvent("RokuSystem", item.value["actionName"], item.value)
+    end for
 end function
+
+function nrAddCommonHTTPAttr(info as Object) as Object
+    attr = {
+        "httpCode": info["HttpCode"],
+        "method": info["Method"],
+        "origUrl": info["OrigUrl"],
+        "status": info["Status"],
+        "targetIp": info["TargetIp"],
+        "url": info["Url"]
+    }
+    return attr
+end function
+
+function nrGroupNewEvent(ev as Object, actionName as String) as Void
+    if ev["Url"] = invalid then return
+    urlKey = ev["Url"]
+    matchUrl = nrParseVideoStreamUrl(urlKey)
+    if matchUrl <> "" then urlKey = matchUrl
+    ev["actionName"] = actionName
+    
+    if actionName = "HTTP_COMPLETE"
+        m.nrEventGroupsComplete = nrGroupMergeEvent(urlKey, m.nrEventGroupsComplete, ev)
+    else if actionName = "HTTP_CONNECT"
+        m.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.nrEventGroupsConnect, ev)
+    end if
+end function
+
+function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as Object
+    evGroup = group[urlKey]
+    if evGroup = invalid
+        'Create new group from event
+        ev["counter"] = 1
+        ev["initialTimestamp"] = nrTimestamp()
+        ev["finalTimestamp"] = ev["initialTimestamp"]
+        group[urlKey] = ev
+    else
+        'Add new event to existing group
+        evGroup["counter"] = evGroup["counter"] + 1
+        evGroup["finalTimestamp"] = nrTimestamp()
+        
+        'Add all numeric values
+        if ev["actionName"] = "HTTP_COMPLETE"
+            'Summations
+            evGroup["bytesDownloaded"] = evGroup["bytesDownloaded"] + ev["bytesDownloaded"]
+            evGroup["bytesUploaded"] = evGroup["bytesUploaded"] + ev["bytesUploaded"]
+            'Averages, we will divide it by count right before sending the event
+            evGroup["transferTime"] = evGroup["transferTime"] + ev["transferTime"]
+            evGroup["connectTime"] = evGroup["connectTime"] + ev["connectTime"]
+            evGroup["dnsLookupTime"] = evGroup["dnsLookupTime"] + ev["dnsLookupTime"]
+            evGroup["downloadSpeed"] = evGroup["downloadSpeed"] + ev["downloadSpeed"]
+            evGroup["uploadSpeed"] = evGroup["uploadSpeed"] + ev["uploadSpeed"]
+            evGroup["firstByteTime"] = evGroup["firstByteTime"] + ev["firstByteTime"]
+        end if 
+        
+        group[urlKey] = evGroup
+    end if
+    return group
+end function
+
+'================='
+' Video functions '
+'================='
 
 function nrSendPlayerReady() as Void
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
@@ -232,23 +454,6 @@ function nrSendError(msg as String) as Void
     nrSendVideoEvent(nrAction("ERROR"), {"errorMessage": errMsg})
 end function
 
-'Used by all video senders
-function nrSendVideoEvent(actionName as String, attr = invalid) as Void
-    ev = nrCreateEvent("RokuVideo", actionName)
-    ev = nrAddVideoAttributes(ev)
-    if type(attr) = "roAssociativeArray"
-       ev.Append(attr)
-    end if
-    nrRecordEvent(ev)
-    'Backup attributes (cloning it)
-    m.nrBackupAttributes = {}
-    m.nrBackupAttributes.Append(ev)
-end function
-
-function nrSendSystemEvent(actionName as String, attr = invalid) as Void
-    nrSendCustomEvent("RokuSystem", actionName, attr)
-end function
-
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     'Use attributes in the backup (m.nrBackupAttributes) and recalculate some of them.
     ev = m.nrBackupAttributes
@@ -292,44 +497,6 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     
     nrRecordEvent(ev)
     
-end function
-
-'=================='
-' Helper functions '
-'=================='
-
-function nrAddCommonHTTPAttr(info as Object) as Object
-    attr = {
-        "httpCode": info["HttpCode"],
-        "method": info["Method"],
-        "origUrl": info["OrigUrl"],
-        "status": info["Status"],
-        "targetIp": info["TargetIp"],
-        "url": info["Url"]
-    }
-    return attr
-end function
-
-function nrAction(action as String) as String
-    if m.nrIsAd = true
-        return "AD_" + action
-    else
-        return "CONTENT_" + action
-    end if
-end function
-
-function isAction(name as String, action as String) as Boolean
-    regExp = "(CONTENT|AD)_" + name
-    r = CreateObject("roRegex", regExp, "")
-    return r.isMatch(action)
-end function
-
-function nrAttr(attribute as String) as String
-    if m.nrIsAd = true
-        return "ad" + attribute
-    else
-        return "content" + attribute
-    end if
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
@@ -382,50 +549,30 @@ function nrAddVideoAttributes(ev as Object) as Object
     return ev
 end function
 
-function nrGroupNewEvent(ev as Object, actionName as String) as Void
-    if ev["Url"] = invalid then return
-    urlKey = ev["Url"]
-    matchUrl = nrParseVideoStreamUrl(urlKey)
-    if matchUrl <> "" then urlKey = matchUrl
-    ev["actionName"] = actionName
-    
-    if actionName = "HTTP_COMPLETE"
-        m.nrEventGroupsComplete = nrGroupMergeEvent(urlKey, m.nrEventGroupsComplete, ev)
-    else if actionName = "HTTP_CONNECT"
-        m.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.nrEventGroupsConnect, ev)
+'=================='
+' Helper functions '
+'=================='
+
+function nrAction(action as String) as String
+    if m.nrIsAd = true
+        return "AD_" + action
+    else
+        return "CONTENT_" + action
     end if
 end function
 
-function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as Object
-    evGroup = group[urlKey]
-    if evGroup = invalid
-        'Create new group from event
-        ev["counter"] = 1
-        ev["initialTimestamp"] = nrTimestamp()
-        ev["finalTimestamp"] = ev["initialTimestamp"]
-        group[urlKey] = ev
+function isAction(name as String, action as String) as Boolean
+    regExp = "(CONTENT|AD)_" + name
+    r = CreateObject("roRegex", regExp, "")
+    return r.isMatch(action)
+end function
+
+function nrAttr(attribute as String) as String
+    if m.nrIsAd = true
+        return "ad" + attribute
     else
-        'Add new event to existing group
-        evGroup["counter"] = evGroup["counter"] + 1
-        evGroup["finalTimestamp"] = nrTimestamp()
-        
-        'Add all numeric values
-        if ev["actionName"] = "HTTP_COMPLETE"
-            'Summations
-            evGroup["bytesDownloaded"] = evGroup["bytesDownloaded"] + ev["bytesDownloaded"]
-            evGroup["bytesUploaded"] = evGroup["bytesUploaded"] + ev["bytesUploaded"]
-            'Averages, we will divide it by count right before sending the event
-            evGroup["transferTime"] = evGroup["transferTime"] + ev["transferTime"]
-            evGroup["connectTime"] = evGroup["connectTime"] + ev["connectTime"]
-            evGroup["dnsLookupTime"] = evGroup["dnsLookupTime"] + ev["dnsLookupTime"]
-            evGroup["downloadSpeed"] = evGroup["downloadSpeed"] + ev["downloadSpeed"]
-            evGroup["uploadSpeed"] = evGroup["uploadSpeed"] + ev["uploadSpeed"]
-            evGroup["firstByteTime"] = evGroup["firstByteTime"] + ev["firstByteTime"]
-        end if 
-        
-        group[urlKey] = evGroup
+        return "content" + attribute
     end if
-    return group
 end function
 
 function nrParseVideoStreamUrl(url as String) as String
@@ -445,9 +592,56 @@ function nrParseVideoStreamUrl(url as String) as String
     return matchUrl
 end function
 
-'========================'
-' Observers and Handlers '
-'========================'
+function __nrGenerateId() as String
+    timestamp = CreateObject("roDateTime").asSeconds()
+    randStr = "ID" + Str(timestamp) + Str(Rnd(0) * 1000.0)
+    ba = CreateObject("roByteArray")
+    ba.FromAsciiString(randStr)
+    digest = CreateObject("roEVPDigest")
+    digest.Setup("md5")
+    result = digest.Process(ba)
+    return result
+end function
+
+function __nrGenerateStreamUrl() as String
+    if m.nrVideoObject.streamInfo <> invalid
+        return m.nrVideoObject.streamInfo["streamUrl"]
+    else
+        if (m.nrVideoObject.contentIsPlaylist)
+            currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
+            if currentChild <> invalid
+                'Get url from content child
+                return currentChild.url
+            end if
+        end if
+    end if
+    return ""
+end function
+
+function nrTimestamp() as LongInteger
+    timestamp = CreateObject("roDateTime").asSeconds()
+    timestampLong& = timestamp
+    timestampMS& = timestampLong& * 1000
+    
+    if timestamp = m.nrLastTimestamp
+        m.nrTicks = m.nrTicks + 1
+    else
+        m.nrTicks = 0
+    end if
+    
+    timestampMS& = timestampMS& + m.nrTicks
+    m.nrLastTimestamp = timestamp
+    
+    return timestampMS&
+end function
+
+function __nrParseVersion(verStr as String) as Object
+    return {version: verStr.Mid(2, 3) + "." + verStr.Mid(5, 1), build: verStr.Mid(8, 4)}
+end function
+
+'================================'
+' Observers, States and Handlers '
+'================================'
 
 function nrHarvestTimerHandler() as Void
     nrLog("--- nrHarvestTimerHandler ---")
@@ -558,204 +752,9 @@ function __nrHeartbeatHandler() as Void
     end if
 end function
 
-function __nrGenerateId() as String
-    timestamp = CreateObject("roDateTime").asSeconds()
-    randStr = "ID" + Str(timestamp) + Str(Rnd(0) * 1000.0)
-    ba = CreateObject("roByteArray")
-    ba.FromAsciiString(randStr)
-    digest = CreateObject("roEVPDigest")
-    digest.Setup("md5")
-    result = digest.Process(ba)
-    return result
-end function
-
-function __nrGenerateStreamUrl() as String
-    if m.nrVideoObject.streamInfo <> invalid
-        return m.nrVideoObject.streamInfo["streamUrl"]
-    else
-        if (m.nrVideoObject.contentIsPlaylist)
-            currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
-            if currentChild <> invalid
-                'Get url from content child
-                return currentChild.url
-            end if
-        end if
-    end if
-    return ""
-end function
-
-'**********************************************************
-' Code from old NRUtils.brs file
-'**********************************************************
-
-'Used to send generic events
-function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
-    nrLog("nrSendCustomEvent")
-    ev = nrCreateEvent(eventType, actionName)
-    if attr <> invalid
-        ev.Append(attr)
-    end if
-    nrRecordEvent(ev)
-end function
-
-function nrCreateEvent(eventType as String, actionName as String) as Object
-    ev = CreateObject("roAssociativeArray")
-    if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
-    if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
-    
-    ev["timestamp"] = FormatJson(nrTimestamp())
-    ev = nrAddAttributes(ev)
-    
-    return ev
-end function
-
-function nrTimestamp() as LongInteger
-    timestamp = CreateObject("roDateTime").asSeconds()
-    timestampLong& = timestamp
-    timestampMS& = timestampLong& * 1000
-    
-    if timestamp = m.nrLastTimestamp
-        m.nrTicks = m.nrTicks + 1
-    else
-        m.nrTicks = 0
-    end if
-    
-    timestampMS& = timestampMS& + m.nrTicks
-    m.nrLastTimestamp = timestamp
-    
-    return timestampMS&
-end function
-
-function nrAddAttributes(ev as Object) as Object
-    ev.AddReplace("newRelicAgent", "RokuAgent")
-    ev.AddReplace("newRelicVersion", m.nrAgentVersion)
-    ev.AddReplace("sessionId", m.nrSessionId)
-    hdmi = CreateObject("roHdmiStatus")
-    ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
-    ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
-    dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
-    ev.AddReplace("device", dev.GetModelDisplayName())
-    ev.AddReplace("deviceGroup", "Roku")
-    ev.AddReplace("deviceManufacturer", "Roku")
-    ev.AddReplace("deviceModel", dev.GetModel())
-    ev.AddReplace("deviceType", dev.GetModelType())
-    ev.AddReplace("osName", "RokuOS")
-    ver = __nrParseVersion(dev.GetVersion())
-    ev.AddReplace("osVersionString", dev.GetVersion())
-    ev.AddReplace("osVersion", ver["version"])
-    ev.AddReplace("osBuild", ver["build"])
-    ev.AddReplace("countryCode", dev.GetUserCountryCode())
-    ev.AddReplace("timeZone", dev.GetTimeZone())
-    ev.AddReplace("locale", dev.GetCurrentLocale())
-    ev.AddReplace("memoryLevel", dev.GetGeneralMemoryLevel())
-    ev.AddReplace("connectionType", dev.GetConnectionType())
-    'ev.AddReplace("ipAddress", dev.GetExternalIp())
-    ev.AddReplace("displayType", dev.GetDisplayType())
-    ev.AddReplace("displayMode", dev.GetDisplayMode())
-    ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
-    ev.AddReplace("videoMode", dev.GetVideoMode())
-    ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
-    ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)    
-    app = CreateObject("roAppInfo")
-    appid = app.GetID().ToInt()
-    if appid = 0 then appid = 1
-    ev.AddReplace("appId", appid)
-    ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
-    ev.AddReplace("appName", app.GetTitle())
-    ev.AddReplace("appDevId", app.GetDevID())
-    ev.AddReplace("appIsDev", app.IsDev())
-    appbuild = app.GetValue("build_version").ToInt()
-    if appbuild = 0 then appbuild = 1
-    ev.AddReplace("appBuild", appbuild)
-    
-    'Add custom attributes
-    genCustomAttr = m.nrCustomAttributes["GENERAL_ATTR"]
-    if genCustomAttr <> invalid then ev.Append(genCustomAttr)
-    actionName = ev["actionName"]
-    actionCustomAttr = m.nrCustomAttributes[actionName]
-    if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
-    
-    'Time Since Load
-    date = CreateObject("roDateTime")
-    ev.AddReplace("timeSinceLoad", date.AsSeconds() - m.nrInitTimestamp)
-    
-    return ev
-end function
-
-function nrProcessGroupedEvents() as Void
-    'Convert groups into custom events and flush the groups dictionaries
-    
-    nrLog("-- Process Grouped Events --")
-    __logEvGroups()
-    
-    if m.nrEventGroupsConnect.Count() > 0
-        nrConvertGroupsToEvents(m.nrEventGroupsConnect)
-        m.nrEventGroupsConnect = {}
-    end if
-    
-    if m.nrEventGroupsComplete.Count() > 0
-        nrConvertGroupsToEvents(m.nrEventGroupsComplete)
-        m.nrEventGroupsComplete = {}
-    end if
-end function
-
-function nrConvertGroupsToEvents(group as Object) as Void
-    for each item in group.Items()
-        item.value["matchUrl"] = item.key
-
-        'Calculate averages
-        if item.value["actionName"] = "HTTP_COMPLETE"
-            counter = Cdbl(item.value["counter"])
-            item.value["transferTime"] = item.value["transferTime"] / counter
-            item.value["connectTime"] = item.value["connectTime"] / counter
-            item.value["dnsLookupTime"] = item.value["dnsLookupTime"] / counter
-            item.value["downloadSpeed"] = item.value["downloadSpeed"] / counter
-            item.value["uploadSpeed"] = item.value["uploadSpeed"] / counter
-            item.value["firstByteTime"] = item.value["firstByteTime"] / counter
-        end if
-        
-        nrSendCustomEvent("RokuSystem", item.value["actionName"], item.value)
-    end for
-end function
-
-'Record an event to the list. Takes an roAssociativeArray as argument 
-function nrRecordEvent(event as Object) as Void
-    if m.nrEventArray.Count() < 500
-        m.nrEventArray.Push(event)
-        
-        nrLog("====================================")
-        nrLog(["RECORD NEW EVENT = ", m.nrEventArray.Peek()])
-        nrLog(["EVENTARRAY SIZE = ", m.nrEventArray.Count()])
-        nrLog("====================================")
-        '__logVideoInfo()
-    else
-        nrLog("Events overflow, discard event")
-    end if
-end function
-
-'Extracts the first event from the list. Returns an roAssociativeArray as argument
-function nrExtractEvent() as Object
-    res = m.nrEventArray.Pop()
-    return res
-end function
-
-function nrLog(msg as Dynamic) as Void
-    if m.nrLogsState = true
-        if type(msg) = "roArray"         
-            For i=0 To msg.Count() - 1 Step 1
-                print msg[i];
-            End For
-            print ""
-        else
-            print msg
-        end if
-    end if
-end function
-
-function nrActivateLogging(state as Boolean) as Void
-    m.nrLogsState = state
-end function
+'========='
+' Logging '
+'========='
 
 function __logEvGroups() as Void
     nrLog("============ Event Groups HTTP_CONNECT ===========")
@@ -816,8 +815,4 @@ function __logEventArray() as Void
         nrLog("----------------------------------")
     end for
     nrLog("====================================")
-end function
-
-function __nrParseVersion(verStr as String) as Object
-    return {version: verStr.Mid(2, 3) + "." + verStr.Mid(5, 1), build: verStr.Mid(8, 4)}
 end function
