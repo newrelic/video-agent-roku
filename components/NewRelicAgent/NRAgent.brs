@@ -14,6 +14,8 @@ sub init()
     print "********************************************************"
 end sub
 
+'TODO: refactor all functions, reorder and rename, giving prevalence to "nrFooName" naming convention.
+
 '========================='
 ' General Agent functions '
 '========================='
@@ -28,6 +30,7 @@ function NewRelicInit(account as String, apikey as String) as Void
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
+    m.nrCustomAttributes = CreateObject("roAssociativeArray")
     m.nrLastTimestamp = 0
     m.nrTicks = 0
     
@@ -120,23 +123,20 @@ function nrSetCustomAttribute(key as String, value as Object, actionName = "" as
     nrSetCustomAttributeList(dict, actionName)
 end function
 
-'TODO: fix global stuff
 function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as Void
-    return
     dictName = actionName
     if dictName = "" then dictName = "GENERAL_ATTR"
     
-    if m.global[dictName] = invalid
-        m.global.addField(dictName, "assocarray", false)
-        m.global[dictName] = CreateObject("roAssociativeArray")
+    if m.nrCustomAttributes[dictName] = invalid
+        m.nrCustomAttributes[dictName] = CreateObject("roAssociativeArray")
     end if
     
-    actionDict = m.global[dictName]
+    actionDict = m.nrCustomAttributes[dictName]
     
     actionDict.Append(attr)
-    m.global[dictName] = actionDict
+    m.nrCustomAttributes[dictName] = actionDict
     
-    nrLog(["Custom Attributes: ", m.global[dictName]])
+    nrLog(["Custom Attributes: ", m.nrCustomAttributes[dictName]])
 end function
 
 '======================='
@@ -734,12 +734,11 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("appBuild", appbuild)
     
     'Add custom attributes
-    'TODO: fix global stuff
-    'genCustomAttr = m.global["GENERAL_ATTR"]
-    'if genCustomAttr <> invalid then ev.Append(genCustomAttr)
-    'actionName = ev["actionName"]
-    'actionCustomAttr = m.global[actionName]
-    'if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
+    genCustomAttr = m.nrCustomAttributes["GENERAL_ATTR"]
+    if genCustomAttr <> invalid then ev.Append(genCustomAttr)
+    actionName = ev["actionName"]
+    actionCustomAttr = m.nrCustomAttributes[actionName]
+    if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
     
     'Time Since Load
     date = CreateObject("roDateTime")

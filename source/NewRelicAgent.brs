@@ -37,8 +37,13 @@ function nrSendVideoEvent(nr as Object, actionName as String, attr = invalid) as
     nr.callFunc("nrSendVideoEvent", actionName, attr)
 end function
 
-'TODO: wrap nrSetCustomAttribute
-'TODO: wrap nrSetCustomAttributeList
+function nrSetCustomAttribute(nr as Object, key as String, value as Object, actionName = "" as String) as Void
+    nr.callFunc("nrSetCustomAttribute", key, value, actionName)
+end function
+
+function nrSetCustomAttributeList(nr as Object, attr as Object, actionName = "" as String) as Void
+    nr.callFunc("nrSetCustomAttributeList", attr, actionName)
+end function
 
 'TODO: add function to set heartbeat time
 'TODO: add function to set harvest time

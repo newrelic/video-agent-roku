@@ -18,13 +18,11 @@ function nrRefUpdated()
 end function
 
 function updateCustomAttr() as Void
-    'TODO: fix custom attributes and undo this 
-    return
-    nrSetCustomAttribute("customGeneralString", "Value")
-    nrSetCustomAttribute("customGeneralNumber", 123)
-    nrSetCustomAttribute("customNumPause", m.pauseCounter, "CONTENT_PAUSE")
+    nrSetCustomAttribute(m.nr, "customGeneralString", "Value")
+    nrSetCustomAttribute(m.nr, "customGeneralNumber", 123)
+    nrSetCustomAttribute(m.nr, "customNumPause", m.pauseCounter, "CONTENT_PAUSE")
     dict = {"key0":"val0", "key1":"val1"}
-    nrSetCustomAttributeList(dict, "CONTENT_HEARTBEAT")
+    nrSetCustomAttributeList(m.nr, dict, "CONTENT_HEARTBEAT")
 end function
 
 function setupVideo() as void
