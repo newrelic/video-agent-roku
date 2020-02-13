@@ -1,5 +1,14 @@
-'Code for TestTask Task
-function SearchTaskMain()
+sub init()
+    m.top.functionName = "searchTaskMain"
+end sub
+
+function nrRefUpdated()
+    print "SearchTask - Updated NR object reference"
+    m.nr = m.top.nr
+end function
+
+function searchTaskMain()
+    print "SearchTaskMain function"
     m.port = CreateObject("roMessagePort")
     while true
         _url = box("https://www.google.com/search?source=hp&q=" + m.top.searchString)
@@ -11,9 +20,11 @@ function SearchTaskMain()
         urlReq.SetMessagePort(m.port)
         urlReq.AsyncGetToString()
         
+        nrSendHttpRequest(m.nr, urlReq)
+        
         msg = wait(5000, m.port)
         if type(msg) = "roUrlEvent" then
-            nrSendHttpEvent(_url, msg)
+            nrSendHttpResponse(m.nr, _url, msg)
         end if
         
         sleep(5000)

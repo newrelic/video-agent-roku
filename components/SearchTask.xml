@@ -2,18 +2,12 @@
 <component name = "SearchTask" extends = "Task">
 	<interface>
 		<field id="searchString" type="string" />
+		<field id="nr" type="node" onChange="nrRefUpdated" />
 	</interface>
+
+	<!-- New Relic Agent Interface -->
+	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
 	
-	<!-- 
-	<script type="text/brightscript" uri="pkg:/source/newrelic/NRUtils.brs"/>
-	<script type="text/brightscript" uri="pkg:/source/SearchTask.brs"/>
-	 -->
-	
-	<script type = "text/brightscript" >
-		<![CDATA[
-		sub init()
-  			m.top.functionName = "SearchTaskMain"
-		end sub
-		]]>
-	</script>
+	<!-- Init -->
+	<script type="text/brightscript" uri="pkg:/components/SearchTask.brs"/>
 </component>

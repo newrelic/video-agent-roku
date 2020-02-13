@@ -76,5 +76,50 @@ function nrProcessMessage(nr as Object, msg as Object) as Boolean
     return false
 end function
 
+function nrSendHttpRequest(nr as Object, urlReq as Object) as Void
+    if type(urlReq) <> "roUrlTransfer" return
+    
+    attr = {
+        "origUrl": urlReq.GetUrl(),
+        "transferIdentity": urlReq.GetIdentity(),
+        "method": urlReq.GetRequest()
+    }
+    
+    nrSendCustomEvent(nr, "RokuSystem", "HTTP_REQUEST", attr)
+end function
+
+function nrSendHttpResponse(nr as Object, _url as String, msg = invalid as Object) as Void
+    
+    if type(msg) <> "roUrlEvent" return
+    
+    attr = {
+        "origUrl": _url
+    }
+    
+    if msg <> invalid
+        attr.AddReplace("httpCode", msg.GetResponseCode())
+        attr.AddReplace("httpResult", msg.GetFailureReason())
+        attr.AddReplace("transferIdentity", msg.GetSourceIdentity())
+        
+        header = msg.GetResponseHeaders()
+        
+        for each key in header
+            parts = key.Tokenize("-")
+            finalKey = "http"
+            finalValue = header[key]
+            for each part in parts
+                firstChar = Left(part, 1)
+                firstChar = UCase(firstChar)
+                restStr = Right(part, Len(part) - 1)
+                restStr = LCase(restStr)
+                finalKey = finalKey + firstChar + restStr
+            end for
+            attr.AddReplace(finalKey, finalValue)
+        end for
+    end if
+    
+    nrSendCustomEvent(nr, "RokuSystem", "HTTP_RESPONSE", attr)
+end function
+
 'TODO: add function to set heartbeat time
 'TODO: add function to set harvest time

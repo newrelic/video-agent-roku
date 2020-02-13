@@ -594,34 +594,6 @@ function nrSendCustomEvent(eventType as String, actionName as String, attr = inv
     nrRecordEvent(ev)
 end function
 
-function nrSendHttpEvent(_url as String, msg = invalid as Object) as Void
-    attr = {
-        "origUrl": _url
-    }
-    
-    if msg <> invalid
-        attr.AddReplace("httpCode", msg.GetResponseCode())
-        attr.AddReplace("httpResult", msg.GetFailureReason())
-        header = msg.GetResponseHeaders()
-        
-        for each key in header
-            parts = key.Tokenize("-")
-            finalKey = "http"
-            finalValue = header[key]
-            for each part in parts
-                firstChar = Left(part, 1)
-                firstChar = UCase(firstChar)
-                restStr = Right(part, Len(part) - 1)
-                restStr = LCase(restStr)
-                finalKey = finalKey + firstChar + restStr
-            end for
-            attr.AddReplace(finalKey, finalValue)
-        end for
-    end if
-    
-    nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
-end function
-
 function nrCreateEvent(eventType as String, actionName as String) as Object
     ev = CreateObject("roAssociativeArray")
     if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
