@@ -1,6 +1,6 @@
 '**********************************************************
 ' NRAgent.brs
-' New Relic Agent for Roku.
+' New Relic Agent Component.
 '
 ' Copyright 2019 New Relic Inc. All Rights Reserved. 
 '**********************************************************

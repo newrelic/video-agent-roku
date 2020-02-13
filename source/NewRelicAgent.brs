@@ -1,14 +1,10 @@
 '**********************************************************
 ' NewRelicAgent.brs
-' New Relic Agent for Roku.
+' New Relic Agent Function Wrapper.
 ' Minimum requirements: FW 8.1
 '
 ' Copyright 2020 New Relic Inc. All Rights Reserved. 
 '**********************************************************
-
-'------------------
-' Wrapper Functions
-'------------------
 
 function NewRelic(account as String, apikey as String, activeLogs = false as Boolean) as Object
     nr = CreateObject("roSGNode", "com.newrelic.NRAgent")
@@ -43,3 +39,6 @@ end function
 
 'TODO: wrap nrSetCustomAttribute
 'TODO: wrap nrSetCustomAttributeList
+
+'TODO: add function to set heartbeat time
+'TODO: add function to set harvest time

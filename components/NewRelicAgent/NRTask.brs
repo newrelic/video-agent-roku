@@ -1,6 +1,6 @@
 '**********************************************************
 ' NRTask.brs
-' New Relic Agent for Roku.
+' New Relic Agent background task.
 '
 ' Copyright 2020 New Relic Inc. All Rights Reserved. 
 '**********************************************************
@@ -45,7 +45,7 @@ function nrEventProcessor() as Void
 end function
 
 function nrTaskMain() as Void
-    'We assume that parent node is com.newrelic.NRAgent
+    'Assuming that parent node is com.newrelic.NRAgent
     m.nr = m.top.getParent()
     m.nr.callFunc("nrLog", "---- NRTASK MAIN ----")
     nrEventProcessor()
