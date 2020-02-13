@@ -45,7 +45,7 @@ function nrEventProcessor() as Void
 end function
 
 function nrTaskMain() as Void
-    'We assume that parent node is NewRelicAgent
+    'We assume that parent node is com.newrelic.NRAgent
     m.nr = m.top.getParent()
     m.nr.callFunc("nrLog", "---- NRTASK MAIN ----")
     nrEventProcessor()

@@ -4,13 +4,12 @@
 **********************************************************
  NRTask.xml
  New Relic Agent background task.
- Minimum requirements: FW 7.2
 
  Copyright 2019 New Relic Inc. All Rights Reserved. 
 **********************************************************
 -->
 
-<component name="com.newrelic.NewRelicAgent.NRTask" extends="Task">
+<component name="com.newrelic.NRTask" extends="Task">
 	<interface>
 		<!-- Properties -->
 		<field id="accountNumber" type="string" value=""/>

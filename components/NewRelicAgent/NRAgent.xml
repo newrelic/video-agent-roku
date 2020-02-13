@@ -33,6 +33,6 @@
 	
 	<children>
 		<Timer id="nrHarvestTimer" repeat="true" duration="10"/>
-		<com.newrelic.NewRelicAgent.NRTask id="NRTask"/>
+		<com.newrelic.NRTask id="NRTask"/>
 	</children>
 </component>
