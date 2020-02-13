@@ -63,6 +63,10 @@ function NewRelicInit(account as String, apikey as String) as Void
     
 end function
 
+function nrSetHarvestTime(seconds as Integer) as Void
+    m.nrHarvestTimer.duration = seconds
+end function
+
 function nrSendHTTPError(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)   
     nrSendCustomEvent("RokuSystem", "HTTP_ERROR", attr)
@@ -449,7 +453,7 @@ function nrHarvestTimerHandler() as Void
     nrLog("--- nrHarvestTimerHandler ---")
     
     'NRTask still running
-    if m.bgTask.state = "RUN"
+    if LCase(m.bgTask.state) = "run"
         nrLog("NRTask still running, abort")
         return
     end if

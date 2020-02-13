@@ -119,5 +119,6 @@ function nrSendHttpResponse(nr as Object, _url as String, msg = invalid as Objec
     nrSendCustomEvent(nr, "RokuSystem", "HTTP_RESPONSE", attr)
 end function
 
-'TODO: add function to set heartbeat time
-'TODO: add function to set harvest time
+function nrSetHarvestTime(nr as Object, time as Integer) as Void
+    nr.callFunc("nrSetHarvestTime", time)
+end function
