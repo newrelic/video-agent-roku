@@ -31,6 +31,7 @@
         <function name="nrExtractEvent"/>
         <function name="nrRecordEvent"/>
         <function name="nrProcessSystemEvent"/>
+        <function name="nrForceHarvest"/>
     </interface>
     
 	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRAgent.brs"/>

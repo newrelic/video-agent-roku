@@ -206,6 +206,10 @@ function nrProcessSystemEvent(i as Object) as Boolean
     return false
 end function
 
+function nrForceHarvest() as Void
+    nrHarvestTimerHandler()
+end function
+
 '=================='
 ' System functions '
 '=================='

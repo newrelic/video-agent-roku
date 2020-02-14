@@ -341,3 +341,16 @@ Arguments:
 Return:
 	Nothing.
 ```
+
+```
+nrForceHarvest(nr as Object) as Void
+
+Description:
+	Do harvest immediately.
+
+Arguments:
+	nr: New Relic Agent object.
+	
+Return:
+	Nothing.
+```
