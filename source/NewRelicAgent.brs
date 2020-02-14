@@ -179,7 +179,7 @@ function nrSetHarvestTime(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTime", time)
 end function
 
-' Do harvest immediately.
+' Do harvest immediately. It doesn't reset the harvest timer.
 '
 ' @param nr New Relic Agent object.
 function nrForceHarvest(nr as Object) as Void

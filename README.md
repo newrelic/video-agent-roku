@@ -346,7 +346,7 @@ Return:
 nrForceHarvest(nr as Object) as Void
 
 Description:
-	Do harvest immediately.
+	Do harvest immediately. It doesn't reset the harvest timer.
 
 Arguments:
 	nr: New Relic Agent object.
