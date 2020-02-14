@@ -5,7 +5,7 @@ The New Relic Roku Agent tracks the behavior of a Roku App. It contains two part
 Internally, it uses the Insights API to send events using the REST interface. It sends two types of events: RokuSystem for system events and RokuVideo for video events. After the agent has sent some data you will be able to see it in Insights with a simple NRQL request like:
 
 ```
-SELECT * from RokuSystem, RokuVideo
+SELECT * FROM RokuSystem, RokuVideo
 ```
 
 ### Requirements
@@ -131,4 +131,213 @@ function setupVideoPlayer()
     m.video.content = videoContent
     m.video.control = "play"
 end function
+```
+
+### Interface Functions
+
+To interact with the New Relic Agent it provides a set of functions that wrap internal behaviours. All wrappers are implemented inside NewRelixAgent.brs and all include inline documentation.
+
+```
+NewRelic(account as String, apikey as String, activeLogs = false as Boolean) as Object
+
+Description:
+	Build a New Relic Agent object.
+
+Arguments:
+	account: New Relic account number.
+	apikey: Insights API key.
+	activeLogs: (optional) Activate logs or not. Default False.
+	
+Return:
+	New Relic Agent object.
+```
+
+```
+NewRelicSystemStart(nr as Object, port as Object) as Object
+
+Description:
+	Start system logging.
+
+Arguments:
+	nr: New Relic Agent object.
+	port: A message port.
+	
+Return:
+	The roSystemLog object created.
+```
+
+```
+NewRelicVideoStart(nr as Object, video as Object) as Void
+
+Description:
+	Start video logging.
+
+Arguments:
+	nr: New Relic Agent object.
+	video: A video object.
+	
+Return:
+	Nothing.
+```
+
+```
+nrProcessMessage(nr as Object, msg as Object) as Boolean
+
+Description:
+	Check for a system log message, process it and sends the appropriate event.
+
+Arguments:
+	nr: New Relic Agent object.
+	msg: A message of type roSystemLogEvent.
+	
+Return:
+	True if msg is a system log message, False otherwise.
+```
+
+```
+nrSetCustomAttribute(nr as Object, key as String, value as Object, actionName = "" as String) as Void
+
+Description:
+	Set a custom attribute to be included in the events.
+
+Arguments:
+	nr: New Relic Agent object.
+	key: Attribute name.
+	value: Attribute value.
+	actionName: (optional) Action where the attribute will be included. Default all actions.
+	
+Return:
+	Nothing.
+```
+
+```
+nrSetCustomAttributeList(nr as Object, attr as Object, actionName = "" as String) as Void
+
+Description:
+	Set a custom attribute list to be included in the events.
+
+Arguments:
+	nr: New Relic Agent object.
+	attr: Attribute list, as an associative array.
+	actionName: (optional) Action where the attribute will be included. Default all actions.
+	
+Return:
+	Nothing.
+```
+
+```
+nrAppStarted(nr as Object, obj as Object) as Void
+
+Description:
+	Send an APP_STARTED event of type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	obj: The object sent as argument of Main subroutine.
+	
+Return:
+	Nothing.
+```
+
+```
+nrSceneLoaded(nr as Object, sceneName as String) as Void
+
+Description:
+	Send a SCENE_LOADED event of type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	sceneName: The scene name.
+	
+Return:
+	Nothing.
+```
+
+```
+nrSendCustomEvent(nr as Object, eventType as String, actionName as String, attr = invalid as Object) as Void
+
+Description:
+	Send a custom event.
+
+Arguments:
+	nr: New Relic Agent object.
+	eventType: Event type.
+	actionName: Action name.
+	attr: (optional) Attributes associative array.
+	
+Return:
+	Nothing.
+```
+
+```
+nrSendSystemEvent(nr as Object, actionName as String, attr = invalid) as Void
+
+Description:
+	Send a system event, type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	actionName: Action name.
+	attr: (optional) Attributes associative array.
+	
+Return:
+	Nothing.
+```
+
+```
+nrSendVideoEvent(nr as Object, actionName as String, attr = invalid) as Void
+
+Description:
+	Send a video event, type RokuVideo.
+
+Arguments:
+	nr: New Relic Agent object.
+	actionName: Action name.
+	attr: (optional) Attributes associative array.
+	
+Return:
+	Nothing.
+```
+
+```
+nrSendHttpRequest(nr as Object, urlReq as Object) as Void
+
+Description:
+	Send an HTTP_REQUEST event of type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	urlReq: URL request, roUrlTransfer object.
+	
+Return:
+	Nothing.
+```
+
+```
+nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
+
+Description:
+	Send an HTTP_RESPONSE event of type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	_url: Request URL.
+	msg: A message of type roUrlEvent.
+	
+Return:
+	Nothing.
+```
+
+```
+nrSetHarvestTime(nr as Object, time as Integer) as Void
+
+Description:
+	Set harvest time, the time the events are buffered before being sent to Insights.
+
+Arguments:
+	nr: New Relic Agent object.
+	time: Time in seconds.
+	
+Return:
+	Nothing.
 ```
