@@ -189,38 +189,21 @@ function nrRecordEvent(event as Object) as Void
     end if
 end function
 
-function nrSendHTTPError(info as Object) as Void
-    attr = nrAddCommonHTTPAttr(info)   
-    nrSendCustomEvent("RokuSystem", "HTTP_ERROR", attr)
-end function
-
-function nrSendHTTPConnect(info as Object) as Void
-    attr = nrAddCommonHTTPAttr(info)
-    nrGroupNewEvent(attr, "HTTP_CONNECT")
-end function
-
-function nrSendHTTPComplete(info as Object) as Void
-    attr = {
-        "bytesDownloaded": info["BytesDownloaded"],
-        "bytesUploaded": info["BytesUploaded"],
-        "connectTime": info["ConnectTime"],
-        "contentType": info["ContentType"],
-        "dnsLookupTime": info["DNSLookupTime"],
-        "downloadSpeed": info["DownloadSpeed"],
-        "firstByteTime": info["FirstByteTime"],
-        "transferTime": info["TransferTime"],
-        "uploadSpeed": info["UploadSpeed"],
-    }
-    commonAttr = nrAddCommonHTTPAttr(info)
-    attr.Append(commonAttr)
-    nrGroupNewEvent(attr, "HTTP_COMPLETE")
-end function
-
-function nrSendBandwidth(info as Object) as Void
-    attr = {
-        "bandwidth": info["bandwidth"]
-    }
-    nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
+function nrProcessSystemEvent(i as Object) as Boolean
+    if i.LogType = "http.error"
+        nrSendHTTPError(i)
+        return true
+    else if i.LogType = "http.connect" 
+        nrSendHTTPConnect(i)
+        return true
+    else if i.LogType = "http.complete"
+        nrSendHTTPComplete(i)
+        return true
+    else if i.LogType = "bandwidth.minute"
+        nrSendBandwidth(i)
+        return true
+    end if
+    return false
 end function
 
 '=================='
@@ -387,6 +370,40 @@ function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as O
         group[urlKey] = evGroup
     end if
     return group
+end function
+
+function nrSendHTTPError(info as Object) as Void
+    attr = nrAddCommonHTTPAttr(info)   
+    nrSendCustomEvent("RokuSystem", "HTTP_ERROR", attr)
+end function
+
+function nrSendHTTPConnect(info as Object) as Void
+    attr = nrAddCommonHTTPAttr(info)
+    nrGroupNewEvent(attr, "HTTP_CONNECT")
+end function
+
+function nrSendHTTPComplete(info as Object) as Void
+    attr = {
+        "bytesDownloaded": info["BytesDownloaded"],
+        "bytesUploaded": info["BytesUploaded"],
+        "connectTime": info["ConnectTime"],
+        "contentType": info["ContentType"],
+        "dnsLookupTime": info["DNSLookupTime"],
+        "downloadSpeed": info["DownloadSpeed"],
+        "firstByteTime": info["FirstByteTime"],
+        "transferTime": info["TransferTime"],
+        "uploadSpeed": info["UploadSpeed"],
+    }
+    commonAttr = nrAddCommonHTTPAttr(info)
+    attr.Append(commonAttr)
+    nrGroupNewEvent(attr, "HTTP_COMPLETE")
+end function
+
+function nrSendBandwidth(info as Object) as Void
+    attr = {
+        "bandwidth": info["bandwidth"]
+    }
+    nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
 end function
 
 '================='

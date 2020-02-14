@@ -30,10 +30,7 @@
         <function name="nrLog"/>
         <function name="nrExtractEvent"/>
         <function name="nrRecordEvent"/>
-        <function name="nrSendHTTPError"/>
-        <function name="nrSendHTTPConnect"/>
-        <function name="nrSendHTTPComplete"/>
-        <function name="nrSendBandwidth"/>
+        <function name="nrProcessSystemEvent"/>
     </interface>
     
 	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRAgent.brs"/>

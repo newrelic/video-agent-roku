@@ -51,19 +51,7 @@ function nrProcessMessage(nr as Object, msg as Object) as Boolean
     msgType = type(msg)
     if msgType = "roSystemLogEvent" then
         i = msg.GetInfo()
-        if i.LogType = "http.error"
-            nr.callFunc("nrSendHTTPError", i)
-            return true
-        else if i.LogType = "http.connect" 
-            nr.callFunc("nrSendHTTPConnect", i)
-            return true
-        else if i.LogType = "http.complete"
-            nr.callFunc("nrSendHTTPComplete", i)
-            return true
-        else if i.LogType = "bandwidth.minute"
-            nr.callFunc("nrSendBandwidth", i)
-            return true
-        end If
+        return nr.callFunc("nrProcessSystemEvent", i)
     end if
     return false
 end function
