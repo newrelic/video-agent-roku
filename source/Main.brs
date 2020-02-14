@@ -29,10 +29,11 @@ sub Main(aa as Object)
     
     while(true)
         msg = wait(0, m.port)
-        print "Msg = ", msg
         
         if nrProcessMessage(m.nr, msg) = false
             'Is not a system message captured by New Relic Agent
+            print "Msg = ", msg
+            
             if type(msg) = "roSGNodeEvent"
                 if msg.getField() = "moteButton"
                     print "moteButton, data = ", msg.getData()
