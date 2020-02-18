@@ -14,6 +14,7 @@ function nrInsertInsightsData(attributes as Object) as Object
     apikey = m.top.apiKey
     jsonString = FormatJson(attributes)
 
+    rport = CreateObject("roMessagePort")
     urlReq = CreateObject("roUrlTransfer")
 
     urlReq.SetUrl(url)
@@ -22,10 +23,14 @@ function nrInsertInsightsData(attributes as Object) as Object
     urlReq.EnableHostVerification(false)
     urlReq.AddHeader("Content-Type", "application/json")
     urlReq.AddHeader("X-Insert-Key", apikey)
-
-    resp = urlReq.PostFromString(jsonString)
+    urlReq.SetMessagePort(rport)
+    urlReq.AsyncPostFromString(jsonString)
     
-    return resp
+    msg = wait(0, rport)
+    if type(msg) = "roUrlEvent" then
+        return msg.GetResponseCode()
+    end if
+    return 0
 end function
 
 function nrEventProcessor() as Void
