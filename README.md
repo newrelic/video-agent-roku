@@ -153,13 +153,12 @@ Return:
 ```
 
 ```
-NewRelicSystemStart(nr as Object, port as Object) as Object
+NewRelicSystemStart(port as Object) as Object
 
 Description:
 	Start system logging.
 
 Arguments:
-	nr: New Relic Agent object.
 	port: A message port.
 	
 Return:

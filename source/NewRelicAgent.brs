@@ -21,10 +21,9 @@ end function
 
 ' Start system logging.
 '
-' @param nr New Relic Agent object.
 ' @param port A message port.
 ' @return The roSystemLog object created.
-function NewRelicSystemStart(nr as Object, port as Object) as Object
+function NewRelicSystemStart(port as Object) as Object
     syslog = CreateObject("roSystemLog")
     syslog.SetMessagePort(port)
     syslog.EnableType("http.error")
