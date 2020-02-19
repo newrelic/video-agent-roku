@@ -67,7 +67,7 @@ sub Main(aa as Object)
 	scene.setField("nr", m.nr)
 	    
 	'Activate system tracking
-	m.syslog = NewRelicSystemStart(m.nr, m.port)
+	m.syslog = NewRelicSystemStart(m.port)
     
 	while (true)
 		msg = wait(0, m.port)
