@@ -149,6 +149,10 @@ function nrSetHarvestTime(seconds as Integer) as Void
     m.nrHarvestTimer.duration = seconds
 end function
 
+function nrForceHarvest() as Void
+    nrHarvestTimerHandler()
+end function
+
 '=========================='
 ' Public Internal Functions '
 '=========================='
@@ -204,10 +208,6 @@ function nrProcessSystemEvent(i as Object) as Boolean
         return true
     end if
     return false
-end function
-
-function nrForceHarvest() as Void
-    nrHarvestTimerHandler()
 end function
 
 '=================='
