@@ -13,7 +13,7 @@
 
 	<interface>
 		<!-- Properties -->
-		<field id="version" type="string" value="1.0.0rc2"/>
+		<field id="version" type="string" value="1.0.0rc3"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
         <function name="NewRelicVideoStart"/>
