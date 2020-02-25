@@ -4,6 +4,7 @@ sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
     setupVideoPlaylist()
+    'setupVideo()
 end sub
 
 function nrRefUpdated()
@@ -30,7 +31,7 @@ function setupVideo() as void
     print "Prepare video player with single video"
     
     'singleVideo = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
-    singleVideo = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
+    singleVideo = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
     
     videoContent = createObject("RoSGNode", "ContentNode")
     videoContent.url = singleVideo
