@@ -10,8 +10,7 @@ sub init()
 end sub
 
 function nrInsertInsightsData(attributes as Object) as Object
-    url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.top.accountNumber + "/events")
-    apikey = m.top.apiKey
+    url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.accountNumber + "/events")
     jsonString = FormatJson(attributes)
 
     rport = CreateObject("roMessagePort")
@@ -22,7 +21,7 @@ function nrInsertInsightsData(attributes as Object) as Object
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
     urlReq.AddHeader("Content-Type", "application/json")
-    urlReq.AddHeader("X-Insert-Key", apikey)
+    urlReq.AddHeader("X-Insert-Key", m.apikey)
     urlReq.SetMessagePort(rport)
     urlReq.AsyncPostFromString(jsonString)
     
@@ -42,9 +41,6 @@ function nrEventProcessor() as Void
             m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED, retry later --")
             m.nr.callFunc("nrRecordEvent", ev)
             return
-        else
-            m.nr.callFunc("nrLog", "-- nrEventProcessor: insert insights data --")
-            m.nr.callFunc("nrLog", [ev["actionName"], " ", ev["timestamp"]])
         end if
     end while
 end function
@@ -52,6 +48,7 @@ end function
 function nrTaskMain() as Void
     'Assuming that parent node is com.newrelic.NRAgent
     m.nr = m.top.getParent()
-    m.nr.callFunc("nrLog", "---- NRTASK MAIN ----")
+    m.apiKey = m.top.apiKey
+    m.accountNumber = m.top.accountNumber
     nrEventProcessor()
 end function
