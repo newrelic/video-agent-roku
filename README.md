@@ -1,6 +1,6 @@
 # New Relic Roku Agent
 
-The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events (essentially networking) and one to monitor video related events (for apps that use a video player).  The events and attributes captured by the New Relic Roku Agent can be viewed  [here](https://docs.google.com/document/d/1Yaw6iaC-4PWWepKav3-GO9AnEx1hErC4DKKxIafQxs0/edit?usp=sharing).
+The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events (essentially networking) and one to monitor video related events (for apps that use a video player).
 
 Internally, it uses the Insights API to send events using the REST interface. It sends two types of events: RokuSystem for system events and RokuVideo for video events. After the agent has sent some data you will be able to see it in Insights with a simple NRQL request like:
 
@@ -150,6 +150,17 @@ Arguments:
 	
 Return:
 	New Relic Agent object.
+	
+Example:
+
+	sub Main(aa as Object)
+		screen = CreateObject("roSGScreen")
+		m.port = CreateObject("roMessagePort")
+		screen.setMessagePort(m.port)
+		scene = screen.CreateScene("VideoScene")
+		screen.show()
+	
+		m.nr = NewRelic("ACCOUNT ID", "API KEY")
 ```
 
 ```
@@ -163,6 +174,10 @@ Arguments:
 	
 Return:
 	The roSystemLog object created.
+	
+Example:
+
+	m.syslog = NewRelicSystemStart(m.port)
 ```
 
 ```
@@ -177,6 +192,10 @@ Arguments:
 	
 Return:
 	Nothing.
+	
+Example:
+
+	NewRelicVideoStart(m.nr, m.video)
 ```
 
 ```
@@ -191,6 +210,19 @@ Arguments:
 	
 Return:
 	True if msg is a system log message, False otherwise.
+	
+Example:
+
+	while (true)
+		msg = wait(0, m.port)
+		if nrProcessMessage(m.nr, msg) = false
+			if type(msg) = "roPosterScreenEvent"
+				if msg.isScreenClosed()
+					exit while
+				end if
+			end if
+		end if
+	end while
 ```
 
 ```
@@ -207,6 +239,11 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	nrSetCustomAttribute(m.nr, "myNum", 123, "CONTENT_START")
+	nrSetCustomAttribute(m.nr, "myString", "hello")
 ```
 
 ```
@@ -222,6 +259,11 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	attr = {"key0":"val0", "key1":"val1"}
+	nrSetCustomAttributeList(m.nr, attr, "CONTENT_HEARTBEAT")
 ```
 
 ```
@@ -236,6 +278,12 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	sub Main(aa as Object)
+		...
+		nrAppStarted(m.nr, aa)
 ```
 
 ```
@@ -250,6 +298,10 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	nrSceneLoaded(m.nr, "MyVideoScene")
 ```
 
 ```
@@ -266,6 +318,12 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	nrSendCustomEvent(m.nr, "MyEvent", "MY_ACTION")
+	attr = {"key0":"val0", "key1":"val1"}
+	nrSendCustomEvent(m.nr, "MyEvent", "MY_ACTION", attr)
 ```
 
 ```
@@ -281,6 +339,12 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	nrSendSystemEvent(m.nr, "MY_ACTION")
+	attr = {"key0":"val0", "key1":"val1"}
+	nrSendSystemEvent(m.nr, "MY_ACTION", attr)
 ```
 
 ```
@@ -296,6 +360,12 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	nrSendVideoEvent(m.nr, "MY_ACTION")
+	attr = {"key0":"val0", "key1":"val1"}
+	nrSendVideoEvent(m.nr, "MY_ACTION", attr)
 ```
 
 ```
@@ -310,6 +380,13 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	urlReq = CreateObject("roUrlTransfer")
+	urlReq.SetUrl(_url)
+	...
+	nrSendHttpRequest(m.nr, urlReq)
 ```
 
 ```
@@ -325,6 +402,13 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	msg = wait(5000, m.port)
+	if type(msg) = "roUrlEvent" then
+		nrSendHttpResponse(m.nr, _url, msg)
+	end if
 ```
 
 ```
@@ -339,6 +423,10 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	nrSetHarvestTime(m.nr, 60)
 ```
 
 ```
@@ -352,6 +440,10 @@ Arguments:
 	
 Return:
 	Nothing.
+		
+Example:
+
+	nrForceHarvest(m.nr)
 ```
 
 ### Data Model
