@@ -448,11 +448,11 @@ Example:
 
 ### Data Model
 
-The agent makes use of two different event types: `RokuSystem` and `RokuVideo`.
+The agent generates two different event types: `RokuSystem` and `RokuVideo`.
 
 #### 1. RokuSystem
 
-This event groups all actions related to system tracking. Essentially networking of the Roku video streaming player.
+This event groups all actions related to system tracking.
 
 #### 1.1 Actions
 
@@ -504,7 +504,7 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `appName` | Application name. |
 | `appDevId` | Developer ID. |
 | `appBuild` | Application build number. |
-| `timeSinceLoad` | Time since NewRelicInit. Seconds. |
+| `timeSinceLoad` | Time since NewRelic function call. Seconds. |
 
 #### 1.2.2 Action Specific Attributes
 
@@ -529,7 +529,7 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `bandwidth` | Bandwidth. | `BANDWIDTH_MINUTE` |
 | `lastExitOrTerminationReason` | The reason for the last app exit / termination. | `APP_STARTED` |
 | `splashTime` | The splash time in ms. | `APP_STARTED` |
-| `instantOnRunMode` | Value of “instant_on_run_mode” property sent to Main. | `APP_STARTED` |
+| `instantOnRunMode` | Value of `instant_on_run_mode` property sent to Main. | `APP_STARTED` |
 | `httpResult` | Request final status. | `HTTP_RESPONSE` |
 | `http*` | Multiple attributes. All the header keys. | `HTTP_RESPONSE` |
 | `transferIdentity` | HTTP request identificator. | `HTTP_REQUEST`, `HTTP_RESPONSE` |
@@ -585,7 +585,7 @@ For video events, the common attributes include all `RokuSystem` common attribut
 | `timeSinceLastHeartbeat` | Time since last heartbeat, in milliseconds. |
 | `timeSinceRequested` | Time since the video requested, in milliseconds. |
 | `timeSinceStarted` | Time since the video started, in milliseconds. |
-| `timeSinceTrackerReady` | Time since PLAYER_READY, in milliseconds. |
+| `timeSinceTrackerReady` | Time since `PLAYER_READY`, in milliseconds. |
 | `isPlaylist` | Content is a playlist. Boolean. |
 | `videoFormat` | Video format, a mime type. |
 
