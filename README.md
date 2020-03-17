@@ -517,8 +517,8 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `targetIp` | Target IP address of request. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR` |
 | `url` | Actual URL of request. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR` |
 | `counter` | Number of actual network events grouped in. | `HTTP_COMPLETE`, `HTTP_CONNECT` |
-| `bytesDownloaded` | Number of bytes downloaded. Summary if grouped. | `HTTP_COMPLETE` |
-| `bytesUploaded` | Number of bytes uploaded. Summatory if grouped. | `HTTP_COMPLETE` |
+| `bytesDownloaded` | Number of bytes downloaded. Summation if grouped. | `HTTP_COMPLETE` |
+| `bytesUploaded` | Number of bytes uploaded. Summation if grouped. | `HTTP_COMPLETE` |
 | `connectTime` | Total connection time. Average if grouped. | `HTTP_COMPLETE` |
 | `contentType` | Mime type of response body. | `HTTP_COMPLETE` |
 | `dnsLookupTime` | DNS lookup time. Average if grouped. | `HTTP_COMPLETE` |
