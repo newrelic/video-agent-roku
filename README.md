@@ -595,7 +595,16 @@ For video events, the common attributes include all `RokuSystem` common attribut
 |---|---|---|
 | `timeSinceBufferBegin` | Time since video last video buffering began, in milliseconds. | `CONTENT_BUFFER_END` |
 | `timeSincePaused` | Time since the video was paused, in milliseconds. | `CONTENT_RESUME` |
-| `errorMessage` | Error message. | `CONTENT_ERROR` |
+| `errorMessage` | Descriptive error message. | `CONTENT_ERROR` |
+| `errorCode` | Numeric error code. | `CONTENT_ERROR` |
+| `errorStr` | Detailed error message. | `CONTENT_ERROR` |
+| `errorClipId` | Property `clip_id` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorIgnored` | Property `ignored` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorSource` | Property `source` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorCategory` | Property `category` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorInfoCode` | Property `error_code` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorDebugMsg` | Property `dbgmsg` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorAttributes` | Property `error_attributes` from Video object errorInfo. | `CONTENT_ERROR` |
 | `isInitialBuffering` | Is the initial buffering event, and not a rebuffering. In playlists it only happens at the beginning, and not on every video. | `CONTENT_BUFFER_*` |
 
 # Support

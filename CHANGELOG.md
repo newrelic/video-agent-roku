@@ -1,7 +1,14 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
-## [1.0.1rc1] - 2020/02/26
+## [1.0.2] - 2020/03/17
+### Add
+- Error attributes.
+
+### Change
+- Update documentation.
+
+## [1.0.1] - 2020/02/26
 ### Change
 - Improve task rendezvous.
 - Update documentation.
