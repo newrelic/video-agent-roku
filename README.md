@@ -1,11 +1,11 @@
 # New Relic Roku Agent
 
-The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events (essentially networking) and one to monitor video related events (for apps that use a video player).  The events and attributes captured by the New Relic Roku Agent can be viewed here.
+The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events (essentially networking) and one to monitor video related events (for apps that use a video player).
 
 Internally, it uses the Insights API to send events using the REST interface. It sends two types of events: RokuSystem for system events and RokuVideo for video events. After the agent has sent some data you will be able to see it in Insights with a simple NRQL request like:
 
 ```
-SELECT * from RokuSystem, RokuVideo
+SELECT * FROM RokuSystem, RokuVideo
 ```
 
 ### Requirements
@@ -23,124 +23,592 @@ To register the API Key, follow the instructions found [here](https://docs.newre
 1. Download the Roku Video Agent and unzip it. Inside the package you will find the following file structure:
 
 ```
-components/
-	NRTask.xml
-source/newrelic/
+components/NewRelicAgent/
 	NRAgent.brs
-	NRUtils.brs
+	NRAgent.xml
+	NRTask.brs
+	NRTask.xml
+source/
+	NewRelicAgent.brs
 ```
 
-2. Open your Roku app project’s directory and copy the “NRTask.xml” to “components” folder and “newrelic” folder to “source” folder.
+2. Open your Roku app project’s directory and copy the “NewRelicAgent” folder to “components” and "NewRelicAgent.brs" file to “source”.
 
 ### Usage
 
 To enable automatic event capture perform the following steps which are detailed below.
 
-1. Add NewRelicInit() with arguments to sub Main()
-2. Add a waitFunction in place of the wait event loop
-3. Add two `<script>` tags to each Scene component XML
-4. Add calls to sub Init() to capture system and video events and attributes
+1. Call `NewRelic` from Main subroutine and store the returned object.
+2. Right after that, call `nrAppStarted` (optional but recommended).
+3. Call `NewRelicSystemStart` and `NewRelicVideoStart` to start capturing events for system and video (both optional).
+4. Inside the main wait loop, call `nrProcessMessage` (only mandatory to capture system events, otherwise not necessary).
 
-#### 1) Adding NewRelicInit() with arguments to sub Main()
-	
-	
-Inside the “sub Main()” add the following code at the end in place fo the wait event loop :
+#### Example
 
-```
-NewRelicInit(“ACCOUNT ID“, “API KEY“, screen)
-```
-
-#### 2) Adding a waitFunction in place of the wait event loop
-		
-After the screen and port initialization. Add this:
+*Main.brs*
 
 ```
-waitFunction = Function(msg as Object)
-	print "msg = " msg
-	return true
-end function
-    
-NewRelicWait(m.port, waitFunction)
-```
-
-After that, the Main function should look like:
-
-```
-sub Main()
-	print "Main"
-
-	'The screen and port must be initialized before starting the NewRelic agent
+sub Main(aa as Object)
 	screen = CreateObject("roSGScreen")
 	m.port = CreateObject("roMessagePort")
 	screen.setMessagePort(m.port)
-    
-	NewRelicInit(“ACCOUNT ID“, “API KEY“, screen)
-	‘To activate New Relic Agent logs
-	nrActivateLogging(true)
 
-	‘Init the first scene
-	scene = screen.CreateScene("NRVideoAgentExample")
+	'Create the main scene that contains a video player
+	scene = screen.CreateScene("VideoScene")
 	screen.show()
+	    
+	'Init New Relic Agent (3rd argument is optional, True to show console logs)
+	m.nr = NewRelic(“ACCOUNT ID“, “API KEY“)
+	    
+	'Send APP_STARTED event
+	nrAppStarted(m.nr, aa)
+	    
+	'Pass NewRelicAgent object to the main scene
+	scene.setField("nr", m.nr)
+	    
+	'Activate system tracking
+	m.syslog = NewRelicSystemStart(m.port)
     
-	waitFunction = Function(msg as Object)
-		print "msg = " msg
-		return true
-	end function
-    
-	NewRelicWait(m.port, waitFunction)
+	while (true)
+		msg = wait(0, m.port)
+		if nrProcessMessage(m.nr, msg) = false
+			'It is not a system message captured by New Relic Agent
+			if type(msg) = "roPosterScreenEvent"
+				if msg.isScreenClosed()
+					exit while
+				end if
+			end if
+		end if
+	end while
 end sub
 ```
 
-#### 3) Adding two `<script>` tags to each Scene component XML
-
-Add the following code to any Scene component XML you have in your app:
+*VideoScene.xml*
 
 ```
-<!-- Setup New Relic Agent -->
-<script type="text/brightscript" uri="pkg:/source/newrelic/NRUtils.brs"/>
-<script type="text/brightscript" uri="pkg:/source/newrelic/NRAgent.brs"/>
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="VideoScene" extends="Scene"> 
+	<interface>
+		<!-- Field used to pass the NewRelicAgent object to the scene -->
+		<field id="nr" type="node" onChange="nrRefUpdated" />
+	</interface>
+		
+	<children>
+		<Video
+			id="myVideo"
+			translation="[0,0]"
+		/>
+	</children>
+	
+	<!-- New Relic Agent Interface -->
+	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
+	
+	<script type="text/brightscript" uri="pkg:/components/VideoScene.brs"/>
+</component>
 ```
 
-#### 4) Adding calls to sub Init() to capture system and video events and attributes
-
-And the following code inside the “sub init()”:
+*VideoScene.brs*
 
 ```
- 'Start New Relic agents
- NewRelicStart()
- NewRelicVideoStart(video)
-```
-
-Where `video` is the Video node.
-
-#### (Optional) Enabling only system or video event capture
-
-Calling NewRelicStart() and NewRelicVideoStart(video) activates event capture for system and video respectively. The agent permits to capture only one type of event, if desired or necessary (e.g. when using an Insights Free account).  
-
-To disable video events and capture only system events, simply omit the call to the NewRelicVideoStart function. 
-
-To capture video events only and not the system events, follow the Usage steps above but do not call the NewRelicWait function. Instead implement your own event loop, like this:
-
-```
-sub Main()
-    print "Main"
-
-    'The screen and port must be initialized before starting the NewRelic agent
-    screen = CreateObject("roSGScreen")
-    m.port = CreateObject("roMessagePort")
-    screen.setMessagePort(m.port)
-    
-    NewRelicInit(“ACCOUNT ID“, “API KEY“, screen)
-    ‘To activate New Relic Agent logs
-    nrActivateLogging(true)
-
-    ‘Init the first scene
-    scene = screen.CreateScene("NRVideoAgentExample")
-    screen.show()
-    
-    while(true)
-        msg = wait(0, m.port)
-        ‘capture any event you need…
-    end while
+sub init()
+    m.top.setFocus(true)
+    setupVideoPlayer()
 end sub
+
+function nrRefUpdated()
+    m.nr = m.top.nr
+    
+    'Activate video tracking
+    NewRelicVideoStart(m.nr, m.video)
+end function
+
+function setupVideoPlayer()
+    videoUrl = "http://..."
+    videoContent = createObject("RoSGNode", "ContentNode")
+    videoContent.url = videoUrl
+    videoContent.title = "Any Video"
+    m.video = m.top.findNode("myVideo")
+    m.video.content = videoContent
+    m.video.control = "play"
+end function
 ```
+
+### Agent API
+
+To interact with the New Relic Agent it provides a set of functions that wrap internal behaviours. All wrappers are implemented inside NewRelicAgent.brs and all include inline documentation.
+
+```
+NewRelic(account as String, apikey as String, activeLogs = false as Boolean) as Object
+
+Description:
+	Build a New Relic Agent object.
+
+Arguments:
+	account: New Relic account number.
+	apikey: Insights API key.
+	activeLogs: (optional) Activate logs or not. Default False.
+	
+Return:
+	New Relic Agent object.
+	
+Example:
+
+	sub Main(aa as Object)
+		screen = CreateObject("roSGScreen")
+		m.port = CreateObject("roMessagePort")
+		screen.setMessagePort(m.port)
+		scene = screen.CreateScene("VideoScene")
+		screen.show()
+	
+		m.nr = NewRelic("ACCOUNT ID", "API KEY")
+```
+
+```
+NewRelicSystemStart(port as Object) as Object
+
+Description:
+	Start system logging.
+
+Arguments:
+	port: A message port.
+	
+Return:
+	The roSystemLog object created.
+	
+Example:
+
+	m.syslog = NewRelicSystemStart(m.port)
+```
+
+```
+NewRelicVideoStart(nr as Object, video as Object) as Void
+
+Description:
+	Start video logging.
+
+Arguments:
+	nr: New Relic Agent object.
+	video: A video object.
+	
+Return:
+	Nothing.
+	
+Example:
+
+	NewRelicVideoStart(m.nr, m.video)
+```
+
+```
+nrProcessMessage(nr as Object, msg as Object) as Boolean
+
+Description:
+	Check for a system log message, process it and sends the appropriate event.
+
+Arguments:
+	nr: New Relic Agent object.
+	msg: A message of type roSystemLogEvent.
+	
+Return:
+	True if msg is a system log message, False otherwise.
+	
+Example:
+
+	while (true)
+		msg = wait(0, m.port)
+		if nrProcessMessage(m.nr, msg) = false
+			if type(msg) = "roPosterScreenEvent"
+				if msg.isScreenClosed()
+					exit while
+				end if
+			end if
+		end if
+	end while
+```
+
+```
+nrSetCustomAttribute(nr as Object, key as String, value as Object, actionName = "" as String) as Void
+
+Description:
+	Set a custom attribute to be included in the events.
+
+Arguments:
+	nr: New Relic Agent object.
+	key: Attribute name.
+	value: Attribute value.
+	actionName: (optional) Action where the attribute will be included. Default all actions.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrSetCustomAttribute(m.nr, "myNum", 123, "CONTENT_START")
+	nrSetCustomAttribute(m.nr, "myString", "hello")
+```
+
+```
+nrSetCustomAttributeList(nr as Object, attr as Object, actionName = "" as String) as Void
+
+Description:
+	Set a custom attribute list to be included in the events.
+
+Arguments:
+	nr: New Relic Agent object.
+	attr: Attribute list, as an associative array.
+	actionName: (optional) Action where the attribute will be included. Default all actions.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	attr = {"key0":"val0", "key1":"val1"}
+	nrSetCustomAttributeList(m.nr, attr, "CONTENT_HEARTBEAT")
+```
+
+```
+nrAppStarted(nr as Object, obj as Object) as Void
+
+Description:
+	Send an APP_STARTED event of type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	obj: The object sent as argument of Main subroutine.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	sub Main(aa as Object)
+		...
+		nrAppStarted(m.nr, aa)
+```
+
+```
+nrSceneLoaded(nr as Object, sceneName as String) as Void
+
+Description:
+	Send a SCENE_LOADED event of type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	sceneName: The scene name.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrSceneLoaded(m.nr, "MyVideoScene")
+```
+
+```
+nrSendCustomEvent(nr as Object, eventType as String, actionName as String, attr = invalid as Object) as Void
+
+Description:
+	Send a custom event.
+
+Arguments:
+	nr: New Relic Agent object.
+	eventType: Event type.
+	actionName: Action name.
+	attr: (optional) Attributes associative array.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrSendCustomEvent(m.nr, "MyEvent", "MY_ACTION")
+	attr = {"key0":"val0", "key1":"val1"}
+	nrSendCustomEvent(m.nr, "MyEvent", "MY_ACTION", attr)
+```
+
+```
+nrSendSystemEvent(nr as Object, actionName as String, attr = invalid) as Void
+
+Description:
+	Send a system event, type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	actionName: Action name.
+	attr: (optional) Attributes associative array.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrSendSystemEvent(m.nr, "MY_ACTION")
+	attr = {"key0":"val0", "key1":"val1"}
+	nrSendSystemEvent(m.nr, "MY_ACTION", attr)
+```
+
+```
+nrSendVideoEvent(nr as Object, actionName as String, attr = invalid) as Void
+
+Description:
+	Send a video event, type RokuVideo.
+
+Arguments:
+	nr: New Relic Agent object.
+	actionName: Action name.
+	attr: (optional) Attributes associative array.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrSendVideoEvent(m.nr, "MY_ACTION")
+	attr = {"key0":"val0", "key1":"val1"}
+	nrSendVideoEvent(m.nr, "MY_ACTION", attr)
+```
+
+```
+nrSendHttpRequest(nr as Object, urlReq as Object) as Void
+
+Description:
+	Send an HTTP_REQUEST event of type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	urlReq: URL request, roUrlTransfer object.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	urlReq = CreateObject("roUrlTransfer")
+	urlReq.SetUrl(_url)
+	...
+	nrSendHttpRequest(m.nr, urlReq)
+```
+
+```
+nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
+
+Description:
+	Send an HTTP_RESPONSE event of type RokuSystem.
+
+Arguments:
+	nr: New Relic Agent object.
+	_url: Request URL.
+	msg: A message of type roUrlEvent.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	msg = wait(5000, m.port)
+	if type(msg) = "roUrlEvent" then
+		nrSendHttpResponse(m.nr, _url, msg)
+	end if
+```
+
+```
+nrSetHarvestTime(nr as Object, time as Integer) as Void
+
+Description:
+	Set harvest time, the time the events are buffered before being sent to Insights.
+
+Arguments:
+	nr: New Relic Agent object.
+	time: Time in seconds.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrSetHarvestTime(m.nr, 60)
+```
+
+```
+nrForceHarvest(nr as Object) as Void
+
+Description:
+	Do harvest immediately. It doesn't reset the harvest timer.
+
+Arguments:
+	nr: New Relic Agent object.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrForceHarvest(m.nr)
+```
+
+### Data Model
+
+The agent generates two different event types: `RokuSystem` and `RokuVideo`.
+
+#### 1. RokuSystem
+
+This event groups all actions related to system tracking.
+
+#### 1.1 Actions
+
+| Action Name | Description |
+|---|---|
+| `BANDWIDTH_MINUTE` | Report the bandwidth every minute. |
+| `HTTP_CONNECT` | An HTTP request, generated by roSystemLog. |
+| `HTTP_COMPLETE` | An HTTP response, generated by roSystemLog. |
+| `HTTP_ERROR` | An HTTP error, generated by roSystemLog. |
+| `HTTP_REQUEST` | An HTTP request. Generated by nrSendHttpRequest function. |
+| `HTTP_RESPONSE` | An HTTP response. Generated by nrSendHttpResponse function. |
+| `APP_STARTED` | The app did start. Generated by nrAppStarted function. |
+| `SCENE_LOADED` | A scene did load. Generated by nrSceneLoaded function. |
+
+#### 1.2 Attributes
+
+There is a set of attributes common to all actions sent over a `RokuSystem` and others are specific to a certain action.
+
+#### 1.2.1 Common Attributes
+
+| Attribute Name | Description |
+|---|---|
+| `newRelicAgent` | Always “RokuAgent”. |
+| `newRelicVersion` | Agent’s version. |
+| `sessionId` | Session ID, a hash that is generated every time the Roku app starts. |
+| `hdmiIsConnected` | Boolean. HDMI is connected or not. |
+| `hdmiHdcpVersion` | HDCP version. |
+| `uuid` | Roku Device UUID. |
+| `device` | Roku device name. |
+| `deviceGroup` | Always “Roku”. |
+| `deviceManufacturer` | Always “Roku”. |
+| `deviceModel` | Roku model. |
+| `deviceType` | Roku model type. |
+| `osName` | Always “RokuOS”. |
+| `osVersion` | Firmware version. |
+| `countryCode` | Country from where the current user is connected. |
+| `timeZone` | Current user’s timezone. |
+| `locale` | Current user’s locale. |
+| `memoryLevel` | Device memory level. |
+| `connectionType` | Network connection type (WiFi, etc). |
+| `displayType` | Type of display, screen, TV, etc. |
+| `displayMode` | Display mode. |
+| `displayAspectRatio` | Aspect ratio. |
+| `videoMode` | Video mode. |
+| `graphicsPlatform` | Graphics platform (OpenGL, etc). |
+| `timeSinceLastKeyPress` | Time since last keypress in the remote. Milliseconds. |
+| `appId` | Application ID. |
+| `appVersion` | Application version. |
+| `appName` | Application name. |
+| `appDevId` | Developer ID. |
+| `appBuild` | Application build number. |
+| `timeSinceLoad` | Time since NewRelic function call. Seconds. |
+
+#### 1.2.2 Action Specific Attributes
+
+| Attribute Name | Description | Actions |
+|---|---|---|
+| `httpCode` | Response code. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR`, `HTTP_RESPONSE` |
+| `method` | HTTP method. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR`, `HTTP_REQUEST ` | 
+| `origUrl` | Original URL of request. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR`, `HTTP_REQUEST`, `HTTP_RESPONSE` |
+| `status` | Current request status. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR` |
+| `targetIp` | Target IP address of request. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR` |
+| `url` | Actual URL of request. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR` |
+| `counter` | Number of actual network events grouped in. | `HTTP_COMPLETE`, `HTTP_CONNECT` |
+| `bytesDownloaded` | Number of bytes downloaded. Summary if grouped. | `HTTP_COMPLETE` |
+| `bytesUploaded` | Number of bytes uploaded. Summatory if grouped. | `HTTP_COMPLETE` |
+| `connectTime` | Total connection time. Average if grouped. | `HTTP_COMPLETE` |
+| `contentType` | Mime type of response body. | `HTTP_COMPLETE` |
+| `dnsLookupTime` | DNS lookup time. Average if grouped. | `HTTP_COMPLETE` |
+| `downloadSpeed` | Download speed. Average if grouped. | `HTTP_COMPLETE` |
+| `firstByteTime` | Time elapsed until the first bytes arrived. Average if grouped. | `HTTP_COMPLETE` |
+| `transferTime` | Total transfer time. Average if grouped. | `HTTP_COMPLETE` |
+| `uploadSpeed` | Upload speed. Average if grouped. | `HTTP_COMPLETE` |
+| `bandwidth` | Bandwidth. | `BANDWIDTH_MINUTE` |
+| `lastExitOrTerminationReason` | The reason for the last app exit / termination. | `APP_STARTED` |
+| `splashTime` | The splash time in ms. | `APP_STARTED` |
+| `instantOnRunMode` | Value of `instant_on_run_mode` property sent to Main. | `APP_STARTED` |
+| `httpResult` | Request final status. | `HTTP_RESPONSE` |
+| `http*` | Multiple attributes. All the header keys. | `HTTP_RESPONSE` |
+| `transferIdentity` | HTTP request identificator. | `HTTP_REQUEST`, `HTTP_RESPONSE` |
+| `sceneName` | Identifier of the scene. | `SCENE_LOADED` |
+
+#### 2. RokuVideo
+
+This event groups all actions related to video tracking.
+
+#### 2.1 Actions
+
+
+| Action Name | Description |
+|---|---|
+| `PLAYER_READY` | Player is ready to start working. It happens when the video agent is started. |
+| `CONTENT_REQUEST` | “Play” button pressed or autoplay activated. |
+| `CONTENT_START` | Video just started playing. |
+| `CONTENT_END` | Video ended playing. |
+| `CONTENT_PAUSE` | Video paused. |
+| `CONTENT_RESUME` | Video resumed. |
+| `CONTENT_BUFFER_START` | Video started buffering. |
+| `CONTENT_BUFFER_END` | Video ended buffering. |
+| `CONTENT_ERROR` | Video error happened. |
+| `CONTENT_HEARTBEAT` | Sent every 30 seconds between video start and video end. |
+
+#### 2.2 Attributes
+
+There is a set of attributes common to all actions sent over a `RokuVideo` and others are specific to a certain action.
+
+#### 2.2.1 Common Attributes
+
+For video events, the common attributes include all `RokuSystem` common attributes (1.2.1) plus the video event ones. Here we will describe only the video common attributes.
+
+| Attribute Name | Description |
+|---|---|
+| `contentDuration` | Total video duration in milliseconds. |
+| `contentPlayhead` | Current video position in milliseconds. |
+| `contentIsMuted` | Video is muted or not. |
+| `contentSrc` | Video URL. |
+| `contentId` | Content ID, a CRC32 of contentSrc. |
+| `contentBitrate` | Video manifest bitrate. |
+| `contentMeasuredBitrate` | Video measured bitrate. |
+| `contentSegmentBitrate` | In case of segmented video sources (HLS, DASH), the current segment’s bitrate. |
+| `playerName` | Always “RokuVideoPlayer”. |
+| `playerVersion` | Current firmware version. |
+| `sessionDuration` | Time since the session started. |
+| `viewId` | sessionId + “-“ + video counter. |
+| `viewSession` | Copy of sessionId. |
+| `trackerName` | Always “rokutracker”. |
+| `trackerVersion` | Agent version. |
+| `numberOfVideos` | Number of videos played. |
+| `numberOfErrors` | Number of errors happened. |
+| `timeSinceLastHeartbeat` | Time since last heartbeat, in milliseconds. |
+| `timeSinceRequested` | Time since the video requested, in milliseconds. |
+| `timeSinceStarted` | Time since the video started, in milliseconds. |
+| `timeSinceTrackerReady` | Time since `PLAYER_READY`, in milliseconds. |
+| `isPlaylist` | Content is a playlist. Boolean. |
+| `videoFormat` | Video format, a mime type. |
+
+#### 2.2.2 Action Specific Attributes
+
+| Attribute | Name Description | Actions |
+|---|---|---|
+| `timeSinceBufferBegin` | Time since video last video buffering began, in milliseconds. | `CONTENT_BUFFER_END` |
+| `timeSincePaused` | Time since the video was paused, in milliseconds. | `CONTENT_RESUME` |
+| `errorMessage` | Descriptive error message. | `CONTENT_ERROR` |
+| `errorCode` | Numeric error code. | `CONTENT_ERROR` |
+| `errorStr` | Detailed error message. | `CONTENT_ERROR` |
+| `errorClipId` | Property `clip_id` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorIgnored` | Property `ignored` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorSource` | Property `source` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorCategory` | Property `category` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorInfoCode` | Property `error_code` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorDebugMsg` | Property `dbgmsg` from Video object errorInfo. | `CONTENT_ERROR` |
+| `errorAttributes` | Property `error_attributes` from Video object errorInfo. | `CONTENT_ERROR` |
+| `isInitialBuffering` | Is the initial buffering event, and not a rebuffering. In playlists it only happens at the beginning, and not on every video. | `CONTENT_BUFFER_*` |
+
+# Support
+
+New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR DEDICATED SUPPORT. Issues and contributions should be reported to the project here on GitHub.
+
+We encourage you to bring your experiences and questions to the [Explorers Hub](https://discuss.newrelic.com) where our community members collaborate on solutions and new ideas.

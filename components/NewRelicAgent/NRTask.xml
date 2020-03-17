@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+**********************************************************
+ NRTask.xml
+ New Relic Agent background task.
+
+ Copyright 2019 New Relic Inc. All Rights Reserved. 
+**********************************************************
+-->
+
+<component name="com.newrelic.NRTask" extends="Task" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+	<interface>
+		<!-- Properties -->
+		<field id="accountNumber" type="string" value=""/>
+		<field id="apiKey" type="string" value=""/>
+    </interface>
+
+	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRTask.brs"/>
+</component>

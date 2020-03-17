@@ -1,37 +1,37 @@
 'NR Video Agent Example - Video'
 
 sub init()
+    print "INIT VideoScene"
     m.top.setFocus(true)
-    
-    'Setup video player with a playlist
     setupVideoPlaylist()
-    'setupVideoPlaylistShort()
-    'Setup video player with a single video
     'setupVideo()
-    
-    'Start New Relic agents
-    NewRelicStart()
-    NewRelicVideoStart(m.video)
-    
+end sub
+
+function nrRefUpdated()
+    print "Updated NR object reference"
+    m.nr = m.top.nr
     m.pauseCounter = 0
     updateCustomAttr()
     
-    nrSceneLoaded("MyVideoScene")
-end sub
+    nrSceneLoaded(m.nr, "MyVideoScene")
+    
+    'Activate video tracking
+    NewRelicVideoStart(m.nr, m.video)
+end function
 
 function updateCustomAttr() as Void
-    nrSetCustomAttribute("customGeneralString", "Value")
-    nrSetCustomAttribute("customGeneralNumber", 123)
-    nrSetCustomAttribute("customNumPause", m.pauseCounter, "CONTENT_PAUSE")
+    nrSetCustomAttribute(m.nr, "customGeneralString", "Value")
+    nrSetCustomAttribute(m.nr, "customGeneralNumber", 123)
+    nrSetCustomAttribute(m.nr, "customNumPause", m.pauseCounter, "CONTENT_PAUSE")
     dict = {"key0":"val0", "key1":"val1"}
-    nrSetCustomAttributeList(dict, "CONTENT_HEARTBEAT")
+    nrSetCustomAttributeList(m.nr, dict, "CONTENT_HEARTBEAT")
 end function
 
 function setupVideo() as void
     print "Prepare video player with single video"
     
     'singleVideo = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
-    singleVideo = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
+    singleVideo = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
     
     videoContent = createObject("RoSGNode", "ContentNode")
     videoContent.url = singleVideo
@@ -134,18 +134,21 @@ function videoAction(key as String) as Boolean
     else if key = "right"
         m.video.control = "skipcontent"
         'Cusom event, Skip Content
-        nrSendVideoEvent("SKIP_CONTENT")
+        nrSendVideoEvent(m.nr, "SKIP_CONTENT")
         return true
     else if key = "left"
         if m.video.contentIndex > 0
             m.video.nextContentIndex = m.video.contentIndex - 1
             m.video.control = "skipcontent"
             'Cusom event, Previous Content
-            nrSendVideoEvent("PREV_CONTENT")
+            nrSendVideoEvent(m.nr, "PREV_CONTENT")
         end if
         return true
     else if key = "back"
         print "BACK BUTTON PRESSED, QUIT"
+        return true
+    else if key = "OK"
+        print "OK BUTTON PRESSED, QUIT"
         return true
     end if
     return false
@@ -160,7 +163,6 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return ret
     else
         print "Key Release --> " key
-        m.top.setField("moteButton", "")
         return false
     end if
 end function
