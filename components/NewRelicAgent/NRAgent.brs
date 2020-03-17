@@ -464,12 +464,20 @@ function nrSendBufferEnd() as Void
     nrSendVideoEvent(nrAction("BUFFER_END"), {"isInitialBuffering": m.nrIsInitialBuffering})
 end function
 
-function nrSendError(msg as String) as Void
-    errMsg = msg
-    if msg = invalid or msg = ""
-        errMsg = "UNKNOWN"
-    end if
-    nrSendVideoEvent(nrAction("ERROR"), {"errorMessage": errMsg})
+function nrSendError(video as Object) as Void
+    attr = {
+        "errorMessage": video.errorMsg,
+        "errorCode": video.errorCode,
+        "errorStr": video.errorStr,
+        "errorClipId": video.errorInfo.clip_id,
+        "errorIgnored": video.errorInfo.ignored,
+        "errorSource": video.errorInfo.source,
+        "errorCategory": video.errorInfo.category,
+        "errorInfoCode": video.errorInfo.error_code,
+        "errorDebugMsg": video.errorInfo.dbgmsg,
+        "errorAttributes": video.errorInfo.error_attributes
+    }
+    nrSendVideoEvent(nrAction("ERROR"), attr)
 end function
 
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
@@ -733,7 +741,7 @@ function nrStateTransitionError() as Void
         nrSendBufferEnd()
     end if
     m.nrNumberOfErrors = m.nrNumberOfErrors + 1
-    nrSendError(m.nrVideoObject.errorMsg)
+    nrSendError(m.nrVideoObject)
 end function
 
 'This corresponds to the NEXT event, it happens when the playlist index changes
