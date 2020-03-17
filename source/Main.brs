@@ -10,8 +10,8 @@ sub Main(aa as Object)
     scene = screen.CreateScene("VideoScene")
     screen.show()
     
-    'Init New Relic Agent
-    m.nr = NewRelic("ACCOUNT ID", "API KEY", true)
+    'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
+    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", true)
     nrAppStarted(m.nr, aa)
     nrSendSystemEvent(m.nr, "TEST_ACTION")
     
