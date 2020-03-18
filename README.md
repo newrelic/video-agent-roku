@@ -137,6 +137,8 @@ end function
 
 To interact with the New Relic Agent it provides a set of functions that wrap internal behaviours. All wrappers are implemented inside NewRelicAgent.brs and all include inline documentation.
 
+**NewRelic**
+
 ```
 NewRelic(account as String, apikey as String, activeLogs = false as Boolean) as Object
 
@@ -163,6 +165,8 @@ Example:
 		m.nr = NewRelic("ACCOUNT ID", "API KEY")
 ```
 
+**NewRelicSystemStart**
+
 ```
 NewRelicSystemStart(port as Object) as Object
 
@@ -179,6 +183,8 @@ Example:
 
 	m.syslog = NewRelicSystemStart(m.port)
 ```
+
+**NewRelicVideoStart**
 
 ```
 NewRelicVideoStart(nr as Object, video as Object) as Void
@@ -197,6 +203,8 @@ Example:
 
 	NewRelicVideoStart(m.nr, m.video)
 ```
+
+**nrProcessMessage**
 
 ```
 nrProcessMessage(nr as Object, msg as Object) as Boolean
@@ -225,6 +233,8 @@ Example:
 	end while
 ```
 
+**nrSetCustomAttribute**
+
 ```
 nrSetCustomAttribute(nr as Object, key as String, value as Object, actionName = "" as String) as Void
 
@@ -246,6 +256,8 @@ Example:
 	nrSetCustomAttribute(m.nr, "myString", "hello")
 ```
 
+**nrSetCustomAttributeList**
+
 ```
 nrSetCustomAttributeList(nr as Object, attr as Object, actionName = "" as String) as Void
 
@@ -265,6 +277,8 @@ Example:
 	attr = {"key0":"val0", "key1":"val1"}
 	nrSetCustomAttributeList(m.nr, attr, "CONTENT_HEARTBEAT")
 ```
+
+**nrAppStarted**
 
 ```
 nrAppStarted(nr as Object, obj as Object) as Void
@@ -286,6 +300,8 @@ Example:
 		nrAppStarted(m.nr, aa)
 ```
 
+**nrSceneLoaded**
+
 ```
 nrSceneLoaded(nr as Object, sceneName as String) as Void
 
@@ -303,6 +319,8 @@ Example:
 
 	nrSceneLoaded(m.nr, "MyVideoScene")
 ```
+
+**nrSendCustomEvent**
 
 ```
 nrSendCustomEvent(nr as Object, eventType as String, actionName as String, attr = invalid as Object) as Void
@@ -326,6 +344,8 @@ Example:
 	nrSendCustomEvent(m.nr, "MyEvent", "MY_ACTION", attr)
 ```
 
+**nrSendSystemEvent**
+
 ```
 nrSendSystemEvent(nr as Object, actionName as String, attr = invalid) as Void
 
@@ -346,6 +366,8 @@ Example:
 	attr = {"key0":"val0", "key1":"val1"}
 	nrSendSystemEvent(m.nr, "MY_ACTION", attr)
 ```
+
+**nrSendVideoEvent**
 
 ```
 nrSendVideoEvent(nr as Object, actionName as String, attr = invalid) as Void
@@ -368,6 +390,8 @@ Example:
 	nrSendVideoEvent(m.nr, "MY_ACTION", attr)
 ```
 
+**nrSendHttpRequest**
+
 ```
 nrSendHttpRequest(nr as Object, urlReq as Object) as Void
 
@@ -388,6 +412,8 @@ Example:
 	...
 	nrSendHttpRequest(m.nr, urlReq)
 ```
+
+**nrSendHttpResponse**
 
 ```
 nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
@@ -411,6 +437,8 @@ Example:
 	end if
 ```
 
+**nrSetHarvestTime**
+
 ```
 nrSetHarvestTime(nr as Object, time as Integer) as Void
 
@@ -428,6 +456,8 @@ Example:
 
 	nrSetHarvestTime(m.nr, 60)
 ```
+
+**nrForceHarvest**
 
 ```
 nrForceHarvest(nr as Object) as Void
