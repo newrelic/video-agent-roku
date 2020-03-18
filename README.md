@@ -1,8 +1,8 @@
 # New Relic Roku Agent
 
-The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events (essentially networking) and one to monitor video related events (for apps that use a video player).
+The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events and one to monitor video related events, for apps that use a video player).
 
-Internally, it uses the Insights API to send events using the REST interface. It sends two types of events: RokuSystem for system events and RokuVideo for video events. After the agent has sent some data you will be able to see it in Insights with a simple NRQL request like:
+Internally, it uses the Insights API to send events using the REST interface. It sends two types of events: RokuSystem for system events and RokuVideo for video events. After the agent has sent some data it will be accessible in Insights with a simple NRQL request like:
 
 ```
 SELECT * FROM RokuSystem, RokuVideo
@@ -607,8 +607,35 @@ For video events, the common attributes include all `RokuSystem` common attribut
 | `errorAttributes` | Property `error_attributes` from Video object errorInfo. | `CONTENT_ERROR` |
 | `isInitialBuffering` | Is the initial buffering event, and not a rebuffering. In playlists it only happens at the beginning, and not on every video. | `CONTENT_BUFFER_*` |
 
+# Open source license
+
+This project is distributed under the [Apache 2 license](LICENSE).
+
 # Support
 
 New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR DEDICATED SUPPORT. Issues and contributions should be reported to the project here on GitHub.
 
 We encourage you to bring your experiences and questions to the [Explorers Hub](https://discuss.newrelic.com) where our community members collaborate on solutions and new ideas.
+
+## Community
+
+> TODO: Work with the Explorer's Hub team to create a tag for your app, then update the link below.
+
+New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
+
+https://discuss.newrelic.com/t/{{ APP_NAME }}
+*(Note: This URL is subject to change before GA)*
+
+## Issues / enhancement requests
+
+> TODO: Update path
+
+Issues and enhancement requests can be submitted in the [Issues tab of this repository](../../issues). Please search for and review the existing open issues before submitting a new issue.
+
+# Contributing
+
+> TODO: Work with the Open Source Office to update the email alias below.
+
+Contributions are encouraged! If you submit an enhancement request, we'll invite you to contribute the change yourself. Please review our [Contributors Guide](CONTRIBUTING.md).
+
+Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. If you'd like to execute our corporate CLA, or if you have any questions, please drop us an email at opensource+{{ APP_NAME }}@newrelic.com.
