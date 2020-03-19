@@ -560,6 +560,7 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `lastExitOrTerminationReason` | The reason for the last app exit / termination. | `APP_STARTED` |
 | `splashTime` | The splash time in ms. | `APP_STARTED` |
 | `instantOnRunMode` | Value of `instant_on_run_mode` property sent to Main. | `APP_STARTED` |
+| `launchSource ` | Value of `source` property sent to Main. | `APP_STARTED` |
 | `httpResult` | Request final status. | `HTTP_RESPONSE` |
 | `http*` | Multiple attributes. All the header keys. | `HTTP_RESPONSE` |
 | `transferIdentity` | HTTP request identificator. | `HTTP_REQUEST`, `HTTP_RESPONSE` |
