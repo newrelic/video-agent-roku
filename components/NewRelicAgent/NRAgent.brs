@@ -77,6 +77,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrTimeSinceRequested = 0.0
     m.nrTimeSinceStarted = 0.0
     m.nrTimeSinceTrackerReady = 0.0
+    nrResetPlaytime()
     'Counters
     m.nrNumberOfErrors = 0
     
@@ -428,20 +429,24 @@ function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent(nrAction("START"))
+    nrResumePlaytime()
 end function
 
 function nrSendEnd() as Void
     nrSendVideoEvent(nrAction("END"))
     m.nrVideoCounter = m.nrVideoCounter + 1
+    nrResetPlaytime()
 end function
 
 function nrSendPause() as Void
     m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent(nrAction("PAUSE"))
+    nrPausePlaytime()
 end function
 
 function nrSendResume() as Void
     nrSendVideoEvent(nrAction("RESUME"))
+    nrResumePlaytime()
 end function
 
 function nrSendBufferStart() as Void
@@ -453,6 +458,7 @@ function nrSendBufferStart() as Void
         m.nrIsInitialBuffering = false
     end if
     nrSendVideoEvent(nrAction("BUFFER_START"), {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrPausePlaytime()
 end function
 
 function nrSendBufferEnd() as Void
@@ -462,6 +468,7 @@ function nrSendBufferEnd() as Void
         m.nrIsInitialBuffering = false
     end if
     nrSendVideoEvent(nrAction("BUFFER_END"), {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrResumePlaytime()
 end function
 
 function nrSendError(video as Object) as Void
@@ -516,6 +523,8 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["timeSinceRequested"] = ev["timeSinceRequested"] + offsetTime ' (ms)
     ev["timeSinceStarted"] = ev["timeSinceStarted"] + offsetTime ' (ms)
     ev["timeSinceTrackerReady"] = ev["timeSinceTrackerReady"] + offsetTime ' (ms)
+    ev["totalPlaytime"] = nrCalculateTotalPlaytime() * 1000
+    
     'PROBLEMS:
     '- Custom attributes remains the same, could be problematic depending on the app
     
@@ -556,17 +565,13 @@ function nrAddVideoAttributes(ev as Object) as Object
     'Add counters
     ev.AddReplace("numberOfVideos", m.nrVideoCounter + 1)
     ev.AddReplace("numberOfErrors", m.nrNumberOfErrors)
-    
-    'Add timeSince attributes
-    'TODO:
-    'timeSinceLastAd -> all
-    'totalPlaytime -> all
     if isAction("BUFFER_END", ev["actionName"])
         ev.AddReplace("timeSinceBufferBegin", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceBufferBegin)
     end if
     if isAction("RESUME", ev["actionName"])
         ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
     end if
+    ev.AddReplace("totalPlaytime", nrCalculateTotalPlaytime() * 1000)
     ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
     ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
     ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
@@ -665,6 +670,46 @@ function nrParseVersion(verStr as String) as Object
     return {version: verStr.Mid(2, 3) + "." + verStr.Mid(5, 1), build: verStr.Mid(8, 4)}
 end function
 
+function nrResetPlaytime() as Void
+    nrLog("nrResetPlaytime")
+    m.nrTotalPlaytime = 0.0
+    m.nrTotalPlaytimeLastTimestamp = 0
+    m.nrPlaytimeIsRunning = false
+end function
+
+function nrResumePlaytime() as Void
+    nrLog("nrResumePlaytime")
+    if m.nrPlaytimeIsRunning = false
+        nrLog("nrResumePlaytime correct state")
+        m.nrPlaytimeIsRunning = true
+        date = CreateObject("roDateTime")
+        m.nrTotalPlaytimeLastTimestamp = date.AsSeconds()
+    end if
+end function
+
+function nrPausePlaytime() as Void
+    nrLog("nrPausePlaytime")
+    if m.nrPlaytimeIsRunning = true
+        nrLog("nrPausePlaytime correct state")
+        m.nrPlaytimeIsRunning = false
+        date = CreateObject("roDateTime")
+        offset = date.AsSeconds() - m.nrTotalPlaytimeLastTimestamp
+        m.nrTotalPlaytime = m.nrTotalPlaytime + offset 
+    end if
+end function
+
+function nrCalculateTotalPlaytime() as Integer
+    if m.nrPlaytimeIsRunning = true
+        nrLog("nrCalculateTotalPlaytime timer running")
+        date = CreateObject("roDateTime")
+        offset = date.AsSeconds() - m.nrTotalPlaytimeLastTimestamp
+        return m.nrTotalPlaytime + offset        
+    else
+        nrLog("nrCalculateTotalPlaytime timer NOT running")
+        return m.nrTotalPlaytime
+    end if
+end function
+
 '================================'
 ' Observers, States and Handlers '
 '================================'
@@ -751,6 +796,7 @@ function nrIndexObserver() as Void
     
     '- Use nrSendBackupVideoEvent to send the END using previous video attributes
     nrSendBackupVideoEvent(nrAction("END"))
+    nrResetPlaytime()
     '- Send REQUEST and START using normal send, with current video attributes
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrSendRequest()
