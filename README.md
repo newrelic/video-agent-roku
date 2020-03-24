@@ -617,6 +617,9 @@ For video events, the common attributes include all `RokuSystem` common attribut
 | `timeSinceRequested` | Time since the video requested, in milliseconds. |
 | `timeSinceStarted` | Time since the video started, in milliseconds. |
 | `timeSinceTrackerReady` | Time since `PLAYER_READY`, in milliseconds. |
+| `totalPlaytime` | Total time the user spend seeing the video. |
+| `playtimeSinceLastEvent` | Total time the user spend seeing the video since last video event. |
+| `timeToStartStreaming` | The time in milliseconds from playback being started until the video actually began playing. |
 | `isPlaylist` | Content is a playlist. Boolean. |
 | `videoFormat` | Video format, a mime type. |
 
