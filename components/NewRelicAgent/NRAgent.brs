@@ -54,22 +54,12 @@ end function
 function NewRelicVideoStart(videoObject as Object) as Void
     nrLog("NewRelicVideoStart")
 
+    'Store video object
+    m.nrVideoObject = videoObject
     'Current state
     m.nrLastVideoState = "none"
     m.nrIsAd = false
-    m.nrVideoCounter = 0
     m.nrIsInitialBuffering = false
-    'Setup event listeners 
-    videoObject.observeField("state", "nrStateObserver")
-    videoObject.observeField("contentIndex", "nrIndexObserver")
-    'Store video object
-    m.nrVideoObject = videoObject
-    'Init heartbeat timer
-    m.hbTimer = CreateObject("roSGNode", "Timer")
-    m.hbTimer.repeat = true
-    m.hbTimer.duration = 30
-    m.hbTimer.observeField("fire", "nrHeartbeatHandler")
-    m.hbTimer.control = "start"
     'Timestamps for timeSince attributes
     m.nrTimeSinceBufferBegin = 0.0
     m.nrTimeSinceLastHeartbeat = 0.0
@@ -77,9 +67,22 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrTimeSinceRequested = 0.0
     m.nrTimeSinceStarted = 0.0
     m.nrTimeSinceTrackerReady = 0.0
+    'Playtimes
     nrResetPlaytime()
+    m.nrPlaytimeSinceLastEvent = invalid
     'Counters
+    m.nrVideoCounter = 0
     m.nrNumberOfErrors = 0
+    
+    'Setup event listeners 
+    videoObject.observeField("state", "nrStateObserver")
+    videoObject.observeField("contentIndex", "nrIndexObserver")
+    'Init heartbeat timer
+    m.hbTimer = CreateObject("roSGNode", "Timer")
+    m.hbTimer.repeat = true
+    m.hbTimer.duration = 30
+    m.hbTimer.observeField("fire", "nrHeartbeatHandler")
+    m.hbTimer.control = "start"
     
     'Player Ready
     nrSendPlayerReady()
@@ -430,23 +433,27 @@ function nrSendStart() as Void
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent(nrAction("START"))
     nrResumePlaytime()
+    m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendEnd() as Void
     nrSendVideoEvent(nrAction("END"))
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrResetPlaytime()
+    m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendPause() as Void
     m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent(nrAction("PAUSE"))
     nrPausePlaytime()
+    m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendResume() as Void
     nrSendVideoEvent(nrAction("RESUME"))
     nrResumePlaytime()
+    m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendBufferStart() as Void
@@ -459,6 +466,7 @@ function nrSendBufferStart() as Void
     end if
     nrSendVideoEvent(nrAction("BUFFER_START"), {"isInitialBuffering": m.nrIsInitialBuffering})
     nrPausePlaytime()
+    m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendBufferEnd() as Void
@@ -469,6 +477,7 @@ function nrSendBufferEnd() as Void
     end if
     nrSendVideoEvent(nrAction("BUFFER_END"), {"isInitialBuffering": m.nrIsInitialBuffering})
     nrResumePlaytime()
+    m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendError(video as Object) as Void
@@ -524,6 +533,11 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["timeSinceStarted"] = ev["timeSinceStarted"] + offsetTime ' (ms)
     ev["timeSinceTrackerReady"] = ev["timeSinceTrackerReady"] + offsetTime ' (ms)
     ev["totalPlaytime"] = nrCalculateTotalPlaytime() * 1000
+    if m.nrPlaytimeSinceLastEvent = invalid
+        ev["playtimeSinceLastEvent"] = 0
+    else
+        ev["playtimeSinceLastEvent"] = m.nrPlaytimeSinceLastEvent.TotalMilliseconds()
+    end if
     
     'PROBLEMS:
     '- Custom attributes remains the same, could be problematic depending on the app
@@ -532,6 +546,12 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     
     nrRecordEvent(ev)
     
+end function
+
+function nrSendBackupVideoEnd() as Void
+    nrSendBackupVideoEvent(nrAction("END"))
+    nrResetPlaytime()
+    m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
@@ -565,19 +585,26 @@ function nrAddVideoAttributes(ev as Object) as Object
     'Add counters
     ev.AddReplace("numberOfVideos", m.nrVideoCounter + 1)
     ev.AddReplace("numberOfErrors", m.nrNumberOfErrors)
+    'Timings
     if isAction("BUFFER_END", ev["actionName"])
         ev.AddReplace("timeSinceBufferBegin", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceBufferBegin)
     end if
     if isAction("RESUME", ev["actionName"])
         ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
     end if
-    ev.AddReplace("totalPlaytime", nrCalculateTotalPlaytime() * 1000)
     ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
     ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
     ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
     ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
-        'TTFF calculated internally by RokuOS
+    'TTFF calculated internally by RokuOS
     ev.AddReplace("timeToStartStreaming", m.nrVideoObject.timeToStartStreaming * 1000)
+    'Playtimes
+    ev.AddReplace("totalPlaytime", nrCalculateTotalPlaytime() * 1000)
+    if m.nrPlaytimeSinceLastEvent = invalid
+        ev.AddReplace("playtimeSinceLastEvent", 0)
+    else
+        ev.AddReplace("playtimeSinceLastEvent", m.nrPlaytimeSinceLastEvent.TotalMilliseconds())
+    end if
     
     return ev
 end function
@@ -797,8 +824,7 @@ function nrIndexObserver() as Void
     nrLogVideoInfo()
     
     '- Use nrSendBackupVideoEvent to send the END using previous video attributes
-    nrSendBackupVideoEvent(nrAction("END"))
-    nrResetPlaytime()
+    nrSendBackupVideoEnd()
     '- Send REQUEST and START using normal send, with current video attributes
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrSendRequest()
@@ -810,6 +836,9 @@ function nrHeartbeatHandler() as Void
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
         nrSendVideoEvent(nrAction("HEARTBEAT"))
         m.nrTimeSinceLastHeartbeat = m.nrTimer.TotalMilliseconds()
+        if m.nrPlaytimeSinceLastEvent <> invalid
+            m.nrPlaytimeSinceLastEvent.Mark()
+        end if
     end if
 end function
 
