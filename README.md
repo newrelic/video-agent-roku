@@ -1,3 +1,5 @@
+[![Community Project header](https://github.com/newrelic/open-source-office/raw/master/examples/categories/images/Community_Project.png)](https://github.com/newrelic/open-source-office/blob/master/examples/categories/index.md#community-project)
+
 # New Relic Roku Agent
 
 The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events and one to monitor video related events, for apps that use a video player.
