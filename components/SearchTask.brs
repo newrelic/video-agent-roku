@@ -20,10 +20,12 @@ function searchTaskMain()
         urlReq.SetMessagePort(m.port)
         urlReq.AsyncGetToString()
         
+        'Send HTTP_REQUEST action
         nrSendHttpRequest(m.nr, urlReq)
         
         msg = wait(5000, m.port)
         if type(msg) = "roUrlEvent" then
+            'Send HTTP_RESPONSE action
             nrSendHttpResponse(m.nr, _url, msg)
         end if
         
