@@ -50,6 +50,8 @@ To enable automatic event capture perform the following steps which are detailed
 
 #### Example
 
+> Note: For a more complete example, please refer to the sample app included in the present repository. Specifically files Main.brs and files inside components directory.
+
 *Main.brs*
 
 ```
