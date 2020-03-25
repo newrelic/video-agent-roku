@@ -700,16 +700,13 @@ function nrParseVersion(verStr as String) as Object
 end function
 
 function nrResetPlaytime() as Void
-    nrLog("nrResetPlaytime")
     m.nrTotalPlaytime = 0.0
     m.nrTotalPlaytimeLastTimestamp = 0
     m.nrPlaytimeIsRunning = false
 end function
 
 function nrResumePlaytime() as Void
-    nrLog("nrResumePlaytime")
     if m.nrPlaytimeIsRunning = false
-        nrLog("nrResumePlaytime correct state")
         m.nrPlaytimeIsRunning = true
         date = CreateObject("roDateTime")
         m.nrTotalPlaytimeLastTimestamp = date.AsSeconds()
@@ -717,9 +714,7 @@ function nrResumePlaytime() as Void
 end function
 
 function nrPausePlaytime() as Void
-    nrLog("nrPausePlaytime")
     if m.nrPlaytimeIsRunning = true
-        nrLog("nrPausePlaytime correct state")
         m.nrPlaytimeIsRunning = false
         date = CreateObject("roDateTime")
         offset = date.AsSeconds() - m.nrTotalPlaytimeLastTimestamp
@@ -729,12 +724,10 @@ end function
 
 function nrCalculateTotalPlaytime() as Integer
     if m.nrPlaytimeIsRunning = true
-        nrLog("nrCalculateTotalPlaytime timer running")
         date = CreateObject("roDateTime")
         offset = date.AsSeconds() - m.nrTotalPlaytimeLastTimestamp
         return m.nrTotalPlaytime + offset        
     else
-        nrLog("nrCalculateTotalPlaytime timer NOT running")
         return m.nrTotalPlaytime
     end if
 end function

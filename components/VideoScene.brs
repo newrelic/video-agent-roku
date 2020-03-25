@@ -3,34 +3,49 @@
 sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
-    setupVideoPlaylist()
-    'setupVideo()
+    'Setup the video player
+    setupVideoContent(true)
 end sub
 
 function nrRefUpdated()
     print "Updated NR object reference"
     m.nr = m.top.nr
+    
+    'Init custom attributes
     m.pauseCounter = 0
     updateCustomAttr()
     
+    'Send SCENE_LOADED action
     nrSceneLoaded(m.nr, "MyVideoScene")
     
     'Activate video tracking
     NewRelicVideoStart(m.nr, m.video)
 end function
 
+'Set custom attributes
 function updateCustomAttr() as Void
+    'Set custom attribute of type string to all action
     nrSetCustomAttribute(m.nr, "customGeneralString", "Value")
+    'Set custom attribute of type integer to all action
     nrSetCustomAttribute(m.nr, "customGeneralNumber", 123)
+    'Set custom attribute of type integer to CONTENT_PAUSE actions
     nrSetCustomAttribute(m.nr, "customNumPause", m.pauseCounter, "CONTENT_PAUSE")
+    'Set a list of custom attributes to CONTENT_HEARTBEAT actions
     dict = {"key0":"val0", "key1":"val1"}
     nrSetCustomAttributeList(m.nr, dict, "CONTENT_HEARTBEAT")
 end function
 
-function setupVideo() as void
+function setupVideoContent(isPlaylist as Boolean) as void
+    if isPlaylist = false
+        setupSingleVideo()
+    else
+        setupVideoPlaylist()
+    end if
+end function
+
+function setupSingleVideo() as void
     print "Prepare video player with single video"
     
-    'singleVideo = "https://ext.inisoft.tv/demo/BBB_clear/dash_ondemand/demo.mpd"
     singleVideo = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
     
     videoContent = createObject("RoSGNode", "ContentNode")
@@ -46,8 +61,7 @@ function setupVideoPlaylist() as void
     print "Prepare video player with Playlist"
 
     httprange = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    'hls0 = "https://bitmovin-a.akamaihd.net/content/playhouse-vr/m3u8s/105560.m3u8"
-    hls1 = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+    hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
     dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
 
     playlistContent = createObject("RoSGNode", "ContentNode")
@@ -57,50 +71,15 @@ function setupVideoPlaylist() as void
     httprangeContent.title = "HTTP Range"
     playlistContent.appendChild(httprangeContent)
     
-    'hls0Content = createObject("RoSGNode", "ContentNode")
-    'hls0Content.url = hls0
-    'hls0Content.title = "HLS 0"
-    'playlistContent.appendChild(hls0Content)
-    
-    hls1Content = createObject("RoSGNode", "ContentNode")
-    hls1Content.url = hls1
-    hls1Content.title = "HLS 1"
-    playlistContent.appendChild(hls1Content)
+    hlsContent = createObject("RoSGNode", "ContentNode")
+    hlsContent.url = hls
+    hlsContent.title = "HLS"
+    playlistContent.appendChild(hlsContent)
     
     dashContent = createObject("RoSGNode", "ContentNode")
     dashContent.url = dash
     dashContent.title = "DASH"
     playlistContent.appendChild(dashContent)
-    
-    m.video = m.top.findNode("myVideo")
-    m.video.content = playlistContent
-    m.video.contentIsPlaylist = True
-    m.video.control = "play"
-end function
-
-function setupVideoPlaylistShort() as void
-    print "Prepare video player with Playlist Short"
-
-    httprange1 = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    httprange2 = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    httprange3 = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-
-    playlistContent = createObject("RoSGNode", "ContentNode")
-    
-    httprangeContent1 = createObject("RoSGNode", "ContentNode")
-    httprangeContent1.url = httprange1
-    httprangeContent1.title = "HTTP Range 1"
-    playlistContent.appendChild(httprangeContent1)
-    
-    httprangeContent2 = createObject("RoSGNode", "ContentNode")
-    httprangeContent2.url = httprange2
-    httprangeContent2.title = "HTTP Range 2"
-    playlistContent.appendChild(httprangeContent2)
-    
-    httprangeContent3 = createObject("RoSGNode", "ContentNode")
-    httprangeContent3.url = httprange3
-    httprangeContent3.title = "HTTP Range"
-    playlistContent.appendChild(httprangeContent3)
     
     m.video = m.top.findNode("myVideo")
     m.video.content = playlistContent
@@ -114,6 +93,7 @@ function videoAction(key as String) as Boolean
         return true
     else if key = "play"
         if m.video.state = "playing"
+            'Increment the value of the custom attribute pauseCounter
             m.pauseCounter = m.pauseCounter + 1
             updateCustomAttr()
             m.video.control = "pause"
@@ -133,14 +113,14 @@ function videoAction(key as String) as Boolean
         return true
     else if key = "right"
         m.video.control = "skipcontent"
-        'Cusom event, Skip Content
+        'Send custom video event, Skip Content
         nrSendVideoEvent(m.nr, "SKIP_CONTENT")
         return true
     else if key = "left"
         if m.video.contentIndex > 0
             m.video.nextContentIndex = m.video.contentIndex - 1
             m.video.control = "skipcontent"
-            'Cusom event, Previous Content
+            'Send custom video event, Previous Content
             nrSendVideoEvent(m.nr, "PREV_CONTENT")
         end if
         return true

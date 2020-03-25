@@ -13,6 +13,7 @@ sub Main(aa as Object)
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
     m.nr = NewRelic("ACCOUNT_ID", "API_KEY", true)
     nrAppStarted(m.nr, aa)
+    'Send a custom system
     nrSendSystemEvent(m.nr, "TEST_ACTION")
     
     print "Main m = ", m
@@ -43,7 +44,7 @@ sub Main(aa as Object)
                     if msg.getData() = "OK"
                         'force crash
                         print "Crash!"
-                        anyshit()
+                        anyfoo()
                     end if
                 end if
             end if
