@@ -542,6 +542,7 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `appDevId` | Developer ID. |
 | `appBuild` | Application build number. |
 | `timeSinceLoad` | Time since NewRelic function call. Seconds. |
+| `uptime` | Uptime of the system since the last reboot. Seconds. |
 
 #### 1.2.2 Action Specific Attributes
 
