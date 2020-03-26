@@ -271,7 +271,8 @@ function nrAddAttributes(ev as Object) as Object
     appbuild = app.GetValue("build_version").ToInt()
     if appbuild = 0 then appbuild = 1
     ev.AddReplace("appBuild", appbuild)
-    
+    'Uptime
+    ev.AddReplace("uptime", Uptime(0))
     'Add custom attributes
     genCustomAttr = m.nrCustomAttributes["GENERAL_ATTR"]
     if genCustomAttr <> invalid then ev.Append(genCustomAttr)
