@@ -526,12 +526,12 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     hdmi = CreateObject("roHdmiStatus")
     ev["hdmiIsConnected"] = hdmi.IsConnected()
     '- Recalculate all timeSinceXXX, adding timestamp offset
-    ev["timeSinceLastHeartbeat"] = ev["timeSinceLastHeartbeat"] + offsetTime '(ms)
+    if ev["timeSinceLastHeartbeat"] <> invalid then ev["timeSinceLastHeartbeat"] = ev["timeSinceLastHeartbeat"] + offsetTime '(ms)
+    if ev["timeSinceRequested"] <> invalid then ev["timeSinceRequested"] = ev["timeSinceRequested"] + offsetTime ' (ms)
+    if ev["timeSinceStarted"] <> invalid then ev["timeSinceStarted"] = ev["timeSinceStarted"] + offsetTime ' (ms)
+    ev["timeSinceTrackerReady"] = ev["timeSinceTrackerReady"] + offsetTime ' (ms)
     ev["timeSinceLastKeypress"] = dev.TimeSinceLastKeypress() * 1000
     ev["timeSinceLoad"] = ev["timeSinceLoad"] + offsetTime/1000 ' (s)
-    ev["timeSinceRequested"] = ev["timeSinceRequested"] + offsetTime ' (ms)
-    ev["timeSinceStarted"] = ev["timeSinceStarted"] + offsetTime ' (ms)
-    ev["timeSinceTrackerReady"] = ev["timeSinceTrackerReady"] + offsetTime ' (ms)
     ev["totalPlaytime"] = nrCalculateTotalPlaytime() * 1000
     if m.nrPlaytimeSinceLastEvent = invalid
         ev["playtimeSinceLastEvent"] = 0
@@ -592,10 +592,18 @@ function nrAddVideoAttributes(ev as Object) as Object
     if isAction("RESUME", ev["actionName"])
         ev.AddReplace("timeSincePaused", m.nrTimer.TotalMilliseconds() - m.nrTimeSincePaused)
     end if
-    ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
-    ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
-    ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
-    ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
+    if m.nrTimeSinceLastHeartbeat > 0
+        ev.AddReplace("timeSinceLastHeartbeat", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastHeartbeat)
+    end if
+    if m.nrTimeSinceRequested > 0
+        ev.AddReplace("timeSinceRequested", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceRequested)
+    end if
+    if m.nrTimeSinceStarted > 0
+        ev.AddReplace("timeSinceStarted", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceStarted)
+    end if
+    if m.nrTimeSinceTrackerReady > 0
+        ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
+    end if
     'TTFF calculated internally by RokuOS
     ev.AddReplace("timeToStartStreaming", m.nrVideoObject.timeToStartStreaming * 1000)
     'Playtimes
