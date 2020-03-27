@@ -29,7 +29,8 @@
         <!-- Internal Methods (not wrapped, but used from the outside by some internal components) -->
         <function name="nrActivateLogging"/>
         <function name="nrLog"/>
-        <function name="nrExtractEvent"/>
+        <function name="nrExtractAllEvents"/>
+        <function name="nrGetBackEvents"/>
         <function name="nrRecordEvent"/>
         <function name="nrProcessSystemEvent"/>
     </interface>

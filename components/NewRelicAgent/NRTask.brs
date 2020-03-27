@@ -33,13 +33,14 @@ function nrInsertInsightsData(attributes as Object) as Object
 end function
 
 function nrEventProcessor() as Void
+    events = m.nr.callFunc("nrExtractAllEvents")
     while true
-        ev = m.nr.callFunc("nrExtractEvent")
+        ev = events.Pop()
         if ev = invalid then exit while
         res = nrInsertInsightsData(ev)
         if res <> 200
             m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED, retry later --")
-            m.nr.callFunc("nrRecordEvent", ev)
+            m.nr.callFunc("nrGetBackEvents", events)
             return
         end if
     end while
@@ -47,8 +48,10 @@ end function
 
 function nrTaskMain() as Void
     'Assuming that parent node is com.newrelic.NRAgent
-    m.nr = m.top.getParent()
-    m.apiKey = m.top.apiKey
-    m.accountNumber = m.top.accountNumber
+    if m.nr = invalid
+        m.nr = m.top.getParent()
+        m.apiKey = m.top.apiKey
+        m.accountNumber = m.top.accountNumber
+    end if
     nrEventProcessor()
 end function
