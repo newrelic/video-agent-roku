@@ -1,6 +1,20 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.0.3] - 2020/04/01
+### Add
+- Attribute totalPlaytime.
+- Attribute timeToStartStreaming.
+- Attribute playtimeSinceLastEvent.
+- Attribute uptime.
+
+### Change
+- Update documentation.
+
+### Fix
+- Issue with all timeSinceXXX attributes.
+- Reduce rendezvous events in NRTask.
+
 ## [1.0.2] - 2020/03/17
 ### Add
 - Error attributes.
