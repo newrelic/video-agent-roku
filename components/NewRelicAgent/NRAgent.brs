@@ -502,16 +502,24 @@ end function
 function nrSendError(video as Object) as Void
     attr = {
         "errorMessage": video.errorMsg,
-        "errorCode": video.errorCode,
-        "errorStr": video.errorStr,
-        "errorClipId": video.errorInfo.clip_id,
-        "errorIgnored": video.errorInfo.ignored,
-        "errorSource": video.errorInfo.source,
-        "errorCategory": video.errorInfo.category,
-        "errorInfoCode": video.errorInfo.error_code,
-        "errorDebugMsg": video.errorInfo.dbgmsg,
-        "errorAttributes": video.errorInfo.error_attributes
+        "errorCode": video.errorCode
     }
+    if video.errorStr <> invalid
+        attr.append({
+            "errorStr": video.errorStr
+        })
+    end if
+    if video.errorInfo <> invalid
+        attr.append({
+            "errorClipId": video.errorInfo.clip_id,
+            "errorIgnored": video.errorInfo.ignored,
+            "errorSource": video.errorInfo.source,
+            "errorCategory": video.errorInfo.category,
+            "errorInfoCode": video.errorInfo.error_code,
+            "errorDebugMsg": video.errorInfo.dbgmsg,
+            "errorAttributes": video.errorInfo.error_attributes
+        })
+    end if
     nrSendVideoEvent(nrAction("ERROR"), attr)
 end function
 
