@@ -21,7 +21,7 @@ sub Main(aa as Object)
     'Pass NewRelicAgent object to scene
     scene.setField("nr", m.nr)
     'Observe scene field "moreButton" to capture "back" button and abort the execution
-    scene.observeField("moteButton", m.port)
+    scene.observeField("moreButton", m.port)
     
     'Activate system tracking
     m.syslog = NewRelicSystemStart(m.port)
