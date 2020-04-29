@@ -184,23 +184,16 @@ function nrExtractEvent() as Object
 end function
 
 function nrExtractAllEvents() as Object
-    events = []
-    while true
-        ev = nrExtractEvent()        
-        if ev = invalid then exit while
-        events.Push(ev)
-    end while
+    events = m.nrEventArray
+    m.nrEventArray = []
     return events
 end function
 
 function nrGetBackEvents(events as Object) as Void
-    while true
-        ev = events.Pop()        
-        if ev = invalid then exit while
-        nrRecordEvent(ev)
-    end while
+    print "------> nrGetBackEvents, ev size = ", events.Count()
+    m.nrEventArray.Append(events)
 end function
- 
+
 function nrRecordEvent(event as Object) as Void
     if m.nrEventArray.Count() < 500
         m.nrEventArray.Push(event)
