@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.0.5] - 2020/04/29
+### Change
+- Improve nrGetBackEvents and nrExtractAllEvents array handling. 
+
 ## [1.0.4] - 2020/04/08
 ### Fix
 - Check for the existance of errorInfo before adding attributes.
