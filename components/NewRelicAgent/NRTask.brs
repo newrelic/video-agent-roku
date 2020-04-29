@@ -40,6 +40,7 @@ function nrEventProcessor() as Void
         res = nrInsertInsightsData(ev)
         if res <> 200
             m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED, retry later --")
+            events.Push(ev)
             m.nr.callFunc("nrGetBackEvents", events)
             return
         end if
