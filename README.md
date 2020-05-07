@@ -17,7 +17,7 @@ Will result in something like the following:
 [Requirements](#requirements)  
 [Installation](#installation)  
 [Usage](#usage)  
-[Agent API](#api)
+[Agent API](#api)  
 [Data Model](#data-model)  
 [Open Source License](#open-source)  
 [Support](#support)  
