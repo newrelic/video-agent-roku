@@ -13,6 +13,18 @@ Will result in something like the following:
 
 ![image](https://user-images.githubusercontent.com/8813505/77453470-b2942d00-6dcd-11ea-9d5b-e48b5ae3c9c6.png)
 
+## On This Page
+[Requirements](#requirements)  
+[Installation](#installation)  
+[Usage](#usage)  
+[Agent API](#api)
+[Data Model](#data-model)  
+[Open Source License](#open-source)  
+[Support](#support)  
+[Contributing](#contributing)  
+
+<a name="requirements"/>
+
 ### Requirements
 
 Sending both system events and video events requires an Insights Pro subscription.   Insights Free accounts permit only one event type per API key.   If you are using an Insights Free account, you can enable only one type of Roku event capture at a time (system or video).
@@ -22,6 +34,8 @@ To initialize the agent you need an ACCOUNT ID and an API KEY.
 The ACCOUNT ID indicates the New Relic account to which you would like to send the Roku data.   For example, https://insights.newrelic.com/accounts/xxx.  Where “xxx” is the Account ID.
 
 To register the API Key, follow the instructions found [here](https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/send-custom-events-event-api#register).
+
+<a name="installation"/>
 
 ### Installation
 
@@ -38,6 +52,8 @@ source/
 ```
 
 2. Open your Roku app project’s directory and copy the “NewRelicAgent” folder to “components” and "NewRelicAgent.brs" file to “source”.
+
+<a name="usage"/>
 
 ### Usage
 
@@ -139,6 +155,7 @@ function setupVideoPlayer()
     m.video.control = "play"
 end function
 ```
+<a name="api"/>
 
 ### Agent API
 
@@ -483,6 +500,8 @@ Example:
 	nrForceHarvest(m.nr)
 ```
 
+<a name="data-model"/>
+
 ### Data Model
 
 The agent generates two different event types: `RokuSystem` and `RokuVideo`.
@@ -649,9 +668,13 @@ For video events, the common attributes include all `RokuSystem` common attribut
 | `errorAttributes` | Property `error_attributes` from Video object errorInfo. | `CONTENT_ERROR` |
 | `isInitialBuffering` | Is the initial buffering event, and not a rebuffering. In playlists it only happens at the beginning, and not on every video. | `CONTENT_BUFFER_*` |
 
+<a name="open-source"/>
+
 # Open source license
 
 This project is distributed under the [Apache 2 license](LICENSE).
+
+<a name="support"/>
 
 # Support
 
@@ -668,6 +691,8 @@ https://discuss.newrelic.com/t/new-relic-open-source-roku-agent/97802
 ## Issues / enhancement requests
 
 Issues and enhancement requests can be submitted in the [Issues tab of this repository](https://github.com/newrelic/video-agent-roku/issues). Please search for and review the existing open issues before submitting a new issue.
+
+<a name="contributing"/>
 
 # Contributing
 
