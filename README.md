@@ -19,6 +19,8 @@ Will result in something like the following:
 [Usage](#usage)  
 [Agent API](#api)  
 [Data Model](#data-model)  
+   [Roku System](#roku-system)
+   [Roku Video] (#roku-video)
 [Open Source License](#open-source)  
 [Support](#support)  
 [Contributing](#contributing)  
@@ -506,6 +508,8 @@ Example:
 
 The agent generates two different event types: `RokuSystem` and `RokuVideo`.
 
+<a name="roku-system"/>
+
 #### 1. RokuSystem
 
 This event groups all actions related to system tracking.
@@ -592,6 +596,8 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `http*` | Multiple attributes. All the header keys. | `HTTP_RESPONSE` |
 | `transferIdentity` | HTTP request identificator. | `HTTP_REQUEST`, `HTTP_RESPONSE` |
 | `sceneName` | Identifier of the scene. | `SCENE_LOADED` |
+
+<a name="roku-video"/>
 
 #### 2. RokuVideo
 
