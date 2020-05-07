@@ -14,16 +14,16 @@ Will result in something like the following:
 ![image](https://user-images.githubusercontent.com/8813505/77453470-b2942d00-6dcd-11ea-9d5b-e48b5ae3c9c6.png)
 
 ## On This Page
-[Requirements](#requirements)  
-[Installation](#installation)  
-[Usage](#usage)  
-[Agent API](#api)  
-[Data Model](#data-model)  
-&nbsp;&nbsp;&nbsp;[Roku System](#roku-system)  
-&nbsp;&nbsp;&nbsp;[Roku Video](#roku-video)  
-[Open Source License](#open-source)  
-[Support](#support)  
-[Contributing](#contributing)  
+  * [Requirements](#requirements)  
+  * [Installation](#installation)  
+  * [Usage](#usage)  
+  * [Agent API](#api)  
+  * [Data Model](#data-model)  
+&nbsp;&nbsp;  * [Roku System](#roku-system)  
+&nbsp;&nbsp;  * [Roku Video](#roku-video)  
+  * [Open Source License](#open-source)  
+  * [Support](#support)  
+  * [Contributing](#contributing)  
 
 <a name="requirements"/>
 
