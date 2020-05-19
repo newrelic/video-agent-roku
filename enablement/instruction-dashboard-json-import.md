@@ -4,6 +4,8 @@
 
 2. Replace '<account_id>' with the New Relic id where you have your Roku data
 
+(Steps 3-6 can only be performed by New Relic, so provide the JSON to a New Relic contact so it can be imported to your account)
+
 3. Go to http://one.newrelic.com
 
 4. Click on the Dashboards launcher
