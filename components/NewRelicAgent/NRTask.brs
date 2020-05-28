@@ -33,18 +33,20 @@ function nrInsertInsightsData(attributes as Object) as Object
 end function
 
 function nrEventProcessor() as Void
-    events = m.nr.callFunc("nrExtractAllEvents")
-    while true
-        ev = events.Pop()
-        if ev = invalid then exit while
-        res = nrInsertInsightsData(ev)
-        if res <> 200
-            m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED, retry later --")
-            events.Push(ev)
-            m.nr.callFunc("nrGetBackEvents", events)
-            return
-        end if
-    end while
+    if m.nr <> invalid
+        events = m.nr.callFunc("nrExtractAllEvents")
+        while true
+            ev = events.Pop()
+            if ev = invalid then exit while
+            res = nrInsertInsightsData(ev)
+            if res <> 200
+                m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED, retry later --")
+                events.Push(ev)
+                m.nr.callFunc("nrGetBackEvents", events)
+                return
+            end if
+        end while
+    end if
 end function
 
 function nrTaskMain() as Void
