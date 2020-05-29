@@ -16,5 +16,5 @@
 		<field id="apiKey" type="string" value=""/>
     </interface>
 
-	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRTask.brs"/>
+	<script type="text/brightscript" uri="NRTask.brs"/>
 </component>

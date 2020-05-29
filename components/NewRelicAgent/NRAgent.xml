@@ -35,7 +35,7 @@
         <function name="nrProcessSystemEvent"/>
     </interface>
     
-	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/NRAgent.brs"/>
+	<script type="text/brightscript" uri="NRAgent.brs"/>
 	
 	<children>
 		<Timer id="nrHarvestTimer" repeat="true" duration="10"/>
