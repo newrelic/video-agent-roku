@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.0.6] - 2020/10/28
+### Fix
+- Multiple bug fixes.
+
 ## [1.0.5] - 2020/04/29
 ### Change
 - Improve nrGetBackEvents and nrExtractAllEvents array handling. 
