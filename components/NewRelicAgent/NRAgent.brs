@@ -694,7 +694,7 @@ function nrGenerateStreamUrl() as String
     if m.nrVideoObject.streamInfo <> invalid
         return m.nrVideoObject.streamInfo["streamUrl"]
     else
-        if (m.nrVideoObject.contentIsPlaylist)
+        if m.nrVideoObject.contentIsPlaylist and m.nrVideoObject.content <> invalid
             currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
             if currentChild <> invalid
                 'Get url from content child
@@ -897,7 +897,7 @@ function nrLogVideoInfo() as Void
         nrLog(["Player state = ", m.nrVideoObject.state])
         nrLog(["Current position = ", m.nrVideoObject.position])
         nrLog(["Current duration = ", m.nrVideoObject.duration])
-        if (m.nrVideoObject.contentIsPlaylist)
+        if m.nrVideoObject.contentIsPlaylist and m.nrVideoObject.content <> invalid
             nrLog(["Video content playlist size = ", m.nrVideoObject.content.getChildCount()])
             nrLog(["Video content index = ", m.nrVideoObject.contentIndex])
             currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
@@ -908,7 +908,7 @@ function nrLogVideoInfo() as Void
                 nrLog("Current child is invalid")
             end if
         else
-            nrLog("Content is not a playlist")
+            nrLog("Content is not a playlist or no content at all")
         end if
         nrLog(["Muted = ", m.nrVideoObject.mute])
         if m.nrVideoObject.streamInfo <> invalid
