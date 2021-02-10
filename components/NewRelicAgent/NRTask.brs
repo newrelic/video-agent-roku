@@ -12,8 +12,6 @@ end sub
 function nrInsertInsightsEvents(events as Object) as Object
     url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.accountNumber + "/events")
     jsonString = FormatJson(events)
-    
-    print "EVENTS JSON STRING = ", jsonString
 
     rport = CreateObject("roMessagePort")
     urlReq = CreateObject("roUrlTransfer")
@@ -27,12 +25,13 @@ function nrInsertInsightsEvents(events as Object) as Object
     urlReq.SetMessagePort(rport)
     urlReq.AsyncPostFromString(jsonString)
     
-    msg = wait(0, rport)
+    msg = wait(10000, rport)
     if type(msg) = "roUrlEvent" then
         return msg.GetResponseCode()
     else
+        'Timeout, cancel transfer and return error code
         urlReq.AsyncCancel()
-        return -1
+        return 0
     end if
 end function
 
@@ -41,9 +40,6 @@ function nrEventProcessor() as Void
         events = m.nr.callFunc("nrExtractAllEvents")
         if events.Count() > 0
             res = nrInsertInsightsEvents(events)
-            
-            print "RESPONSE CODE = ", res
-            
             if res <> 200
                 m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED, retry later --")
                 m.nr.callFunc("nrGetBackEvents", events)
