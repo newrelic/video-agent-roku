@@ -1,6 +1,13 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.0.8] - 2021/02/10
+### Change
+- Improved how the events are sent to New Relic. Now are sent in batches, instead of one by one.
+
+### Fix
+- In case of a network link disconnection, the NRTask doesn't wait forever.
+
 ## [1.0.7] - 2021/02/04
 ### Fix
 - Check if `Video.content` exists before using it.
