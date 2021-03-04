@@ -230,6 +230,25 @@ Example:
 	NewRelicVideoStart(m.nr, m.video)
 ```
 
+**NewRelicVideoStop**
+
+```
+NewRelicVideoStop(nr as Object) as Void
+
+Description:
+	Stop video logging.
+
+Arguments:
+	nr: New Relic Agent object.
+	
+Return:
+	Nothing.
+	
+Example:
+
+	NewRelicVideoStop(m.nr)
+```
+
 **nrProcessMessage**
 
 ```
