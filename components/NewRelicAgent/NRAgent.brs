@@ -89,9 +89,11 @@ function NewRelicVideoStart(videoObject as Object) as Void
 end function
 
 function NewRelicVideoStop() as Void
+    ' Remove event listeners
     m.nrVideoObject.unobserveFieldScoped("state")
     m.nrVideoObject.unobserveFieldScoped("contentIndex")
     m.nrVideoObject = Invalid
+    ' Stop heartbeat timer
     m.hbTimer.control = "stop"
 end function
 
