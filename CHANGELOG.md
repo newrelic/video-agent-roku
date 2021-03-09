@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2021/03/09
+### Change
+- Fix NewRelicVideoStop function - remove timer observer.
+
 ## [1.1.0] - 2021/03/04
 ### Change
 - Added NewRelicVideoStop function. In case the scene changes from the one containing a video player to another without it.
