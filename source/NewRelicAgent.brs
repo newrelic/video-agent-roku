@@ -41,6 +41,13 @@ function NewRelicVideoStart(nr as Object, video as Object) as Void
     nr.callFunc("NewRelicVideoStart", video)
 end function
 
+' Stop video logging.
+'
+' @param nr New Relic Agent object.
+function NewRelicVideoStop(nr as Object) as Void
+    nr.callFunc("NewRelicVideoStop")
+end function
+
 ' Check for a system log message, process it and sends the appropriate event. 
 '
 ' @param nr New Relic Agent object.

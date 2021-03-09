@@ -75,17 +75,26 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrNumberOfErrors = 0
     
     'Setup event listeners 
-    videoObject.observeField("state", "nrStateObserver")
-    videoObject.observeField("contentIndex", "nrIndexObserver")
+    m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
+    m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
     'Init heartbeat timer
     m.hbTimer = CreateObject("roSGNode", "Timer")
     m.hbTimer.repeat = true
     m.hbTimer.duration = 30
-    m.hbTimer.observeField("fire", "nrHeartbeatHandler")
+    m.hbTimer.observeFieldScoped("fire", "nrHeartbeatHandler")
     m.hbTimer.control = "start"
     
     'Player Ready
     nrSendPlayerReady()
+end function
+
+function NewRelicVideoStop() as Void
+    ' Remove event listeners
+    m.nrVideoObject.unobserveFieldScoped("state")
+    m.nrVideoObject.unobserveFieldScoped("contentIndex")
+    m.nrVideoObject = Invalid
+    ' Stop heartbeat timer
+    m.hbTimer.control = "stop"
 end function
 
 function nrAppStarted(aa as Object) as Void

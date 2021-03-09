@@ -13,10 +13,11 @@
 
 	<interface>
 		<!-- Properties -->
-		<field id="version" type="string" value="1.0.8"/>
+		<field id="version" type="string" value="1.0.9"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
         <function name="NewRelicVideoStart"/>
+        <function name="NewRelicVideoStop"/>
         <function name="nrSceneLoaded"/>
         <function name="nrAppStarted"/>
         <function name="nrSendCustomEvent"/>

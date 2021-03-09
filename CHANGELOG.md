@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.0.9] - 2021/03/04
+### Change
+- Added NewRelicVideoStop function. In case the scene changes from the one containing a video player to another without it.
+
 ## [1.0.8] - 2021/02/10
 ### Change
 - Improved how the events are sent to New Relic. Now are sent in batches, instead of one by one.
