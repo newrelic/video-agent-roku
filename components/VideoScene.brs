@@ -46,7 +46,7 @@ end function
 function setupSingleVideo() as void
     print "Prepare video player with single video"
     
-    singleVideo = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
+    singleVideo = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
     
     videoContent = createObject("RoSGNode", "ContentNode")
     videoContent.url = singleVideo
@@ -65,11 +65,6 @@ function setupVideoPlaylist() as void
     dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
 
     playlistContent = createObject("RoSGNode", "ContentNode")
-    
-    httprangeContent = createObject("RoSGNode", "ContentNode")
-    httprangeContent.url = httprange
-    httprangeContent.title = "HTTP Range"
-    playlistContent.appendChild(httprangeContent)
     
     hlsContent = createObject("RoSGNode", "ContentNode")
     hlsContent.url = hls
