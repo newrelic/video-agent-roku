@@ -94,6 +94,7 @@ function NewRelicVideoStop() as Void
     m.nrVideoObject.unobserveFieldScoped("contentIndex")
     m.nrVideoObject = Invalid
     ' Stop heartbeat timer
+    m.hbTimer.unobserveFieldScoped("fire")
     m.hbTimer.control = "stop"
 end function
 
