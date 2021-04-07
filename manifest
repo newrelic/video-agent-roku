@@ -6,3 +6,4 @@ mm_icon_focus_hd=pkg:/images/channel-poster_hd.png
 mm_icon_focus_sd=pkg:/images/channel-poster_sd.png
 mm_icon_focus_fhd=pkg:/images/channel-poster_fhd.png
 splash_color=#000000
+bs_libs_required=roku_ads_lib

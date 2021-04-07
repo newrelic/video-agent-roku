@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name = "AdsTask" extends = "Task">
+	<interface>
+		<field id="videoNode" type="node" />
+	</interface>
+	
+	<!-- Init -->
+	<script type="text/brightscript" uri="pkg:/components/AdsTask.brs"/>
+</component>

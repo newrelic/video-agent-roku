@@ -3,8 +3,15 @@
 sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
-    'Setup the video player
-    setupVideoContent(true)
+    
+    'Setup the video player with a single video
+    'setupSingleVideo()
+    
+    'Setup the video player with a playlist
+    'setupVideoPlaylist()
+    
+    'Setup the video player with a single video and ads
+    setupVideoWithAds()
 end sub
 
 function nrRefUpdated()
@@ -33,14 +40,6 @@ function updateCustomAttr() as Void
     'Set a list of custom attributes to CONTENT_HEARTBEAT actions
     dict = {"key0":"val0", "key1":"val1"}
     nrSetCustomAttributeList(m.nr, dict, "CONTENT_HEARTBEAT")
-end function
-
-function setupVideoContent(isPlaylist as Boolean) as void
-    if isPlaylist = false
-        setupSingleVideo()
-    else
-        setupVideoPlaylist()
-    end if
 end function
 
 function setupSingleVideo() as void
@@ -80,6 +79,24 @@ function setupVideoPlaylist() as void
     m.video.content = playlistContent
     m.video.contentIsPlaylist = True
     m.video.control = "play"
+end function
+
+function setupVideoWithAds() as void
+    print "Prepare video player with ads"
+    
+    singleVideo = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+    
+    videoContent = createObject("RoSGNode", "ContentNode")
+    videoContent.url = singleVideo
+    videoContent.title = "Single Video"
+    
+    m.video = m.top.findNode("myVideo")
+    m.video.content = videoContent
+    'm.video.control = "play"
+    
+    m.adstask = createObject("roSGNode", "AdsTask")
+    m.adstask.setField("videoNode", m.video)
+    m.adstask.control = "RUN"
 end function
 
 function videoAction(key as String) as Boolean
