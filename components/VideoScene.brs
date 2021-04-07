@@ -92,7 +92,6 @@ function setupVideoWithAds() as void
     
     m.video = m.top.findNode("myVideo")
     m.video.content = videoContent
-    'm.video.control = "play"
     
     m.adstask = createObject("roSGNode", "AdsTask")
     m.adstask.setField("videoNode", m.video)
