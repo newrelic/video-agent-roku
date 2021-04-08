@@ -175,6 +175,8 @@ end function
 
 'Roku Advertising Framework tracking
 function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic)
+    'TODO: implement attributes
+    
     if GetInterface(evtType, "ifString") <> invalid
         if evtType = "PodStart"
             nrSendVideoEvent("AD_BREAK_START")
@@ -189,6 +191,10 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic)
             m.rafState.didFirstQuartile = false
             m.rafState.didSecondQuartile = false
             m.rafState.didThirdQuartile = false
+        else if evtType = "Pause"
+            nrSendVideoEvent("AD_PAUSE")
+        else if evtType = "Resume"
+            nrSendVideoEvent("AD_RESUME")
         end if
     else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
         'Time progress event
