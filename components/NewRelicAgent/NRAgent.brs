@@ -48,6 +48,12 @@ function NewRelicInit(account as String, apikey as String) as Void
     m.nrHarvestTimer.ObserveField("fire", "nrHarvestTimerHandler")
     m.nrHarvestTimer.control = "start"
     
+    'Ad tracker states
+    m.rafState = CreateObject("roAssociativeArray")
+    m.rafState.didFirstQuartile = false
+    m.rafState.didSecondQuartile = false
+    m.rafState.didThirdQuartile = false
+    
     nrLog(["NewRelicInit, m = ", m])
 end function
 
@@ -169,16 +175,37 @@ end function
 
 'Roku Advertising Framework tracking
 function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic)
-    if evtType = "PodStart"
-        nrSendVideoEvent("AD_BREAK_START")
-    else if evtType = "PodComplete"
-        nrSendVideoEvent("AD_BREAK_END")
-    else if evtType = "Impression"
-        nrSendVideoEvent("AD_REQUEST")
-    else if evtType = "Start"
-        nrSendVideoEvent("AD_START")
-    else if evtType = "Complete"
-        nrSendVideoEvent("AD_END")
+    if GetInterface(evtType, "ifString") <> invalid
+        if evtType = "PodStart"
+            nrSendVideoEvent("AD_BREAK_START")
+        else if evtType = "PodComplete"
+            nrSendVideoEvent("AD_BREAK_END")
+        else if evtType = "Impression"
+            nrSendVideoEvent("AD_REQUEST")
+        else if evtType = "Start"
+            nrSendVideoEvent("AD_START")
+        else if evtType = "Complete"
+            nrSendVideoEvent("AD_END")
+            m.rafState.didFirstQuartile = false
+            m.rafState.didSecondQuartile = false
+            m.rafState.didThirdQuartile = false
+        end if
+    else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
+        'Time progress event
+        firstQuartile = ctx.duration / 4.0
+        secondQuartile = firstQuartile * 2.0
+        thirdQuartile = firstQuartile * 3.0
+        
+        if ctx.time >= firstQuartile and ctx.time < secondQuartile and m.rafState.didFirstQuartile = false
+            m.rafState.didFirstQuartile = true
+            nrSendVideoEvent("AD_QUARTILE")
+        else if ctx.time >= secondQuartile and ctx.time < thirdQuartile and m.rafState.didSecondQuartile = false
+            m.rafState.didSecondQuartile = true
+            nrSendVideoEvent("AD_QUARTILE")
+        else if ctx.time >= thirdQuartile and m.rafState.didThirdQuartile = false
+            m.rafState.didThirdQuartile = true
+            nrSendVideoEvent("AD_QUARTILE")
+        end if
     end if
 end function
 
