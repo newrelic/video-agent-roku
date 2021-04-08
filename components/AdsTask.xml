@@ -2,7 +2,14 @@
 <component name = "AdsTask" extends = "Task">
 	<interface>
 		<field id="videoNode" type="node" />
+		<field id="nr" type="node" />
 	</interface>
+	
+	<!-- Smart Ad Server Interface -->
+	<script type="text/brightscript" uri="pkg:/components/SmartAdServer.brs"/>
+	
+	<!-- New Relic Agent Interface -->
+	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
 	
 	<!-- Init -->
 	<script type="text/brightscript" uri="pkg:/components/AdsTask.brs"/>

@@ -191,3 +191,21 @@ end function
 function nrForceHarvest(nr as Object) as Void
     nr.callFunc("nrForceHarvest")
 end function
+
+' Track an event from Roku Advertising Framework
+'
+' @param nr New Relic Agent object.
+' @param evtType Event type.
+function nrTrackRAF(nr as Object, evtType = invalid as Dynamic)
+    if evtType = "PodStart"
+        nrSendVideoEvent(nr, "AD_BREAK_START")
+    else if evtType = "PodComplete"
+        nrSendVideoEvent(nr, "AD_BREAK_END")
+    else if evtType = "Impression"
+        nrSendVideoEvent(nr, "AD_REQUEST")
+    else if evtType = "Start"
+        nrSendVideoEvent(nr, "AD_START")
+    else if evtType = "Complete"
+        nrSendVideoEvent(nr, "AD_END")
+    end if
+end function

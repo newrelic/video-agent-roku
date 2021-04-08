@@ -3,15 +3,6 @@
 sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
-    
-    'Setup the video player with a single video
-    'setupSingleVideo()
-    
-    'Setup the video player with a playlist
-    'setupVideoPlaylist()
-    
-    'Setup the video player with a single video and ads
-    setupVideoWithAds()
 end sub
 
 function nrRefUpdated()
@@ -24,6 +15,15 @@ function nrRefUpdated()
     
     'Send SCENE_LOADED action
     nrSceneLoaded(m.nr, "MyVideoScene")
+    
+    'Setup the video player with a single video
+    'setupSingleVideo()
+    
+    'Setup the video player with a playlist
+    'setupVideoPlaylist()
+    
+    'Setup the video player with a single video and ads
+    setupVideoWithAds()
     
     'Activate video tracking
     NewRelicVideoStart(m.nr, m.video)
@@ -95,6 +95,7 @@ function setupVideoWithAds() as void
     
     m.adstask = createObject("roSGNode", "AdsTask")
     m.adstask.setField("videoNode", m.video)
+    m.adstask.setField("nr", m.nr)
     m.adstask.control = "RUN"
 end function
 
