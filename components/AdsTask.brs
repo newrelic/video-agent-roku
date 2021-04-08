@@ -27,33 +27,14 @@ function adsTaskMain()
     'print "Ad Pods = ", adPods[0]
     
     adIface.enableAdMeasurements(true)
-    logObj = {
-         log : Function(evtType = invalid as Dynamic, ctx = invalid as Dynamic)
-                   print "------> logObj", evtType, ctx
-                   if GetInterface(evtType, "ifString") <> invalid
-                       print "*** tracking event " + evtType + " fired."
-                       if ctx.companion = true then
-                           print "***** companion = true"
-                       end if
-                       if ctx.errMsg <> invalid then print "*****   Error message: " + ctx.errMsg
-                       if ctx.adIndex <> invalid then print "*****  Ad Index: " + ctx.adIndex.ToStr()
-                       if ctx.ad <> invalid and ctx.ad.adTitle <> invalid then print "*****  Ad Title: " + ctx.ad.adTitle
-                   else if ctx <> invalid and ctx.time <> invalid
-                       print "*** checking tracking events for ad progress: " + ctx.time.ToStr()
-                   end if
-               End Function
-     }
-     logFunc = Function(obj = Invalid as Dynamic, evtType = invalid as Dynamic, ctx = invalid as Dynamic)
-                   
-                   print "logFunc m = ", m
-                   print "logFunc m.top = ", m.top
-                   
-                   nrTrackRAF(obj, evtType)
-                   
-                   'obj.log(evtType, ctx)
-               End Function
+
+    logFunc = Function(obj = Invalid as Dynamic, evtType = invalid as Dynamic, ctx = invalid as Dynamic)
+        print "logFunc evtType = ", evtType
+        print "logFunc ctx = ", ctx
+        
+        nrTrackRAF(obj, evtType)
+    End Function
     
-    'adIface.setTrackingCallback(logFunc, logObj)
     adIface.setTrackingCallback(logFunc, m.top.nr)
     
     shouldPlayContent = adIface.showAds(adPods, invalid, m.top.videoNode.getParent())

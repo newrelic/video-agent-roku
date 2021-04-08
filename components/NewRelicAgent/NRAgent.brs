@@ -167,6 +167,21 @@ function nrForceHarvest() as Void
     nrHarvestTimerHandler()
 end function
 
+'Roku Advertising Framework tracking
+function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic)
+    if evtType = "PodStart"
+        nrSendVideoEvent("AD_BREAK_START")
+    else if evtType = "PodComplete"
+        nrSendVideoEvent("AD_BREAK_END")
+    else if evtType = "Impression"
+        nrSendVideoEvent("AD_REQUEST")
+    else if evtType = "Start"
+        nrSendVideoEvent("AD_START")
+    else if evtType = "Complete"
+        nrSendVideoEvent("AD_END")
+    end if
+end function
+
 '=========================='
 ' Public Internal Functions '
 '=========================='

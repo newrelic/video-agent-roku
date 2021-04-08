@@ -196,16 +196,7 @@ end function
 '
 ' @param nr New Relic Agent object.
 ' @param evtType Event type.
-function nrTrackRAF(nr as Object, evtType = invalid as Dynamic)
-    if evtType = "PodStart"
-        nrSendVideoEvent(nr, "AD_BREAK_START")
-    else if evtType = "PodComplete"
-        nrSendVideoEvent(nr, "AD_BREAK_END")
-    else if evtType = "Impression"
-        nrSendVideoEvent(nr, "AD_REQUEST")
-    else if evtType = "Start"
-        nrSendVideoEvent(nr, "AD_START")
-    else if evtType = "Complete"
-        nrSendVideoEvent(nr, "AD_END")
-    end if
+' @param ctx Event context.
+function nrTrackRAF(nr as Object, evtType = invalid as Dynamic, ctx = invalid as Dynamic)
+    nr.callFunc("nrTrackRAF", evtType, ctx)
 end function
