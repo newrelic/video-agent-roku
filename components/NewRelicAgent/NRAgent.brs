@@ -524,7 +524,10 @@ function nrSendError(video as Object) as Void
     end if
     if video.licenseStatus <> Invalid
         attr.append({
-            "licenseStatus": formatJson(video.licenseStatus)
+            "licenseStatusDuration": video.licenseStatus.duration,
+            "licenseStatusKeySystem": video.licenseStatus.keySystem,
+            "licenseStatusResponse": video.licenseStatus.response,
+            "licenseStatusStatus": video.licenseStatus.status
         })
     end if
 
