@@ -50,9 +50,7 @@ function NewRelicInit(account as String, apikey as String) as Void
     
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
-    m.rafState.didFirstQuartile = false
-    m.rafState.didSecondQuartile = false
-    m.rafState.didThirdQuartile = false
+    nrResetRAFState()
     
     nrLog(["NewRelicInit, m = ", m])
 end function
@@ -174,27 +172,28 @@ function nrForceHarvest() as Void
 end function
 
 'Roku Advertising Framework tracking
-function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic)
-    'TODO: implement attributes
-    
-    if GetInterface(evtType, "ifString") <> invalid
+function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as Void
+    if GetInterface(evtType, "ifString") <> invalid and ctx <> invalid
         if evtType = "PodStart"
-            nrSendVideoEvent("AD_BREAK_START")
+            nrSendRAFEvent("AD_BREAK_START", ctx)
         else if evtType = "PodComplete"
-            nrSendVideoEvent("AD_BREAK_END")
+            nrSendRAFEvent("AD_BREAK_END", ctx)
         else if evtType = "Impression"
-            nrSendVideoEvent("AD_REQUEST")
+            nrSendRAFEvent("AD_REQUEST", ctx)
         else if evtType = "Start"
-            nrSendVideoEvent("AD_START")
+            nrSendRAFEvent("AD_START", ctx)
         else if evtType = "Complete"
-            nrSendVideoEvent("AD_END")
-            m.rafState.didFirstQuartile = false
-            m.rafState.didSecondQuartile = false
-            m.rafState.didThirdQuartile = false
+            nrSendRAFEvent("AD_END", ctx)
+            nrResetRAFState()
         else if evtType = "Pause"
-            nrSendVideoEvent("AD_PAUSE")
+            nrSendRAFEvent("AD_PAUSE", ctx)
         else if evtType = "Resume"
-            nrSendVideoEvent("AD_RESUME")
+            nrSendRAFEvent("AD_RESUME", ctx)
+        else if evtType = "Close"
+            nrSendRAFEvent("AD_SKIP", ctx)
+            nrSendRAFEvent("AD_END", ctx)
+            nrSendRAFEvent("AD_BREAK_END", ctx)
+            nrResetRAFState()
         end if
     else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
         'Time progress event
@@ -204,13 +203,13 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic)
         
         if ctx.time >= firstQuartile and ctx.time < secondQuartile and m.rafState.didFirstQuartile = false
             m.rafState.didFirstQuartile = true
-            nrSendVideoEvent("AD_QUARTILE")
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 1})
         else if ctx.time >= secondQuartile and ctx.time < thirdQuartile and m.rafState.didSecondQuartile = false
             m.rafState.didSecondQuartile = true
-            nrSendVideoEvent("AD_QUARTILE")
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 2})
         else if ctx.time >= thirdQuartile and m.rafState.didThirdQuartile = false
             m.rafState.didThirdQuartile = true
-            nrSendVideoEvent("AD_QUARTILE")
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 3})
         end if
     end if
 end function
@@ -692,6 +691,34 @@ function nrAddVideoAttributes(ev as Object) as Object
     end if
     
     return ev
+end function
+
+'=============='
+' Ad functions '
+'=============='
+
+function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
+    'TODO: implement attributes
+    return ev
+end function
+
+function nrSendRAFEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
+    ev = nrCreateEvent("RokuVideo", actionName)
+    ev = nrAddVideoAttributes(ev)
+    ev = nrAddRAFAttributes(ev, ctx)
+    if type(attr) = "roAssociativeArray"
+       ev.Append(attr)
+    end if
+    nrRecordEvent(ev)
+    'Backup attributes (cloning it)
+    m.nrBackupAttributes = {}
+    m.nrBackupAttributes.Append(ev)
+end function
+
+function nrResetRAFState() as Void
+    m.rafState.didFirstQuartile = false
+    m.rafState.didSecondQuartile = false
+    m.rafState.didThirdQuartile = false
 end function
 
 '=================='

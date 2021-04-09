@@ -25,8 +25,8 @@ function adsTaskMain()
     adIface.enableAdMeasurements(true)
 
     logFunc = Function(obj = Invalid as Dynamic, evtType = invalid as Dynamic, ctx = invalid as Dynamic)
-        'print "logFunc evtType = ", evtType
-        'print "logFunc ctx = ", ctx
+        print "logFunc evtType = ", evtType
+        print "logFunc ctx = ", ctx
         
         nrTrackRAF(obj, evtType, ctx)
     End Function
