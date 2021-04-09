@@ -77,7 +77,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Setup event listeners 
     m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
-    m.nrvideoObject.observeField("licenseStatus", "nrLicenseStatusObserver")
+    m.nrvideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
     'Init heartbeat timer
     m.hbTimer = CreateObject("roSGNode", "Timer")
     m.hbTimer.repeat = true
