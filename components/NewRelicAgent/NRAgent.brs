@@ -699,6 +699,12 @@ end function
 
 function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
     'TODO: implement attributes
+    if ctx.rendersequence <> invalid
+        if ctx.rendersequence = "preroll" then ev.AddReplace("adPosition", "pre")
+        if ctx.rendersequence = "midroll" then ev.AddReplace("adPosition", "mid")
+        if ctx.rendersequence = "postroll" then ev.AddReplace("adPosition", "post")
+    end if
+    
     return ev
 end function
 
