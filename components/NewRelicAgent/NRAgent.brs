@@ -522,6 +522,12 @@ function nrSendError(video as Object) as Void
             "errorAttributes": video.errorInfo.error_attributes
         })
     end if
+    if video.licenseStatus <> Invalid
+        attr.append({
+            "licenseStatus": formatJson(video.licenseStatus)
+        })
+    end if
+
     nrSendVideoEvent(nrAction("ERROR"), attr)
 end function
 
