@@ -62,7 +62,6 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrVideoObject = videoObject
     'Current state
     m.nrLastVideoState = "none"
-    m.nrIsAd = false
     m.nrIsInitialBuffering = false
     'Timestamps for timeSince attributes
     m.nrTimeSinceBufferBegin = 0.0
@@ -493,19 +492,19 @@ end function
 
 function nrSendRequest() as Void
     m.nrTimeSinceRequested = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent(nrAction("REQUEST"))
+    nrSendVideoEvent("CONTENT_REQUEST")
 end function
 
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent(nrAction("START"))
+    nrSendVideoEvent("CONTENT_START")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendEnd() as Void
-    nrSendVideoEvent(nrAction("END"))
+    nrSendVideoEvent("CONTENT_END")
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -513,13 +512,13 @@ end function
 
 function nrSendPause() as Void
     m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent(nrAction("PAUSE"))
+    nrSendVideoEvent("CONTENT_PAUSE")
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendResume() as Void
-    nrSendVideoEvent(nrAction("RESUME"))
+    nrSendVideoEvent("CONTENT_RESUME")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -532,7 +531,7 @@ function nrSendBufferStart() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent(nrAction("BUFFER_START"), {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
@@ -543,7 +542,7 @@ function nrSendBufferEnd() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent(nrAction("BUFFER_END"), {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -569,7 +568,7 @@ function nrSendError(video as Object) as Void
             "errorAttributes": video.errorInfo.error_attributes
         })
     end if
-    nrSendVideoEvent(nrAction("ERROR"), attr)
+    nrSendVideoEvent("CONTENT_ERROR", attr)
 end function
 
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
@@ -625,27 +624,27 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
 end function
 
 function nrSendBackupVideoEnd() as Void
-    nrSendBackupVideoEvent(nrAction("END"))
+    nrSendBackupVideoEvent("CONTENT_END")
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
-    ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
-    ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
-    ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
+    ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
+    ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
+    ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
     streamUrl = nrGenerateStreamUrl()
-    ev.AddReplace(nrAttr("Src"), streamUrl)
+    ev.AddReplace("contentSrc", streamUrl)
     'Generate Id from Src (hashing it)
     ba = CreateObject("roByteArray")
     ba.FromAsciiString(streamUrl)
-    ev.AddReplace(nrAttr("Id"), ba.GetCRC32())
+    ev.AddReplace("contentId", ba.GetCRC32())
     if m.nrVideoObject.streamInfo <> invalid
-        ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
-        ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
+        ev.AddReplace("contentBitrate", m.nrVideoObject.streamInfo["streamBitrate"])
+        ev.AddReplace("contentMeasuredBitrate", m.nrVideoObject.streamInfo["measuredBitrate"])
     end if
     if m.nrVideoObject.streamingSegment <> invalid
-        ev.AddReplace(nrAttr("SegmentBitrate"), m.nrVideoObject.streamingSegment["segBitrateBps"])
+        ev.AddReplace("contentSegmentBitrate", m.nrVideoObject.streamingSegment["segBitrateBps"])
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
     dev = CreateObject("roDeviceInfo")
@@ -731,26 +730,10 @@ end function
 ' Helper functions '
 '=================='
 
-function nrAction(action as String) as String
-    if m.nrIsAd = true
-        return "AD_" + action
-    else
-        return "CONTENT_" + action
-    end if
-end function
-
 function isAction(name as String, action as String) as Boolean
     regExp = "(CONTENT|AD)_" + name
     r = CreateObject("roRegex", regExp, "")
     return r.isMatch(action)
-end function
-
-function nrAttr(attribute as String) as String
-    if m.nrIsAd = true
-        return "ad" + attribute
-    else
-        return "content" + attribute
-    end if
 end function
 
 function nrParseVideoStreamUrl(url as String) as String
@@ -945,7 +928,7 @@ end function
 function nrHeartbeatHandler() as Void
     'Only send while it is playing (state is not "none" or "finished")
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
-        nrSendVideoEvent(nrAction("HEARTBEAT"))
+        nrSendVideoEvent("CONTENT_HEARTBEAT")
         m.nrTimeSinceLastHeartbeat = m.nrTimer.TotalMilliseconds()
         if m.nrPlaytimeSinceLastEvent <> invalid
             m.nrPlaytimeSinceLastEvent.Mark()
