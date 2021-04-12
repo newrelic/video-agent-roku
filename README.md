@@ -637,6 +637,7 @@ This event groups all actions related to video tracking.
 | `CONTENT_BUFFER_END` | Video ended buffering. |
 | `CONTENT_ERROR` | Video error happened. |
 | `CONTENT_HEARTBEAT` | Sent every 30 seconds between video start and video end. |
+| `LICENSE_STATUS` | Video has received a DRM license response |
 
 #### 2.2 Attributes
 
@@ -691,10 +692,10 @@ For video events, the common attributes include all `RokuSystem` common attribut
 | `errorInfoCode` | Property `error_code` from Video object errorInfo. | `CONTENT_ERROR` |
 | `errorDebugMsg` | Property `dbgmsg` from Video object errorInfo. | `CONTENT_ERROR` |
 | `errorAttributes` | Property `error_attributes` from Video object errorInfo. | `CONTENT_ERROR` |
-| `licenseStatusDuration` | Property `duration` from Video object licenseStatus. | `CONTENT_ERROR` |
-| `licenseStatusKeySystem` | Property `keySystem` from Video object licenseStatus. | `CONTENT_ERROR` |
-| `licenseStatusResponse` | Property `response` from Video object licenseStatus. | `CONTENT_ERROR` |
-| `licenseStatusStatus` | Property `status` from Video object licenseStatus. | `CONTENT_ERROR` |
+| `licenseStatusDuration` | Property `duration` from Video object licenseStatus. | `CONTENT_ERROR`, `LICENSE_STATUS` |
+| `licenseStatusKeySystem` | Property `keySystem` from Video object licenseStatus. | `CONTENT_ERROR`, `LICENSE_STATUS` |
+| `licenseStatusResponse` | Property `response` from Video object licenseStatus. | `CONTENT_ERROR`, `LICENSE_STATUS` |
+| `licenseStatusStatus` | Property `status` from Video object licenseStatus. | `CONTENT_ERROR`, `LICENSE_STATUS` |
 | `isInitialBuffering` | Is the initial buffering event, and not a rebuffering. In playlists it only happens at the beginning, and not on every video. | `CONTENT_BUFFER_*` |
 
 <a name="open-source"/>
