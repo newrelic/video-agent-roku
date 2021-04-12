@@ -524,12 +524,7 @@ function nrSendError(video as Object) as Void
         })
     end if
     if video.licenseStatus <> Invalid
-        attr.append({
-            "licenseStatusDuration": video.licenseStatus.duration,
-            "licenseStatusKeySystem": video.licenseStatus.keySystem,
-            "licenseStatusResponse": video.licenseStatus.response,
-            "licenseStatusStatus": video.licenseStatus.status
-        })
+        attr.append(getLicenseStatusAttributes(video.licenseStatus))
     end if
 
     nrSendVideoEvent(nrAction("ERROR"), attr)
@@ -873,13 +868,17 @@ end function
 
 function nrLicenseStatusObserver(event as Object) as Void
     licenseStatus = event.getData()
-    attr = {
+    attr = getLicenseStatusAttributes(licenseStatus)
+    nrSendVideoEvent("LICENSE_STATUS", attr)
+end function
+
+function getLicenseStatusAttributes(licenseStatus as Object) as object
+    return {
         "licenseStatusDuration": licenseStatus.duration,
         "licenseStatusKeySystem": licenseStatus.keySystem,
         "licenseStatusResponse": licenseStatus.response,
         "licenseStatusStatus": licenseStatus.status
     }
-    nrSendVideoEvent("LICENSE_STATUS", attr)
 end function
 
 function nrHeartbeatHandler() as Void
