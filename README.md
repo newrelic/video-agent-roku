@@ -691,6 +691,10 @@ For video events, the common attributes include all `RokuSystem` common attribut
 | `errorInfoCode` | Property `error_code` from Video object errorInfo. | `CONTENT_ERROR` |
 | `errorDebugMsg` | Property `dbgmsg` from Video object errorInfo. | `CONTENT_ERROR` |
 | `errorAttributes` | Property `error_attributes` from Video object errorInfo. | `CONTENT_ERROR` |
+| `licenseStatusDuration` | Property `duration` from Video object licenseStatus. | `CONTENT_ERROR` |
+| `licenseStatusKeySystem` | Property `keySystem` from Video object licenseStatus. | `CONTENT_ERROR` |
+| `licenseStatusResponse` | Property `response` from Video object licenseStatus. | `CONTENT_ERROR` |
+| `licenseStatusStatus` | Property `status` from Video object licenseStatus. | `CONTENT_ERROR` |
 | `isInitialBuffering` | Is the initial buffering event, and not a rebuffering. In playlists it only happens at the beginning, and not on every video. | `CONTENT_BUFFER_*` |
 
 <a name="open-source"/>
