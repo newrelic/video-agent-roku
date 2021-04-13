@@ -697,11 +697,33 @@ end function
 '=============='
 
 function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
-    'TODO: implement attributes
+    'TODO: implement attributes:
+    'TODO: ad playhead (?)
+    'TODO: time since attributes
     if ctx.rendersequence <> invalid
         if ctx.rendersequence = "preroll" then ev.AddReplace("adPosition", "pre")
         if ctx.rendersequence = "midroll" then ev.AddReplace("adPosition", "mid")
         if ctx.rendersequence = "postroll" then ev.AddReplace("adPosition", "post")
+    end if
+    
+    if ctx.duration <> invalid
+        ev.AddReplace("adDuration", ctx.duration * 1000)
+    end if
+    
+    if ctx.server <> invalid
+        ev.AddReplace("adSrc", ctx.server)
+    end if
+    
+    if ctx.ad <> invalid
+        if ctx.ad.adid <> invalid
+            ev.AddReplace("adId", ctx.ad.adid)
+        end if
+        if ctx.ad.creativeid <> invalid
+            ev.AddReplace("adCreativeId", ctx.ad.creativeid)
+        end if
+        if ctx.ad.adtitle <> invalid
+            ev.AddReplace("adTitle", ctx.ad.adtitle)
+        end if
     end if
     
     return ev
