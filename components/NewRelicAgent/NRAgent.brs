@@ -50,6 +50,7 @@ function NewRelicInit(account as String, apikey as String) as Void
     
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
+    nrResetRAFTimers()
     nrResetRAFState()
     
     nrLog(["NewRelicInit, m = ", m])
@@ -174,25 +175,41 @@ end function
 function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as Void
     if GetInterface(evtType, "ifString") <> invalid and ctx <> invalid
         if evtType = "PodStart"
+            nrResetRAFTimers()
             nrSendRAFEvent("AD_BREAK_START", ctx)
+            m.rafState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
         else if evtType = "PodComplete"
-            nrSendRAFEvent("AD_BREAK_END", ctx)
+            'Calc attributes for Ad break end
+            timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
+            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
         else if evtType = "Impression"
             nrSendRAFEvent("AD_REQUEST", ctx)
+            m.rafState.timeSinceAdRequested = m.nrTimer.TotalMilliseconds()
         else if evtType = "Start"
             nrSendRAFEvent("AD_START", ctx)
+            m.rafState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
         else if evtType = "Complete"
             nrSendRAFEvent("AD_END", ctx)
+            'Reset attributes after END
             nrResetRAFState()
+            m.rafState.timeSinceAdRequested = 0
+            m.rafState.timeSinceAdStarted = 0
         else if evtType = "Pause"
             nrSendRAFEvent("AD_PAUSE", ctx)
+            m.rafState.timeSinceAdPaused = m.nrTimer.TotalMilliseconds()
         else if evtType = "Resume"
-            nrSendRAFEvent("AD_RESUME", ctx)
+            timeSinceAdPaused = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdPaused
+            nrSendRAFEvent("AD_RESUME", ctx, {"timeSinceAdPaused": timeSinceAdPaused})
         else if evtType = "Close"
             nrSendRAFEvent("AD_SKIP", ctx)
             nrSendRAFEvent("AD_END", ctx)
-            nrSendRAFEvent("AD_BREAK_END", ctx)
+            'Reset attributes after END
             nrResetRAFState()
+            m.rafState.timeSinceAdRequested = 0
+            m.rafState.timeSinceAdStarted = 0
+            'Calc attributes for Ad break end
+            timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
+            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
         end if
     else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
         'Time progress event
@@ -697,9 +714,8 @@ end function
 '=============='
 
 function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
-    'TODO: implement attributes:
-    'TODO: ad playhead (?)
-    'TODO: time since attributes
+    'TODO: adPlayhead (?)
+    'TODO: totalPlaytime, playtimeSinceLastEvent, totalAdPlaytime
     if ctx.rendersequence <> invalid
         if ctx.rendersequence = "preroll" then ev.AddReplace("adPosition", "pre")
         if ctx.rendersequence = "midroll" then ev.AddReplace("adPosition", "mid")
@@ -726,6 +742,14 @@ function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
         end if
     end if
     
+    if m.rafState.timeSinceAdRequested <> 0
+        ev.AddReplace("timeSinceAdRequested", m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdRequested)
+    end if
+    
+    if m.rafState.timeSinceAdStarted <> 0
+        ev.AddReplace("timeSinceAdStarted", m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdStarted)
+    end if
+    
     return ev
 end function
 
@@ -746,6 +770,13 @@ function nrResetRAFState() as Void
     m.rafState.didFirstQuartile = false
     m.rafState.didSecondQuartile = false
     m.rafState.didThirdQuartile = false
+end function
+
+function nrResetRAFTimers() as Void
+    m.rafState.timeSinceAdBreakBegin = 0
+    m.rafState.timeSinceAdRequested = 0
+    m.rafState.timeSinceAdStarted = 0
+    m.rafState.timeSinceAdPaused = 0
 end function
 
 '=================='
