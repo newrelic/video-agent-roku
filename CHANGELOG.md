@@ -1,6 +1,14 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.1.3] - 2021/04/14
+### Fix
+- Use `GetOSVersion()` (when available) instead of deprecated `GetVersion()`.
+
+## [1.1.2] - 2021/04/14
+### Add
+- DRM related events and attributes.
+
 ## [1.1.1] - 2021/03/09
 ### Change
 - Fix NewRelicVideoStop function - remove timer observer.
