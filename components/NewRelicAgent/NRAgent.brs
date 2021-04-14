@@ -266,8 +266,7 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("deviceModel", dev.GetModel())
     ev.AddReplace("deviceType", dev.GetModelType())
     ev.AddReplace("osName", "RokuOS")
-    ver = nrParseVersion(dev.GetVersion())
-    ev.AddReplace("osVersionString", dev.GetVersion())
+    ver = nrGetOSVersion(dev)
     ev.AddReplace("osVersion", ver["version"])
     ev.AddReplace("osBuild", ver["build"])
     ev.AddReplace("countryCode", dev.GetUserCountryCode())
@@ -607,7 +606,7 @@ function nrAddVideoAttributes(ev as Object) as Object
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
     dev = CreateObject("roDeviceInfo")
-    ver = nrParseVersion(dev.GetVersion())
+    ver = nrGetOSVersion(dev)
     ev.AddReplace("playerVersion", ver["version"])
     ev.AddReplace("sessionDuration", m.nrTimer.TotalMilliseconds() / 1000.0)
     ev.AddReplace("viewId", m.nrSessionId + "-" + m.nrVideoCounter.ToStr())
@@ -737,8 +736,16 @@ function nrTimestamp() as LongInteger
     return timestampMS&
 end function
 
-function nrParseVersion(verStr as String) as Object
-    return {version: verStr.Mid(2, 3) + "." + verStr.Mid(5, 1), build: verStr.Mid(8, 4)}
+function nrGetOSVersion(dev as Object) as Object
+    verStr = dev.GetVersion()
+    if verStr = "999.99E99999X"
+        'RokuOS 10
+        verDict = dev.GetOSVersion()
+        return {version: verDict.major + "." + verDict.minor + "." + verDict.revision, build: verDict.build}
+    else
+        'Older than RokuOS 10
+        return {version: verStr.Mid(2, 3) + "." + verStr.Mid(5, 1), build: verStr.Mid(8, 4)}
+    end if
 end function
 
 function nrResetPlaytime() as Void
