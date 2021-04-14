@@ -82,6 +82,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Setup event listeners 
     m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
+    m.nrvideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
     'Init heartbeat timer
     m.hbTimer = CreateObject("roSGNode", "Timer")
     m.hbTimer.repeat = true
@@ -587,6 +588,10 @@ function nrSendError(video as Object) as Void
             "errorAttributes": video.errorInfo.error_attributes
         })
     end if
+    if video.licenseStatus <> Invalid
+        attr.append(getLicenseStatusAttributes(video.licenseStatus))
+    end if
+
     nrSendVideoEvent("CONTENT_ERROR", attr)
 end function
 
@@ -981,6 +986,21 @@ function nrIndexObserver() as Void
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrSendRequest()
     nrSendStart()
+end function
+
+function nrLicenseStatusObserver(event as Object) as Void
+    licenseStatus = event.getData()
+    attr = getLicenseStatusAttributes(licenseStatus)
+    nrSendVideoEvent("LICENSE_STATUS", attr)
+end function
+
+function getLicenseStatusAttributes(licenseStatus as Object) as object
+    return {
+        "licenseStatusDuration": licenseStatus.duration,
+        "licenseStatusKeySystem": licenseStatus.keySystem,
+        "licenseStatusResponse": licenseStatus.response,
+        "licenseStatusStatus": licenseStatus.status
+    }
 end function
 
 function nrHeartbeatHandler() as Void
