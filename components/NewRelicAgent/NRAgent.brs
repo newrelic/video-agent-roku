@@ -50,6 +50,7 @@ function NewRelicInit(account as String, apikey as String) as Void
     
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
+    m.rafState.numberOfAds = 0
     nrResetRAFTimers()
     nrResetRAFState()
     
@@ -186,6 +187,7 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             nrSendRAFEvent("AD_REQUEST", ctx)
             m.rafState.timeSinceAdRequested = m.nrTimer.TotalMilliseconds()
         else if evtType = "Start"
+            m.rafState.numberOfAds = m.rafState.numberOfAds + 1
             nrSendRAFEvent("AD_START", ctx)
             m.rafState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
         else if evtType = "Complete"
@@ -749,6 +751,9 @@ function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
     if m.rafState.timeSinceAdStarted <> 0
         ev.AddReplace("timeSinceAdStarted", m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdStarted)
     end if
+    
+    ev.AddReplace("adPartner", "raf")
+    ev.AddReplace("numberOfAds", m.rafState.numberOfAds)
     
     return ev
 end function
