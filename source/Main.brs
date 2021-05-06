@@ -11,7 +11,7 @@ sub Main(aa as Object)
     screen.show()
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", true)
+    m.nr = NewRelic("1567277", "4SxMEHFjPjZ-M7Do8Tt_M0YaTqwf4dTl", true)
     nrAppStarted(m.nr, aa)
     'Send a custom system
     nrSendSystemEvent(m.nr, "TEST_ACTION")
@@ -24,9 +24,9 @@ sub Main(aa as Object)
     scene.observeField("moteButton", m.port)
     
     'Activate system tracking
-    m.syslog = NewRelicSystemStart(m.port)
+    'm.syslog = NewRelicSystemStart(m.port)
     
-    runSearchTask("hello")
+    'runSearchTask("hello")
     
     while(true)
         msg = wait(0, m.port)

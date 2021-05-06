@@ -16,6 +16,8 @@ function nrRefUpdated()
     'Send SCENE_LOADED action
     nrSceneLoaded(m.nr, "MyVideoScene")
     
+    'NOTE: Uncomment ONE of the following setup calls
+    
     'Setup the video player with a single video
     'setupSingleVideo()
     
@@ -23,7 +25,10 @@ function nrRefUpdated()
     'setupVideoPlaylist()
     
     'Setup the video player with a single video and ads
-    setupVideoWithAds()
+    'setupVideoWithAds()
+    
+    'Setup the video player with a single video and Google IMA ads
+    setupVideoWithIMA()
     
     'Activate video tracking
     NewRelicVideoStart(m.nr, m.video)
@@ -99,6 +104,27 @@ function setupVideoWithAds() as void
     m.adstask.control = "RUN"
 end function
 
+function setupVideoWithIMA() as Void
+    m.video = m.top.findNode("myVideo")
+    m.video.notificationinterval = 1
+    
+    m.testLiveStream = {
+        title: "Live Stream",
+        assetKey: "sN_IYUG8STe1ZzhIIE_ksA",
+        apiKey: "",
+        type: "live"
+    }
+    m.testVodStream = {
+        title: "VOD stream"
+        contentSourceId: "2528370",
+        videoId: "tears-of-steel",
+        apiKey: "",
+        type: "vod"
+    }
+    
+    loadImaSdk()
+end function
+
 function videoAction(key as String) as Boolean
     if key = "replay"
         m.video.control = "replay"
@@ -158,3 +184,46 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return false
     end if
 end function
+
+'Google IMA functions
+
+function loadImaSdk() as void
+  m.sdkTask = createObject("roSGNode", "imasdk")
+  m.sdkTask.observeField("sdkLoaded", "onSdkLoaded")
+  m.sdkTask.observeField("errors", "onSdkLoadedError")
+  
+  selectedStream = m.testVodStream
+  m.videoTitle = selectedStream.title
+  m.sdkTask.streamData = selectedStream
+
+  m.sdkTask.observeField("urlData", "urlLoadRequested")
+  m.sdkTask.video = m.video
+  m.sdkTask.control = "RUN"
+end function
+
+Sub urlLoadRequested(message as Object)
+  print "Url Load Requested ";message
+  data = message.getData()
+
+  playStream(data.manifest)
+End Sub
+
+Sub playStream(url as Object)
+  vidContent = createObject("RoSGNode", "ContentNode")
+  vidContent.url = url
+  vidContent.title = m.videoTitle
+  vidContent.streamformat = "hls"
+  m.video.content = vidContent
+  m.video.setFocus(true)
+  m.video.visible = true
+  m.video.control = "play"
+  m.video.EnableCookies()
+End Sub
+
+Sub onSdkLoaded(message as Object)
+  print "----- onSdkLoaded --- control ";message
+End Sub
+
+Sub onSdkLoadedError(message as Object)
+  print "----- errors in the sdk loading process --- ";message
+End Sub

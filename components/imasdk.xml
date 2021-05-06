@@ -1,0 +1,15 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+
+<component name = "imasdk" extends = "Task">
+	<interface>
+		<field id="sdkLoaded" type="Boolean" />
+		<field id="errors" type="stringarray" />
+		<field id="urlData" type="assocarray" />
+		<field id="adPlaying" type="Boolean" />
+  		<field id="video" type="Node" />
+		<field id="streamData" type="assocarray" />
+		<field id="streamManagerReady" type="Boolean" />
+	</interface>
+	<!-- Init -->
+	<script type="text/brightscript" uri="pkg:/components/imasdk.brs"/>
+</component>
