@@ -108,13 +108,13 @@ function setupVideoWithIMA() as Void
     m.video = m.top.findNode("myVideo")
     m.video.notificationinterval = 1
     
-    m.testLiveStream = {
+    testLiveStream = {
         title: "Live Stream",
         assetKey: "sN_IYUG8STe1ZzhIIE_ksA",
         apiKey: "",
         type: "live"
     }
-    m.testVodStream = {
+    testVodStream = {
         title: "VOD stream"
         contentSourceId: "2528370",
         videoId: "tears-of-steel",
@@ -122,7 +122,7 @@ function setupVideoWithIMA() as Void
         type: "vod"
     }
     
-    loadImaSdk()
+    loadImaSdk(testLiveStream)
 end function
 
 function videoAction(key as String) as Boolean
@@ -187,12 +187,14 @@ end function
 
 'Google IMA functions
 
-function loadImaSdk() as void
+function loadImaSdk(testStream as Object) as void
   m.sdkTask = createObject("roSGNode", "imasdk")
+  'Pass NRAgent object to imasdk
+  m.sdkTask.setField("nr", m.nr)
   m.sdkTask.observeField("sdkLoaded", "onSdkLoaded")
   m.sdkTask.observeField("errors", "onSdkLoadedError")
   
-  selectedStream = m.testVodStream
+  selectedStream = testStream
   m.videoTitle = selectedStream.title
   m.sdkTask.streamData = selectedStream
 

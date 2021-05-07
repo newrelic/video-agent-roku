@@ -9,7 +9,12 @@
   		<field id="video" type="Node" />
 		<field id="streamData" type="assocarray" />
 		<field id="streamManagerReady" type="Boolean" />
+		<field id="nr" type="node"/>
 	</interface>
+	
+	<!-- New Relic Agent Interface -->
+	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
+	
 	<!-- Init -->
 	<script type="text/brightscript" uri="pkg:/components/imasdk.brs"/>
 </component>

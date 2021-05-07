@@ -987,6 +987,11 @@ function nrIndexObserver() as Void
     nrLog("---------- Index Observer ----------")
     nrLogVideoInfo()
     
+    'Check if the index change happened with an invalid playlist
+    if m.nrVideoObject.contentIsPlaylist = false or m.nrVideoObject.content = invalid
+        return
+    end if
+    
     '- Use nrSendBackupVideoEvent to send the END using previous video attributes
     nrSendBackupVideoEnd()
     '- Send REQUEST and START using normal send, with current video attributes

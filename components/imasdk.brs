@@ -36,11 +36,15 @@ sub setupVideoPlayer()
     print "---- Ad Break Started ---- "
     m.top.adPlaying = True
     m.top.video.enableTrickPlay = false
+    
+    nrSendVideoEvent(m.top.nr, "AD_BREAK_START")
   End Function
   m.player.adBreakEnded = Function(adBreakInfo as Object)
     print "---- Ad Break Ended ---- "
     m.top.adPlaying = False
     m.top.video.enableTrickPlay = true
+    
+    nrSendVideoEvent(m.top.nr, "AD_BREAK_END")
   End Function
 End Sub
 
@@ -120,6 +124,8 @@ End Function
 
 Function startCallback(ad as Object) as Void
   print "Callback from SDK -- Start called - "
+  
+  nrSendVideoEvent(m.top.nr, "AD_START")
 End Function
 
 Function firstQuartileCallback(ad as Object) as Void
@@ -136,6 +142,8 @@ End Function
 
 Function completeCallback(ad as Object) as Void
   print "Callback from SDK -- Complete called - "
+  
+  nrSendVideoEvent(m.top.nr, "AD_END")
 End Function
 
 Function errorCallback(error as Object) as Void
