@@ -33,14 +33,14 @@ sub setupVideoPlayer()
     m.top.urlData = urlData
   End Function
   m.player.adBreakStarted = Function(adBreakInfo as Object)
-    print "---- Ad Break Started ---- "
+    print "---- Ad Break Started ---- ", adBreakInfo
     m.top.adPlaying = True
     m.top.video.enableTrickPlay = false
     
     nrSendVideoEvent(m.top.nr, "AD_BREAK_START")
   End Function
   m.player.adBreakEnded = Function(adBreakInfo as Object)
-    print "---- Ad Break Ended ---- "
+    print "---- Ad Break Ended ---- ", adBreakInfo
     m.top.adPlaying = False
     m.top.video.enableTrickPlay = true
     
@@ -122,14 +122,19 @@ Function addCallbacks() as Void
   m.streamManager.addEventListener(m.sdk.AdEvent.COMPLETE, completeCallback)
 End Function
 
+'TODO:
+' - Add attributes (check RAF ones)
+' - Put the IMA tracker in a SG Object, independent of the NRAgent (takes an NRAgent reference)
+' - Check out the initial PAUSE-RESUME evenets when an AD_BREAK starts
+
 Function startCallback(ad as Object) as Void
-  print "Callback from SDK -- Start called - "
+  print "Callback from SDK -- Start called - ", ad
   
   nrSendVideoEvent(m.top.nr, "AD_START")
 End Function
 
 Function firstQuartileCallback(ad as Object) as Void
-  print "Callback from SDK -- First quartile called - "
+  print "Callback from SDK -- First quartile called - ", ad
 End Function
 
 Function midpointCallback(ad as Object) as Void
@@ -137,11 +142,11 @@ Function midpointCallback(ad as Object) as Void
 End Function
 
 Function thirdQuartileCallback(ad as Object) as Void
-  print "Callback from SDK -- Third quartile called - "
+  print "Callback from SDK -- Third quartile called - ", ad
 End Function
 
 Function completeCallback(ad as Object) as Void
-  print "Callback from SDK -- Complete called - "
+  print "Callback from SDK -- Complete called - ", ad
   
   nrSendVideoEvent(m.top.nr, "AD_END")
 End Function

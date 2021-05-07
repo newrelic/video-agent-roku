@@ -9,6 +9,7 @@
   		<field id="video" type="Node" />
 		<field id="streamData" type="assocarray" />
 		<field id="streamManagerReady" type="Boolean" />
+		<!-- NRAgent object -->
 		<field id="nr" type="node"/>
 	</interface>
 	
