@@ -18,7 +18,9 @@
         <function name="nrSendIMAAdBreakEnd"/>
         <function name="nrSendIMAAdStart"/>
         <function name="nrSendIMAAdEnd"/>
-        <function name="nrSendIMAAdQuartile"/>
+        <function name="nrSendIMAAdFirstQuartile"/>
+        <function name="nrSendIMAAdMidpoint"/>
+        <function name="nrSendIMAAdThirdQuartile"/>
     </interface>
 
 	<script type="text/brightscript" uri="IMATracker.brs" />

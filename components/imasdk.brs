@@ -134,22 +134,22 @@ End Function
 Function firstQuartileCallback(ad as Object) as Void
   print "Callback from SDK -- First quartile called - ", ad.adBreakInfo, ad
   
-  'Send AD_QUARTILE
-  nrSendIMAAdQuartile(m.top.tracker, ad, 1)
+  'Send AD_QUARTILE (first)
+  nrSendIMAAdFirstQuartile(m.top.tracker, ad)
 End Function
 
 Function midpointCallback(ad as Object) as Void
-  print "Callback from SDK -- Midpoint called - "
+  print "Callback from SDK -- Midpoint called - ", ad.adBreakInfo, ad
   
-  'Send AD_QUARTILE
-  nrSendIMAAdQuartile(m.top.tracker, ad, 2)
+  'Send AD_QUARTILE (midpoint)
+  nrSendIMAAdMidpoint(m.top.tracker, ad)
 End Function
 
 Function thirdQuartileCallback(ad as Object) as Void
   print "Callback from SDK -- Third quartile called - ", ad.adBreakInfo, ad
   
-  'Send AD_QUARTILE
-  nrSendIMAAdQuartile(m.top.tracker, ad, 3)
+  'Send AD_QUARTILE (third)
+  nrSendIMAAdThirdQuartile(m.top.tracker, ad)
 End Function
 
 Function completeCallback(ad as Object) as Void

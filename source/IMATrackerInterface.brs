@@ -47,11 +47,26 @@ function nrSendIMAAdEnd(tracker as Object, ad as Object) as Void
     tracker.callFunc("nrSendIMAAdEnd", ad)
 end function
 
-' Send Ad Quartile.
+' Send First Ad Quartile.
 '
 ' @param tracker Google IMA Tracker object.
 ' @param ad Ad info object.
-' @param quartile Quartile number.
-function nrSendIMAAdQuartile(tracker as Object, ad as Object, quartile as Integer) as Void
-    tracker.callFunc("nrSendIMAAdQuartile", ad, quartile)
+function nrSendIMAAdFirstQuartile(tracker as Object, ad as Object) as Void
+    tracker.callFunc("nrSendIMAAdFirstQuartile", ad)
+end function
+
+' Send Second Ad Quartile (midpoint).
+'
+' @param tracker Google IMA Tracker object.
+' @param ad Ad info object.
+function nrSendIMAAdMidpoint(tracker as Object, ad as Object) as Void
+    tracker.callFunc("nrSendIMAAdMidpoint", ad)
+end function
+
+' Send Third Ad Quartile.
+'
+' @param tracker Google IMA Tracker object.
+' @param ad Ad info object.
+function nrSendIMAAdThirdQuartile(tracker as Object, ad as Object) as Void
+    tracker.callFunc("nrSendIMAAdThirdQuartile", ad)
 end function

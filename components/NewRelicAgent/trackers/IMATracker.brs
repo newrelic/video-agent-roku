@@ -49,15 +49,27 @@ function nrSendIMAAdEnd(ad as Object) as Void
     m.adState.timeSinceAdStarted = 0
 end function
 
-function nrSendIMAAdQuartile(ad as Object, quartile as Integer) as Void
-    attr = nrIMAAttributes(ad.adBreakInfo, ad)
-    attr.AddReplace("adQuartile", quartile)
-    m.top.nr.callFunc("nrSendVideoEvent", "AD_QUARTILE", nrIMAAttributes(ad.adBreakInfo, ad))
+function nrSendIMAAdFirstQuartile(ad as Object) as Void
+    nrSendIMAAdQuartile(ad, 1)
+end function
+
+function nrSendIMAAdMidpoint(ad as Object) as Void
+    nrSendIMAAdQuartile(ad, 2)
+end function
+
+function nrSendIMAAdThirdQuartile(ad as Object) as Void
+    nrSendIMAAdQuartile(ad, 3)
 end function
 
 '==================='
 ' Private Functions '
 '==================='
+
+function nrSendIMAAdQuartile(ad as Object, quartile as Integer) as Void
+    attr = nrIMAAttributes(ad.adBreakInfo, ad)
+    attr.AddReplace("adQuartile", quartile)
+    m.top.nr.callFunc("nrSendVideoEvent", "AD_QUARTILE", attr)
+end function
 
 'TODO: totalAdPlaytime
 function nrIMAAttributes(adBreakInfo as Object, ad as Object) as Object
