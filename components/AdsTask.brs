@@ -29,14 +29,9 @@ function adsTaskMain()
         print "logFunc ctx = ", ctx
         if ctx.ad <> invalid
             print "Ad info = ", ctx.ad
-            'for each x in ctx.ad.companionads
-            '    print "Ad companion element = ", x
-            'end for
-            'for each x in ctx.ad.tracking
-            '    print "Ad tracking element = ", x
-            'end for
         end if
         
+        'Call RAF tracker
         nrTrackRAF(obj, evtType, ctx)
     End Function
     

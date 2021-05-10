@@ -122,7 +122,7 @@ function setupVideoWithIMA() as Void
         type: "vod"
     }
     
-    loadImaSdk(testLiveStream)
+    loadImaSdk(testVodStream)
 end function
 
 function videoAction(key as String) as Boolean

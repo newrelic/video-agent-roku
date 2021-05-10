@@ -37,14 +37,14 @@ sub setupVideoPlayer()
     m.top.adPlaying = True
     m.top.video.enableTrickPlay = false
     
-    nrSendVideoEvent(m.top.nr, "AD_BREAK_START")
+    sendIMAAdBreakStart(adBreakInfo)
   End Function
   m.player.adBreakEnded = Function(adBreakInfo as Object)
     print "---- Ad Break Ended ---- ", adBreakInfo
     m.top.adPlaying = False
     m.top.video.enableTrickPlay = true
     
-    nrSendVideoEvent(m.top.nr, "AD_BREAK_END")
+    sendIMAAdBreakEnd(adBreakInfo)
   End Function
 End Sub
 
@@ -123,35 +123,80 @@ Function addCallbacks() as Void
 End Function
 
 'TODO:
-' - Add attributes (check RAF ones)
 ' - Put the IMA tracker in a SG Object, independent of the NRAgent (takes an NRAgent reference)
 ' - Check out the initial PAUSE-RESUME evenets when an AD_BREAK starts
 
 Function startCallback(ad as Object) as Void
-  print "Callback from SDK -- Start called - ", ad
+  print "Callback from SDK -- Start called - ", ad.adBreakInfo, ad
   
-  nrSendVideoEvent(m.top.nr, "AD_START")
+  sendIMAAdStart(ad)
 End Function
 
 Function firstQuartileCallback(ad as Object) as Void
-  print "Callback from SDK -- First quartile called - ", ad
+  print "Callback from SDK -- First quartile called - ", ad.adBreakInfo, ad
+  
+  sendIMAAdQuartile(ad, 1)
 End Function
 
 Function midpointCallback(ad as Object) as Void
   print "Callback from SDK -- Midpoint called - "
+  
+  sendIMAAdQuartile(ad, 2)
 End Function
 
 Function thirdQuartileCallback(ad as Object) as Void
-  print "Callback from SDK -- Third quartile called - ", ad
+  print "Callback from SDK -- Third quartile called - ", ad.adBreakInfo, ad
+  
+  sendIMAAdQuartile(ad, 3)
 End Function
 
 Function completeCallback(ad as Object) as Void
-  print "Callback from SDK -- Complete called - ", ad
+  print "Callback from SDK -- Complete called - ", ad.adBreakInfo, ad
   
-  nrSendVideoEvent(m.top.nr, "AD_END")
+  sendIMAAdEnd(ad)
 End Function
 
 Function errorCallback(error as Object) as Void
   print "Callback from SDK -- Error called - "; error
   m.errorState = True
+  
+  'TODO: send error
 End Function
+
+function nrIMAAttributes(adBreakInfo as Object, ad as Object) as Object
+    attr = {}
+    if adBreakInfo.podindex = 0 then attr.AddReplace("adPosition", "pre")
+    if adBreakInfo.podindex > 0 then attr.AddReplace("adPosition", "mid")
+    if adBreakInfo.podindex < 0 then attr.AddReplace("adPosition", "live")
+    attr.AddReplace("contentPosition", adBreakInfo.timeoffset * 1000)
+    
+    if ad <> invalid
+        attr.AddReplace("adDuration", ad.duration * 1000)
+        attr.AddReplace("adId", ad.adid)
+        attr.AddReplace("adTitle", ad.adtitle)
+        attr.AddReplace("adSystem", ad.adsystem)
+    end if
+    return attr
+end function
+
+function sendIMAAdBreakStart(adBreakInfo as Object) as Void
+    nrSendVideoEvent(m.top.nr, "AD_BREAK_START", nrIMAAttributes(adBreakInfo, invalid))
+end function
+
+function sendIMAAdBreakEnd(adBreakInfo as Object) as Void
+    nrSendVideoEvent(m.top.nr, "AD_BREAK_END", nrIMAAttributes(adBreakInfo, invalid))
+end function
+
+function sendIMAAdStart(ad as Object) as Void
+    nrSendVideoEvent(m.top.nr, "AD_START", nrIMAAttributes(ad.adBreakInfo, ad))
+end function
+
+function sendIMAAdEnd(ad as Object) as Void
+    nrSendVideoEvent(m.top.nr, "AD_END", nrIMAAttributes(ad.adBreakInfo, ad))
+end function
+
+function sendIMAAdQuartile(ad as Object, quartile as Integer) as Void
+    attr = nrIMAAttributes(ad.adBreakInfo, ad)
+    attr.AddReplace("adQuartile", quartile)
+    nrSendVideoEvent(m.top.nr, "AD_QUARTILE", attr)
+end function
