@@ -13,7 +13,7 @@
 		<field id="tracker" type="node"/>
 	</interface>
 	
-	<!-- New Relic Agent Interface -->
+	<!-- New Relic IMA Tracker Interface -->
 	<script type="text/brightscript" uri="pkg:/source/IMATrackerInterface.brs"/>
 	
 	<!-- Init -->

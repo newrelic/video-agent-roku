@@ -189,6 +189,7 @@ end function
 
 function loadImaSdk(testStream as Object) as void
   m.sdkTask = createObject("roSGNode", "imasdk")
+  'Pass IMA Tracker object
   m.sdkTask.setField("tracker", IMATracker(m.nr))
   m.sdkTask.observeField("sdkLoaded", "onSdkLoaded")
   m.sdkTask.observeField("errors", "onSdkLoadedError")

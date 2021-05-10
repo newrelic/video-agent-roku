@@ -720,8 +720,7 @@ end function
 '=============='
 
 function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
-    'TODO: adPlayhead (?)
-    'TODO: totalPlaytime, playtimeSinceLastEvent, totalAdPlaytime
+    'TODO: totalAdPlaytime
     if ctx.rendersequence <> invalid
         if ctx.rendersequence = "preroll" then ev.AddReplace("adPosition", "pre")
         if ctx.rendersequence = "midroll" then ev.AddReplace("adPosition", "mid")
