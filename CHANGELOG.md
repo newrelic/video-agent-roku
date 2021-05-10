@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2021/05/10
+### Add
+- Support for Ad trackers: RAF and Google IMA.
+
 ## [1.1.3] - 2021/04/14
 ### Fix
 - Use `GetOSVersion()` (when available) instead of deprecated `GetVersion()`.
