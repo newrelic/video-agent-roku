@@ -1,5 +1,23 @@
+'**********************************************************
+' IMATracker.brs
+' New Relic Google IMA Tracker Component.
+'
+' Copyright 2021 New Relic Inc. All Rights Reserved. 
+'**********************************************************
 
-'Public Functions
+sub init()
+    print "********************************************************"
+    print "   New Relic Google IMA Agent for Roku"
+    print "   Copyright 2021 New Relic Inc. All Rights Reserved."
+    print "********************************************************"
+end sub
+
+'TODO:
+' - Check out the initial PAUSE-RESUME events when an AD_BREAK starts
+
+'=========================='
+' Public Wrapped Functions '
+'=========================='
 
 function nrSendIMAAdBreakStart(adBreakInfo as Object) as Void
     m.top.nr.callFunc("nrSendVideoEvent", "AD_BREAK_START", nrIMAAttributes(adBreakInfo, invalid))
@@ -23,7 +41,9 @@ function nrSendIMAAdQuartile(ad as Object, quartile as Integer) as Void
     m.top.nr.callFunc("nrSendVideoEvent", "AD_QUARTILE", nrIMAAttributes(ad.adBreakInfo, ad))
 end function
 
-'Private Functions
+'==================='
+' Private Functions '
+'==================='
 
 function nrIMAAttributes(adBreakInfo as Object, ad as Object) as Object
     attr = {}

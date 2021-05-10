@@ -124,10 +124,6 @@ Function addCallbacks() as Void
   m.streamManager.addEventListener(m.sdk.AdEvent.COMPLETE, completeCallback)
 End Function
 
-'TODO:
-' - Put the IMA tracker in a SG Object, independent of the NRAgent (takes an NRAgent reference)
-' - Check out the initial PAUSE-RESUME evenets when an AD_BREAK starts
-
 Function startCallback(ad as Object) as Void
   print "Callback from SDK -- Start called - ", ad.adBreakInfo, ad
   
