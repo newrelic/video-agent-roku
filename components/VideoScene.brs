@@ -3,8 +3,6 @@
 sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
-    'Setup the video player
-    setupVideoContent(true)
 end sub
 
 function nrRefUpdated()
@@ -17,6 +15,20 @@ function nrRefUpdated()
     
     'Send SCENE_LOADED action
     nrSceneLoaded(m.nr, "MyVideoScene")
+    
+    'NOTE: Uncomment ONE of the following setup calls
+    
+    'Setup the video player with a single video
+    'setupSingleVideo()
+    
+    'Setup the video player with a playlist
+    'setupVideoPlaylist()
+    
+    'Setup the video player with a single video and ads
+    'setupVideoWithAds()
+    
+    'Setup the video player with a single video and Google IMA ads
+    setupVideoWithIMA()
     
     'Activate video tracking
     NewRelicVideoStart(m.nr, m.video)
@@ -33,14 +45,6 @@ function updateCustomAttr() as Void
     'Set a list of custom attributes to CONTENT_HEARTBEAT actions
     dict = {"key0":"val0", "key1":"val1"}
     nrSetCustomAttributeList(m.nr, dict, "CONTENT_HEARTBEAT")
-end function
-
-function setupVideoContent(isPlaylist as Boolean) as void
-    if isPlaylist = false
-        setupSingleVideo()
-    else
-        setupVideoPlaylist()
-    end if
 end function
 
 function setupSingleVideo() as void
@@ -80,6 +84,45 @@ function setupVideoPlaylist() as void
     m.video.content = playlistContent
     m.video.contentIsPlaylist = True
     m.video.control = "play"
+end function
+
+function setupVideoWithAds() as void
+    print "Prepare video player with ads"
+    
+    singleVideo = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+    
+    videoContent = createObject("RoSGNode", "ContentNode")
+    videoContent.url = singleVideo
+    videoContent.title = "Single Video"
+    
+    m.video = m.top.findNode("myVideo")
+    m.video.content = videoContent
+    
+    m.adstask = createObject("roSGNode", "AdsTask")
+    m.adstask.setField("videoNode", m.video)
+    m.adstask.setField("nr", m.nr)
+    m.adstask.control = "RUN"
+end function
+
+function setupVideoWithIMA() as Void
+    m.video = m.top.findNode("myVideo")
+    m.video.notificationinterval = 1
+    
+    testLiveStream = {
+        title: "Live Stream",
+        assetKey: "sN_IYUG8STe1ZzhIIE_ksA",
+        apiKey: "",
+        type: "live"
+    }
+    testVodStream = {
+        title: "VOD stream"
+        contentSourceId: "2528370",
+        videoId: "tears-of-steel",
+        apiKey: "",
+        type: "vod"
+    }
+    
+    loadImaSdk(testVodStream)
 end function
 
 function videoAction(key as String) as Boolean
@@ -141,3 +184,48 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return false
     end if
 end function
+
+'Google IMA functions
+
+function loadImaSdk(testStream as Object) as void
+  m.sdkTask = createObject("roSGNode", "imasdk")
+  'Pass IMA Tracker object
+  m.sdkTask.setField("tracker", IMATracker(m.nr))
+  m.sdkTask.observeField("sdkLoaded", "onSdkLoaded")
+  m.sdkTask.observeField("errors", "onSdkLoadedError")
+  
+  selectedStream = testStream
+  m.videoTitle = selectedStream.title
+  m.sdkTask.streamData = selectedStream
+
+  m.sdkTask.observeField("urlData", "urlLoadRequested")
+  m.sdkTask.video = m.video
+  m.sdkTask.control = "RUN"
+end function
+
+Sub urlLoadRequested(message as Object)
+  print "Url Load Requested ";message
+  data = message.getData()
+
+  playStream(data.manifest)
+End Sub
+
+Sub playStream(url as Object)
+  vidContent = createObject("RoSGNode", "ContentNode")
+  vidContent.url = url
+  vidContent.title = m.videoTitle
+  vidContent.streamformat = "hls"
+  m.video.content = vidContent
+  m.video.setFocus(true)
+  m.video.visible = true
+  m.video.control = "play"
+  m.video.EnableCookies()
+End Sub
+
+Sub onSdkLoaded(message as Object)
+  print "----- onSdkLoaded --- control ";message
+End Sub
+
+Sub onSdkLoadedError(message as Object)
+  print "----- errors in the sdk loading process --- ";message
+End Sub

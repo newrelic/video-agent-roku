@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+'**********************************************************
+' IMATracker.xml
+' New Relic Google IMA Tracker Component.
+'
+' Copyright 2021 New Relic Inc. All Rights Reserved. 
+'**********************************************************
+-->
+
+<component name="com.newrelic.trackers.IMATracker" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+	<interface>
+		<!-- Properties -->
+		<field id="nr" type="node"/>
+		<!-- Public Methods (wrapped) -->
+        <function name="nrSendIMAAdBreakStart"/>
+        <function name="nrSendIMAAdBreakEnd"/>
+        <function name="nrSendIMAAdStart"/>
+        <function name="nrSendIMAAdEnd"/>
+        <function name="nrSendIMAAdFirstQuartile"/>
+        <function name="nrSendIMAAdMidpoint"/>
+        <function name="nrSendIMAAdThirdQuartile"/>
+    </interface>
+
+	<script type="text/brightscript" uri="IMATracker.brs" />
+</component>

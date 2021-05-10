@@ -48,6 +48,12 @@ function NewRelicInit(account as String, apikey as String) as Void
     m.nrHarvestTimer.ObserveField("fire", "nrHarvestTimerHandler")
     m.nrHarvestTimer.control = "start"
     
+    'Ad tracker states
+    m.rafState = CreateObject("roAssociativeArray")
+    m.rafState.numberOfAds = 0
+    nrResetRAFTimers()
+    nrResetRAFState()
+    
     nrLog(["NewRelicInit, m = ", m])
 end function
 
@@ -58,7 +64,6 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrVideoObject = videoObject
     'Current state
     m.nrLastVideoState = "none"
-    m.nrIsAd = false
     m.nrIsInitialBuffering = false
     'Timestamps for timeSince attributes
     m.nrTimeSinceBufferBegin = 0.0
@@ -166,6 +171,66 @@ end function
 
 function nrForceHarvest() as Void
     nrHarvestTimerHandler()
+end function
+
+'Roku Advertising Framework tracking
+function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as Void
+    if GetInterface(evtType, "ifString") <> invalid and ctx <> invalid
+        if evtType = "PodStart"
+            nrResetRAFTimers()
+            nrSendRAFEvent("AD_BREAK_START", ctx)
+            m.rafState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
+        else if evtType = "PodComplete"
+            'Calc attributes for Ad break end
+            timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
+            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
+        else if evtType = "Impression"
+            nrSendRAFEvent("AD_REQUEST", ctx)
+            m.rafState.timeSinceAdRequested = m.nrTimer.TotalMilliseconds()
+        else if evtType = "Start"
+            m.rafState.numberOfAds = m.rafState.numberOfAds + 1
+            nrSendRAFEvent("AD_START", ctx)
+            m.rafState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
+        else if evtType = "Complete"
+            nrSendRAFEvent("AD_END", ctx)
+            'Reset attributes after END
+            nrResetRAFState()
+            m.rafState.timeSinceAdRequested = 0
+            m.rafState.timeSinceAdStarted = 0
+        else if evtType = "Pause"
+            nrSendRAFEvent("AD_PAUSE", ctx)
+            m.rafState.timeSinceAdPaused = m.nrTimer.TotalMilliseconds()
+        else if evtType = "Resume"
+            timeSinceAdPaused = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdPaused
+            nrSendRAFEvent("AD_RESUME", ctx, {"timeSinceAdPaused": timeSinceAdPaused})
+        else if evtType = "Close"
+            nrSendRAFEvent("AD_SKIP", ctx)
+            nrSendRAFEvent("AD_END", ctx)
+            'Reset attributes after END
+            nrResetRAFState()
+            m.rafState.timeSinceAdRequested = 0
+            m.rafState.timeSinceAdStarted = 0
+            'Calc attributes for Ad break end
+            timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
+            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
+        end if
+    else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
+        'Time progress event
+        firstQuartile = ctx.duration / 4.0
+        secondQuartile = firstQuartile * 2.0
+        thirdQuartile = firstQuartile * 3.0
+        
+        if ctx.time >= firstQuartile and ctx.time < secondQuartile and m.rafState.didFirstQuartile = false
+            m.rafState.didFirstQuartile = true
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 1})
+        else if ctx.time >= secondQuartile and ctx.time < thirdQuartile and m.rafState.didSecondQuartile = false
+            m.rafState.didSecondQuartile = true
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 2})
+        else if ctx.time >= thirdQuartile and m.rafState.didThirdQuartile = false
+            m.rafState.didThirdQuartile = true
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 3})
+        end if
+    end if
 end function
 
 '=========================='
@@ -446,19 +511,19 @@ end function
 
 function nrSendRequest() as Void
     m.nrTimeSinceRequested = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent(nrAction("REQUEST"))
+    nrSendVideoEvent("CONTENT_REQUEST")
 end function
 
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent(nrAction("START"))
+    nrSendVideoEvent("CONTENT_START")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendEnd() as Void
-    nrSendVideoEvent(nrAction("END"))
+    nrSendVideoEvent("CONTENT_END")
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -466,13 +531,13 @@ end function
 
 function nrSendPause() as Void
     m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent(nrAction("PAUSE"))
+    nrSendVideoEvent("CONTENT_PAUSE")
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendResume() as Void
-    nrSendVideoEvent(nrAction("RESUME"))
+    nrSendVideoEvent("CONTENT_RESUME")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -485,7 +550,7 @@ function nrSendBufferStart() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent(nrAction("BUFFER_START"), {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
@@ -496,7 +561,7 @@ function nrSendBufferEnd() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent(nrAction("BUFFER_END"), {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -526,7 +591,7 @@ function nrSendError(video as Object) as Void
         attr.append(getLicenseStatusAttributes(video.licenseStatus))
     end if
 
-    nrSendVideoEvent(nrAction("ERROR"), attr)
+    nrSendVideoEvent("CONTENT_ERROR", attr)
 end function
 
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
@@ -582,27 +647,27 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
 end function
 
 function nrSendBackupVideoEnd() as Void
-    nrSendBackupVideoEvent(nrAction("END"))
+    nrSendBackupVideoEvent("CONTENT_END")
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
-    ev.AddReplace(nrAttr("Duration"), m.nrVideoObject.duration * 1000)
-    ev.AddReplace(nrAttr("Playhead"), m.nrVideoObject.position * 1000)
-    ev.AddReplace(nrAttr("IsMuted"), m.nrVideoObject.mute)
+    ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
+    ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
+    ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
     streamUrl = nrGenerateStreamUrl()
-    ev.AddReplace(nrAttr("Src"), streamUrl)
+    ev.AddReplace("contentSrc", streamUrl)
     'Generate Id from Src (hashing it)
     ba = CreateObject("roByteArray")
     ba.FromAsciiString(streamUrl)
-    ev.AddReplace(nrAttr("Id"), ba.GetCRC32())
+    ev.AddReplace("contentId", ba.GetCRC32())
     if m.nrVideoObject.streamInfo <> invalid
-        ev.AddReplace(nrAttr("Bitrate"), m.nrVideoObject.streamInfo["streamBitrate"])
-        ev.AddReplace(nrAttr("MeasuredBitrate"), m.nrVideoObject.streamInfo["measuredBitrate"])
+        ev.AddReplace("contentBitrate", m.nrVideoObject.streamInfo["streamBitrate"])
+        ev.AddReplace("contentMeasuredBitrate", m.nrVideoObject.streamInfo["measuredBitrate"])
     end if
     if m.nrVideoObject.streamingSegment <> invalid
-        ev.AddReplace(nrAttr("SegmentBitrate"), m.nrVideoObject.streamingSegment["segBitrateBps"])
+        ev.AddReplace("contentSegmentBitrate", m.nrVideoObject.streamingSegment["segBitrateBps"])
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
     dev = CreateObject("roDeviceInfo")
@@ -650,30 +715,86 @@ function nrAddVideoAttributes(ev as Object) as Object
     return ev
 end function
 
+'=============='
+' Ad functions '
+'=============='
+
+function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
+    'TODO: totalAdPlaytime
+    if ctx.rendersequence <> invalid
+        if ctx.rendersequence = "preroll" then ev.AddReplace("adPosition", "pre")
+        if ctx.rendersequence = "midroll" then ev.AddReplace("adPosition", "mid")
+        if ctx.rendersequence = "postroll" then ev.AddReplace("adPosition", "post")
+    end if
+    
+    if ctx.duration <> invalid
+        ev.AddReplace("adDuration", ctx.duration * 1000)
+    end if
+    
+    if ctx.server <> invalid
+        ev.AddReplace("adSrc", ctx.server)
+    end if
+    
+    if ctx.ad <> invalid
+        if ctx.ad.adid <> invalid
+            ev.AddReplace("adId", ctx.ad.adid)
+        end if
+        if ctx.ad.creativeid <> invalid
+            ev.AddReplace("adCreativeId", ctx.ad.creativeid)
+        end if
+        if ctx.ad.adtitle <> invalid
+            ev.AddReplace("adTitle", ctx.ad.adtitle)
+        end if
+    end if
+    
+    if m.rafState.timeSinceAdRequested <> 0
+        ev.AddReplace("timeSinceAdRequested", m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdRequested)
+    end if
+    
+    if m.rafState.timeSinceAdStarted <> 0
+        ev.AddReplace("timeSinceAdStarted", m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdStarted)
+    end if
+    
+    ev.AddReplace("adPartner", "raf")
+    ev.AddReplace("numberOfAds", m.rafState.numberOfAds)
+    
+    return ev
+end function
+
+function nrSendRAFEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
+    ev = nrCreateEvent("RokuVideo", actionName)
+    ev = nrAddVideoAttributes(ev)
+    ev = nrAddRAFAttributes(ev, ctx)
+    if type(attr) = "roAssociativeArray"
+       ev.Append(attr)
+    end if
+    nrRecordEvent(ev)
+    'Backup attributes (cloning it)
+    m.nrBackupAttributes = {}
+    m.nrBackupAttributes.Append(ev)
+end function
+
+function nrResetRAFState() as Void
+    m.rafState.didFirstQuartile = false
+    m.rafState.didSecondQuartile = false
+    m.rafState.didThirdQuartile = false
+end function
+
+function nrResetRAFTimers() as Void
+    m.rafState.timeSinceAdBreakBegin = 0
+    m.rafState.timeSinceAdRequested = 0
+    m.rafState.timeSinceAdStarted = 0
+    m.rafState.timeSinceAdPaused = 0
+end function
+
 '=================='
 ' Helper functions '
 '=================='
-
-function nrAction(action as String) as String
-    if m.nrIsAd = true
-        return "AD_" + action
-    else
-        return "CONTENT_" + action
-    end if
-end function
 
 function isAction(name as String, action as String) as Boolean
     regExp = "(CONTENT|AD)_" + name
     r = CreateObject("roRegex", regExp, "")
     return r.isMatch(action)
-end function
-
-function nrAttr(attribute as String) as String
-    if m.nrIsAd = true
-        return "ad" + attribute
-    else
-        return "content" + attribute
-    end if
 end function
 
 function nrParseVideoStreamUrl(url as String) as String
@@ -865,6 +986,11 @@ function nrIndexObserver() as Void
     nrLog("---------- Index Observer ----------")
     nrLogVideoInfo()
     
+    'Check if the index change happened with an invalid playlist
+    if m.nrVideoObject.contentIsPlaylist = false or m.nrVideoObject.content = invalid
+        return
+    end if
+    
     '- Use nrSendBackupVideoEvent to send the END using previous video attributes
     nrSendBackupVideoEnd()
     '- Send REQUEST and START using normal send, with current video attributes
@@ -891,7 +1017,7 @@ end function
 function nrHeartbeatHandler() as Void
     'Only send while it is playing (state is not "none" or "finished")
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
-        nrSendVideoEvent(nrAction("HEARTBEAT"))
+        nrSendVideoEvent("CONTENT_HEARTBEAT")
         m.nrTimeSinceLastHeartbeat = m.nrTimer.TotalMilliseconds()
         if m.nrPlaytimeSinceLastEvent <> invalid
             m.nrPlaytimeSinceLastEvent.Mark()

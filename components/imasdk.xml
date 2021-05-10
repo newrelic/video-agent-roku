@@ -1,0 +1,21 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+
+<component name = "imasdk" extends = "Task">
+	<interface>
+		<field id="sdkLoaded" type="Boolean" />
+		<field id="errors" type="stringarray" />
+		<field id="urlData" type="assocarray" />
+		<field id="adPlaying" type="Boolean" />
+  		<field id="video" type="Node" />
+		<field id="streamData" type="assocarray" />
+		<field id="streamManagerReady" type="Boolean" />
+		<!-- IMA Tracker object -->
+		<field id="tracker" type="node"/>
+	</interface>
+	
+	<!-- New Relic IMA Tracker Interface -->
+	<script type="text/brightscript" uri="pkg:/source/IMATrackerInterface.brs"/>
+	
+	<!-- Init -->
+	<script type="text/brightscript" uri="pkg:/components/imasdk.brs"/>
+</component>

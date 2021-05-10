@@ -14,6 +14,7 @@
 
 	<!-- New Relic Agent Interface -->
 	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/IMATrackerInterface.brs"/>
 	
 	<!-- Init -->
 	<script type="text/brightscript" uri="pkg:/components/VideoScene.brs"/>

@@ -13,7 +13,7 @@
 
 	<interface>
 		<!-- Properties -->
-		<field id="version" type="string" value="1.1.3"/>
+		<field id="version" type="string" value="1.2.0"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
         <function name="NewRelicVideoStart"/>
@@ -27,6 +27,7 @@
         <function name="nrSetCustomAttributeList"/>
         <function name="nrSetHarvestTime"/>
         <function name="nrForceHarvest"/>
+        <function name="nrTrackRAF"/>
         <!-- Internal Methods (not wrapped, but used from the outside by some internal components) -->
         <function name="nrActivateLogging"/>
         <function name="nrLog"/>

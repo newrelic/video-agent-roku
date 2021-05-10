@@ -191,3 +191,12 @@ end function
 function nrForceHarvest(nr as Object) as Void
     nr.callFunc("nrForceHarvest")
 end function
+
+' Track an event from Roku Advertising Framework
+'
+' @param nr New Relic Agent object.
+' @param evtType Event type.
+' @param ctx Event context.
+function nrTrackRAF(nr as Object, evtType = invalid as Dynamic, ctx = invalid as Dynamic)
+    nr.callFunc("nrTrackRAF", evtType, ctx)
+end function
