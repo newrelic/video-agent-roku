@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="com.newrelic.trackers.IMATracker" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+	<interface>
+		<!-- Properties -->
+		<field id="nr" type="node"/>
+		<!-- Public Methods (wrapped) -->
+        <function name="nrSendIMAAdBreakStart"/>
+        <function name="nrSendIMAAdBreakEnd"/>
+        <function name="nrSendIMAAdStart"/>
+        <function name="nrSendIMAAdEnd"/>
+        <function name="nrSendIMAAdQuartile"/>
+    </interface>
+
+	<script type="text/brightscript" uri="IMATracker.brs" />
+</component>

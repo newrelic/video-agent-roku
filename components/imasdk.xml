@@ -9,12 +9,12 @@
   		<field id="video" type="Node" />
 		<field id="streamData" type="assocarray" />
 		<field id="streamManagerReady" type="Boolean" />
-		<!-- NRAgent object -->
-		<field id="nr" type="node"/>
+		<!-- IMA Tracker object -->
+		<field id="tracker" type="node"/>
 	</interface>
 	
 	<!-- New Relic Agent Interface -->
-	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/IMATrackerInterface.brs"/>
 	
 	<!-- Init -->
 	<script type="text/brightscript" uri="pkg:/components/imasdk.brs"/>
