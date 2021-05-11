@@ -6,11 +6,6 @@
 '**********************************************************
 
 sub init()
-    print "********************************************************"
-    print "   New Relic Google IMA Agent for Roku"
-    print "   Copyright 2021 New Relic Inc. All Rights Reserved."
-    print "********************************************************"
-    
     'Init state
     m.adState = {}
     nrResetAdTimers()
