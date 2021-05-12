@@ -679,7 +679,7 @@ For video events, the common attributes include all `RokuSystem` common attribut
 
 #### 2.2.2 Action Specific Attributes
 
-| Attribute | Name Description | Actions |
+| Attribute Name | Description | Actions |
 |---|---|---|
 | `timeSinceBufferBegin` | Time since video last video buffering began, in milliseconds. | `CONTENT_BUFFER_END` |
 | `timeSincePaused` | Time since the video was paused, in milliseconds. | `CONTENT_RESUME` |
@@ -821,7 +821,7 @@ For a complete usage example, checkout files `VideoScene.brs` (function `setupVi
 
 **Attributes**
 
-| Attribute | Name Description | Actions |
+| Attribute Name | Description | Actions |
 |---|---|---|
 | `timeSinceAdBreakBegin` | Time since `AD_BREAK_START` happened, in milliseconds. | `AD_BREAK_END` |
 | `timeSinceAdStarted` | Time since `AD_START` happened, in milliseconds. | All `AD_` events. |
