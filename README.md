@@ -818,6 +818,7 @@ For a complete usage example, checkout files `VideoScene.brs` (function `setupVi
 | `AD_END` | Ad ended. |
 | `AD_QUARTILE` | Ad quartile happened. There are 3 quartile events during the ad playback. First happens after 25% of the ad is played. Second after 50% and third after 75%. |
 | `AD_SKIP` | Ad skipped. |
+| `AD_ERROR` | An error happened. |
 
 **Attributes**
 
@@ -837,6 +838,9 @@ For a complete usage example, checkout files `VideoScene.brs` (function `setupVi
 | `adPartner` | Partner of current Ad. | All `AD_` events. | 
 | `numberOfAds` | Number of started ads. | All `AD_` events. |
 | `adQuartile` | Quartile number: 1, 2 or 3. | `AD_QUARTILE`. |
+| `adErrorType` | Error type. | `AD_ERROR`. |
+| `adErrorCode` | Error code. | `AD_ERROR`. |
+| `adErrorMsg` | Error message. | `AD_ERROR`. |
 
 Not all events and attributes are supported in all Ad trackers.
 

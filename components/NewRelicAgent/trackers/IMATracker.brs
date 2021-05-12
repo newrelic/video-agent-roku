@@ -56,6 +56,14 @@ function nrSendIMAAdThirdQuartile(ad as Object) as Void
     nrSendIMAAdQuartile(ad, 3)
 end function
 
+function nrSendIMAAdError(error as Object) as Void
+    attr = nrIMAGenericAttributes({})
+    if error.id <> invalid then attr.AddReplace("adErrorCode", error.id)
+    if error.info <> invalid then attr.AddReplace("adErrorMsg", error.info)
+    if error.type <> invalid then attr.AddReplace("adErrorType", error.type)
+    m.top.nr.callFunc("nrSendVideoEvent", "AD_ERROR", attr)
+end function
+
 '==================='
 ' Private Functions '
 '==================='
@@ -81,12 +89,17 @@ function nrIMAAttributes(adBreakInfo as Object, ad as Object) as Object
         attr.AddReplace("adSystem", ad.adsystem)
     end if
     
+    attr = nrIMAGenericAttributes(attr)
+    
+    return attr
+end function
+
+function nrIMAGenericAttributes(attr as Object) as Object
     if m.adState.timeSinceAdStarted <> 0
         attr.AddReplace("timeSinceAdStarted", m.nrTimer.TotalMilliseconds() - m.adState.timeSinceAdStarted)
     end if
     
     attr.AddReplace("numberOfAds", m.adState.numberOfAds)
-    
     return attr
 end function
 

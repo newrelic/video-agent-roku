@@ -213,6 +213,12 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             'Calc attributes for Ad break end
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
             nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
+        else if evtType = "Error"
+            attr = {}
+            if ctx.errType <> invalid then attr.AddReplace("adErrorType", ctx.errType)
+            if ctx.errCode <> invalid then attr.AddReplace("adErrorCode", ctx.errCode)
+            if ctx.errMsg <> invalid then attr.AddReplace("adErrorMsg", ctx.errMsg)
+            nrSendRAFEvent("AD_ERROR", ctx, attr)
         end if
     else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
         'Time progress event

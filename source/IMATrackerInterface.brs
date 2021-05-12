@@ -70,3 +70,11 @@ end function
 function nrSendIMAAdThirdQuartile(tracker as Object, ad as Object) as Void
     tracker.callFunc("nrSendIMAAdThirdQuartile", ad)
 end function
+
+' Send Ad Error.
+'
+' @param tracker Google IMA Tracker object.
+' @param error Error info object.
+function nrSendIMAAdError(tracker as Object, error as Object) as Void
+    tracker.callFunc("nrSendIMAAdError", error)
+end function

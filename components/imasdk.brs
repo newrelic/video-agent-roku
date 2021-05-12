@@ -163,5 +163,5 @@ Function errorCallback(error as Object) as Void
   print "Callback from SDK -- Error called - "; error
   m.errorState = True
   
-  'TODO: send error
+  nrSendIMAAdError(m.top.tracker, error)
 End Function
