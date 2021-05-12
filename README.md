@@ -803,6 +803,43 @@ Where `m.top.tracker` is the tracker object passed to the task.
 
 For a complete usage example, checkout files `VideoScene.brs` (function `setupVideoWithIMA()`) and `imasdk.brs` in the present repo.
 
+#### Data Model
+
+**Actions**
+
+| Action Name | Description |
+|---|---|
+| `AD_BREAK_START` | An Ad Break has started. |
+| `AD_BREAK_END` | An Ad Break has ended. |
+| `AD_REQUEST` | Ad requested. |
+| `AD_START` | Ad started. |
+| `AD_PAUSE` | Ad paused. |
+| `AD_RESUME` | Ad resumed. |
+| `AD_END` | Ad ended. |
+| `AD_QUARTILE` | Ad quartile happened. There are 3 quartile events during the ad playback. First happens after 25% of the ad is played. Second after 50% and third after 75%. |
+| `AD_SKIP` | Ad skipped. |
+
+**Attributes**
+
+| Attribute | Name Description | Actions |
+|---|---|---|
+| `timeSinceAdBreakBegin` | Time since `AD_BREAK_START` happened, in milliseconds. | `AD_BREAK_END` |
+| `timeSinceAdStarted` | Time since `AD_START` happened, in milliseconds. | All `AD_` events. |
+| `timeSinceAdRequested` | Time since `AD_REQUEST` happened, in milliseconds. | All `AD_` events. |
+| `timeSinceAdPaused` | Time since `AD_PAUSE` happened, in milliseconds. | `AD_RESUME` |
+| `adTitle` | Title of current ad. | All `AD_` events. |
+| `adId` | ID of current Ad. | All `AD_` events. |
+| `adSystem` | Ad System of current Ad. | All `AD_` events. |
+| `adDuration` | Ad duration in milliseconds. | All `AD_` events. |
+| `adPosition` | Ad break position, "pre", "mid", "post" or "live". | All `AD_` events. |
+| `adSrc` | Stream source of current Ad. | All `AD_` events. |
+| `adCreativeId` | Creative ID of current Ad. | All `AD_` events. | 
+| `adPartner` | Partner of current Ad. | All `AD_` events. | 
+| `numberOfAds` | Number of started ads. | All `AD_` events. |
+| `adQuartile` | Quartile number: 1, 2 or 3. | `AD_QUARTILE`. |
+
+Not all events and attributes are supported in all Ad trackers.
+
 <a name="open-source"></a>
 
 # Open source license
