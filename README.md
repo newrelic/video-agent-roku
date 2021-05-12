@@ -21,11 +21,12 @@ Will result in something like the following:
   * [Data Model](#data-model)  
 &nbsp;&nbsp;  * [Roku System](#roku-system)  
 &nbsp;&nbsp;  * [Roku Video](#roku-video)  
+  * [Ad Tracking](#ad-track)
   * [Open Source License](#open-source)  
   * [Support](#support)  
   * [Contributing](#contributing)  
 
-<a name="requirements"/>
+<a name="requirements"></a>
 
 ### Requirements
 
@@ -37,7 +38,7 @@ The ACCOUNT ID indicates the New Relic account to which you would like to send t
 
 To register the API Key, follow the instructions found [here](https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/send-custom-events-event-api#register).
 
-<a name="installation"/>
+<a name="installation"></a>
 
 ### Installation
 
@@ -55,7 +56,7 @@ source/
 
 2. Open your Roku app project’s directory and copy the “NewRelicAgent” folder to “components” and "NewRelicAgent.brs" file to “source”.
 
-<a name="usage"/>
+<a name="usage"></a>
 
 ### Usage
 
@@ -157,7 +158,7 @@ function setupVideoPlayer()
     m.video.control = "play"
 end function
 ```
-<a name="api"/>
+<a name="api"></a>
 
 ### Agent API
 
@@ -521,13 +522,13 @@ Example:
 	nrForceHarvest(m.nr)
 ```
 
-<a name="data-model"/>
+<a name="data-model"></a>
 
 ### Data Model
 
 The agent generates two different event types: `RokuSystem` and `RokuVideo`.
 
-<a name="roku-system"/>
+<a name="roku-system"></a>
 
 #### 1. RokuSystem
 
@@ -616,7 +617,7 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `transferIdentity` | HTTP request identificator. | `HTTP_REQUEST`, `HTTP_RESPONSE` |
 | `sceneName` | Identifier of the scene. | `SCENE_LOADED` |
 
-<a name="roku-video"/>
+<a name="roku-video"></a>
 
 #### 2. RokuVideo
 
@@ -698,13 +699,117 @@ For video events, the common attributes include all `RokuSystem` common attribut
 | `licenseStatusStatus` | Property `status` from Video object licenseStatus. | `CONTENT_ERROR`, `LICENSE_STATUS` |
 | `isInitialBuffering` | Is the initial buffering event, and not a rebuffering. In playlists it only happens at the beginning, and not on every video. | `CONTENT_BUFFER_*` |
 
-<a name="open-source"/>
+<a name="ad-track"></a>
+
+### Ad Tracking
+
+The Roku Video Agent also provides Ad events monitoring. Currently we support two different Ad APIs: [Roku Advertising Framework (RAF)](https://developer.roku.com/en-gb/docs/developer-program/advertising/roku-advertising-framework.md) and [Google IMA](https://developers.google.com/interactive-media-ads/docs/sdks/roku).
+
+#### Installation
+
+For RAF there is no additional steps required, because the tracker is integrated inside the NRAgent, but for IMA, the following files must be included in the project:
+
+```
+components/NewRelicAgent/trackers
+	IMATracker.brs
+	IMATracker.xml
+source/
+	IMATrackerInterface.brs
+```
+
+#### RAF Usage
+
+First we have to pass the NRAgent object (created with the call to `NewRelic(accountId, apiKey)`) to the Ads Task. This can be achieved using a field. Once done, inside the Ads Task we must do:
+
+```brightscript
+adIface = Roku_Ads()
+
+' Ad Iface setup code...
+
+logFunc = Function(obj = Invalid as Dynamic, evtType = invalid as Dynamic, ctx = invalid as Dynamic)
+    'Call RAF tracker, passing the event and context
+    nrTrackRAF(obj, evtType, ctx)
+End Function
+
+' m.top.nr is the reference to the field where we have the NRAgent object
+adIface.setTrackingCallback(logFunc, m.top.nr)
+```
+
+For a complete usage example, checkout files `VideoScene.brs` (function `setupVideoWithAds()`) and `AdsTask.brs` in the present repo.
+
+#### IMA Usage
+
+First we have to create the IMA Tracker object:
+
+```brightscript
+tracker = IMATracker(m.nr)
+```
+
+Where `m.nr` is the NRAgent object.
+
+Then we need to pass the tracker object to the IMA SDK Task, using a field. And include the script `IMATrackerInterface.brs` in the task XML.
+
+Once done, inside the task we must do:
+
+```brightscript
+m.player.adBreakStarted = Function(adBreakInfo as Object)
+	'Ad break start code...
+	    
+	'Send AD_BREAK_START
+	nrSendIMAAdBreakStart(m.top.tracker, adBreakInfo)
+End Function
+m.player.adBreakEnded = Function(adBreakInfo as Object)
+	'Ad break end code...
+    
+    'Send AD_BREAK_END
+    nrSendIMAAdBreakEnd(m.top.tracker, adBreakInfo)
+End Function
+
+'...
+
+m.streamManager.addEventListener(m.sdk.AdEvent.START, startCallback)
+m.streamManager.addEventListener(m.sdk.AdEvent.FIRST_QUARTILE, firstQuartileCallback)
+m.streamManager.addEventListener(m.sdk.AdEvent.MIDPOINT, midpointCallback)
+m.streamManager.addEventListener(m.sdk.AdEvent.THIRD_QUARTILE, thirdQuartileCallback)
+m.streamManager.addEventListener(m.sdk.AdEvent.COMPLETE, completeCallback)
+
+Function startCallback(ad as Object) as Void
+	'Send AD_START
+	nrSendIMAAdStart(m.top.tracker, ad)
+End Function
+
+Function firstQuartileCallback(ad as Object) as Void
+	'Send AD_QUARTILE (first)
+	nrSendIMAAdFirstQuartile(m.top.tracker, ad)
+End Function
+
+Function midpointCallback(ad as Object) as Void
+	'Send AD_QUARTILE (midpoint)
+	nrSendIMAAdMidpoint(m.top.tracker, ad)
+End Function
+
+Function thirdQuartileCallback(ad as Object) as Void
+	'Send AD_QUARTILE (third)
+	nrSendIMAAdThirdQuartile(m.top.tracker, ad)
+End Function
+
+Function completeCallback(ad as Object) as Void
+	'Send AD_END
+	nrSendIMAAdEnd(m.top.tracker, ad)
+End Function
+```
+
+Where `m.top.tracker` is the tracker object passed to the task.
+
+For a complete usage example, checkout files `VideoScene.brs` (function `setupVideoWithIMA()`) and `imasdk.brs` in the present repo.
+
+<a name="open-source"></a>
 
 # Open source license
 
 This project is distributed under the [Apache 2 license](LICENSE).
 
-<a name="support"/>
+<a name="support"></a>
 
 # Support
 
@@ -722,7 +827,7 @@ https://discuss.newrelic.com/t/new-relic-open-source-roku-agent/97802
 
 Issues and enhancement requests can be submitted in the [Issues tab of this repository](https://github.com/newrelic/video-agent-roku/issues). Please search for and review the existing open issues before submitting a new issue.
 
-<a name="contributing"/>
+<a name="contributing"></a>
 
 # Contributing
 
