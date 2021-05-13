@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2021/05/13
+### Add
+- Ad errors.
+
 ## [1.2.0] - 2021/05/10
 ### Add
 - Support for Ad trackers: RAF and Google IMA.
