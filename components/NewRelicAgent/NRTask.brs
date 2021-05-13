@@ -30,6 +30,7 @@ function nrInsertInsightsEvents(events as Object) as Object
         return msg.GetResponseCode()
     else
         'Timeout, cancel transfer and return error code
+        m.nr.callFunc("nrLog", "-- nrInsertInsightsEvents: timeout, cancel request and return --")
         urlReq.AsyncCancel()
         return 0
     end if
@@ -45,15 +46,19 @@ function nrEventProcessor() as Void
                 m.nr.callFunc("nrGetBackEvents", events)
             end if
         end if
+    else
+        print("-- nrEventProcessor: m.nr is invalid!! --")
     end if
 end function
 
 function nrTaskMain() as Void
     'Assuming that parent node is com.newrelic.NRAgent
+    'print "---- Running NRTask ----"
     if m.nr = invalid
         m.nr = m.top.getParent()
         m.apiKey = m.top.apiKey
         m.accountNumber = m.top.accountNumber
     end if
     nrEventProcessor()
+    'print "---- Ended running NRTask ----"
 end function
