@@ -111,7 +111,7 @@ end sub
 
 *VideoScene.xml*
 
-```brightscript
+```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="VideoScene" extends="Scene"> 
 	<interface>
