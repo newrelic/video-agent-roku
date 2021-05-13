@@ -73,7 +73,7 @@ To enable automatic event capture perform the following steps which are detailed
 
 *Main.brs*
 
-```
+```brightscript
 sub Main(aa as Object)
 	screen = CreateObject("roSGScreen")
 	m.port = CreateObject("roMessagePort")
@@ -111,7 +111,7 @@ end sub
 
 *VideoScene.xml*
 
-```
+```brightscript
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="VideoScene" extends="Scene"> 
 	<interface>
@@ -135,7 +135,7 @@ end sub
 
 *VideoScene.brs*
 
-```
+```brightscript
 sub init()
     m.top.setFocus(true)
     setupVideoPlayer()
