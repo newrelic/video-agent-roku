@@ -864,7 +864,7 @@ function nrTimestamp() as LongInteger
 end function
 
 function nrGetOSVersion(dev as Object) as Object
-    if findMemberFunction(dev, "GetOSVersion") <> Invalid
+    if FindMemberFunction(dev, "GetOSVersion") <> Invalid
         verDict = dev.GetOsVersion()
         return {version: verDict.major + "." + verDict.minor + "." + verDict.revision, build: verDict.build}
     else
