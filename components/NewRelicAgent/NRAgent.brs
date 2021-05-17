@@ -864,13 +864,11 @@ function nrTimestamp() as LongInteger
 end function
 
 function nrGetOSVersion(dev as Object) as Object
-    verStr = dev.GetVersion()
-    if verStr = "999.99E99999X"
-        'RokuOS 10
-        verDict = dev.GetOSVersion()
+    if FindMemberFunction(dev, "GetOSVersion") <> Invalid
+        verDict = dev.GetOsVersion()
         return {version: verDict.major + "." + verDict.minor + "." + verDict.revision, build: verDict.build}
     else
-        'Older than RokuOS 10
+        verStr = dev.GetVersion()
         return {version: verStr.Mid(2, 3) + "." + verStr.Mid(5, 1), build: verStr.Mid(8, 4)}
     end if
 end function
