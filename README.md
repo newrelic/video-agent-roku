@@ -22,6 +22,7 @@ Will result in something like the following:
 &nbsp;&nbsp;  * [Roku System](#roku-system)  
 &nbsp;&nbsp;  * [Roku Video](#roku-video)  
   * [Ad Tracking](#ad-track)
+  * [Testing](#testing)
   * [Open Source License](#open-source)  
   * [Support](#support)  
   * [Contributing](#contributing)  
@@ -843,6 +844,18 @@ For a complete usage example, checkout files `VideoScene.brs` (function `setupVi
 | `adErrorMsg` | Error message. | `AD_ERROR`. |
 
 Not all events and attributes are supported in all Ad trackers.
+
+<a name="testing"></a>
+
+### Testing
+
+To run the unit tests, first copy the file `UnitTestFramework.brs` from [unit-testing-framework](https://github.com/rokudev/unit-testing-framework) to `source/testFramework/`. Then install the demo channel provided in the present repo and from a terminal run:
+
+```bash
+curl -d '' 'http://ROKU_IP:8060/launch/dev?RunTests=true'
+```
+
+Where `ROKU_IP` is the address of the Roku device where the channel is installed. Connect to the debug terminal (port 8085) to see test results.
 
 <a name="open-source"></a>
 
