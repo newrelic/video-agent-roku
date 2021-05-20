@@ -1,20 +1,19 @@
 'NR Video Agent Example - Main'
 
 sub RunUserInterface(args)
-    print "RunUserInterface args = ", args
+    'TODO: remove this once finished creating tests
+    args.RunTests = "true"
 
     if args.RunTests = "true" and type(TestRunner) = "Function" then
         print "Run tests"
         Runner = TestRunner()
 
         Runner.SetFunctions([
-            MainTestSuite__SetUp
-            TestCase_1
-            MainTestSuite__TearDown
+            TestSuite__Main
         ])
 
         Runner.Logger.SetVerbosity(3)
-        Runner.Logger.SetEcho(true)
+        Runner.Logger.SetEcho(false)
         Runner.Logger.SetJUnit(false)
         Runner.SetFailFast(true)
         
