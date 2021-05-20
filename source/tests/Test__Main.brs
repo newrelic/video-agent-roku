@@ -15,6 +15,13 @@ Function TestSuite__Main() as Object
     return this
 End Function
 
+Function multiAssert(arr as Object) as String
+    for each assert in arr
+        if assert <> "" return assert
+    end for
+    return ""
+End Function
+
 Sub MainTestSuite__SetUp()
     print "SetUp"
 
@@ -38,16 +45,11 @@ Function TestCase__Main_CustomEvents() as String
     x = m.assertArrayCount(events, 1)
     if x <> "" then return x
 
-    event = events[0]
+    ev = events[0]
     
-    x = m.assertEqual(event.actionName, "TEST_SYSTEM_EVENT")
-    if x <> "" then return x
-    
-    x = m.assertNotInvalid(event.timeSinceLoad)
-    if x <> "" then return x
-
-    x = m.assertEqual(event.timeSinceLoad, 0)
-    if x <> "" then return x
-    
-    return ""
+    return multiAssert([
+        m.assertEqual(ev.actionName, "TEST_SYSTEM_EVENT")
+        m.assertNotInvalid(ev.timeSinceLoad)
+        m.assertEqual(ev.timeSinceLoad, 0)
+    ])
 End Function
