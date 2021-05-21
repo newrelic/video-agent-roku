@@ -40,6 +40,7 @@
 	<script type="text/brightscript" uri="NRAgent.brs"/>
 	
 	<children>
+        <Timer id="nrHeartbeatTimer" repeat="true" duration="30"/>
 		<Timer id="nrHarvestTimer" repeat="true" duration="10"/>
 		<com.newrelic.NRTask id="NRTask"/>
 	</children>
