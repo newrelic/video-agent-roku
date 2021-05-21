@@ -11,14 +11,26 @@
         <!-- Attributes -->
         <field id="mute" type="boolean" value="false"/>
         <field id="duration" type="integer" value="111"/>
-        <field id="position" type="integer" value="22"/>
+        <field id="position" type="integer" value="0"/>
         <field id="streamInfo" type="assocarray"/>
         <field id="streamingSegment" type="assocarray"/>
         <field id="videoFormat" type="string" value="fake_format"/>
         <field id="contentIsPlaylist" type="boolean" value="false"/>
         <field id="timeToStartStreaming" type="integer" value="3"/>
-        <field id="content" type="assocarray"/>
+        <field id="content" type="node"/>
         <field id="manifestData" type="string" value="manifest data"/>
+        <field id="errorMsg" type="string" value="whatever error"/>
+        <field id="errorCore" type="integer" value="12345"/>
+
+        <!-- Functions -->
+        <function name="startPlayback"/>
+        <function name="startBuffering"/>
+        <function name="endBuffering"/>
+        <function name="pausePlayback"/>
+        <function name="resumePlayback"/>
+        <function name="stopPlayback"/>
+        <function name="endPlayback"/>
+        <function name="error"/>
     </interface>
     
 	<script type="text/brightscript" uri="DummyVideo.brs"/>

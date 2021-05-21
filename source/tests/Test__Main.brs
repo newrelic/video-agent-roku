@@ -11,6 +11,7 @@ Function TestSuite__Main() as Object
 
     ' Add tests to suite's tests collection
     this.addTest("CustomEvents", TestCase__Main_CustomEvents)
+    this.addTest("VideoEvents", TestCase__Main_VideoEvents)
 
     return this
 End Function
@@ -32,7 +33,13 @@ Sub MainTestSuite__SetUp()
     nrHarvestTimer.control = "stop"
     ' Create Dummy Video object and start video tracking
     m.videoObject = CreateObject("roSGNode", "com.newrelic.test.DummyVideo")
+    videoContent = createObject("RoSGNode", "ContentNode")
+    videoContent.url = "http://fakedomain.com/fakevideo"
+    videoContent.title = "Fake Video"
+    m.videoObject.content = videoContent
     NewRelicVideoStart(m.nr, m.videoObject)
+    'Remove initial video events (PLAYER_READY)
+    m.nr.callFunc("nrExtractAllEvents")
 End Sub
 
 Sub MainTestSuite__TearDown()
@@ -57,4 +64,15 @@ Function TestCase__Main_CustomEvents() as String
         m.assertNotInvalid(ev.timeSinceLoad)
         m.assertEqual(ev.timeSinceLoad, 0)
     ])
+End Function
+
+
+Function TestCase__Main_VideoEvents() as String
+    print "Checking video events...", m.videoObject
+
+    m.videoObject.callFunc("startBuffering")
+    m.videoObject.callFunc("startPlayback")
+    m.videoObject.callFunc("endPlayback")
+
+    return ""
 End Function
