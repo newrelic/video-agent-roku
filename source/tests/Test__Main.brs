@@ -72,7 +72,27 @@ Function TestCase__Main_VideoEvents() as String
 
     m.videoObject.callFunc("startBuffering")
     m.videoObject.callFunc("startPlayback")
+    m.videoObject.callFunc("pausePlayback")
+    m.videoObject.callFunc("resumePlayback")
     m.videoObject.callFunc("endPlayback")
+    m.videoObject.callFunc("error")
+
+    events = m.nr.callFunc("nrExtractAllEvents")
+
+    x = m.assertArrayCount(events, 8)
+    if x <> "" then return x
+
+    x = multiAssert([
+        m.assertEqual(events[0].actionName, "CONTENT_REQUEST")
+        m.assertEqual(events[1].actionName, "CONTENT_BUFFER_START")
+        m.assertEqual(events[2].actionName, "CONTENT_BUFFER_END")
+        m.assertEqual(events[3].actionName, "CONTENT_START")
+        m.assertEqual(events[4].actionName, "CONTENT_PAUSE")
+        m.assertEqual(events[5].actionName, "CONTENT_RESUME")
+        m.assertEqual(events[6].actionName, "CONTENT_END")
+        m.assertEqual(events[7].actionName, "CONTENT_ERROR")
+    ])
+    if x <> "" then return x
 
     return ""
 End Function

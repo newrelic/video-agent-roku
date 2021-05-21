@@ -6,7 +6,7 @@
 		<!-- Observed state values -->
 		<field id="state" type="string" value="none"/>
         <field id="contentIndex" type="integer" value="1"/>
-        <field id="licenseStatus" type="string"/>
+        <field id="licenseStatus" type="node"/>
 
         <!-- Attributes -->
         <field id="mute" type="boolean" value="false"/>
@@ -20,7 +20,7 @@
         <field id="content" type="node"/>
         <field id="manifestData" type="string" value="manifest data"/>
         <field id="errorMsg" type="string" value="whatever error"/>
-        <field id="errorCore" type="integer" value="12345"/>
+        <field id="errorCode" type="integer" value="12345"/>
 
         <!-- Functions -->
         <function name="startPlayback"/>
