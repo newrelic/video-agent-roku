@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component name="com.newrelic.test.DummyVideo" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+
+	<interface>
+		<!-- Observed state values -->
+		<field id="state" type="string" value="none"/>
+        <field id="contentIndex" type="integer" value="1"/>
+        <field id="licenseStatus" type="string"/>
+
+        <!-- Attributes -->
+        <field id="mute" type="boolean" value="false"/>
+        <field id="duration" type="integer" value="111"/>
+        <field id="position" type="integer" value="22"/>
+        <field id="streamInfo" type="assocarray"/>
+        <field id="streamingSegment" type="assocarray"/>
+        <field id="videoFormat" type="string" value="fake_format"/>
+        <field id="contentIsPlaylist" type="boolean" value="false"/>
+        <field id="timeToStartStreaming" type="integer" value="3"/>
+        <field id="content" type="assocarray"/>
+        <field id="manifestData" type="string" value="manifest data"/>
+    </interface>
+    
+	<script type="text/brightscript" uri="DummyVideo.brs"/>
+</component>

@@ -30,10 +30,15 @@ Sub MainTestSuite__SetUp()
     ' Disable harvest timer
     nrHarvestTimer = m.nr.findNode("nrHarvestTimer")
     nrHarvestTimer.control = "stop"
+    ' Create Dummy Video object and start video tracking
+    m.videoObject = CreateObject("roSGNode", "com.newrelic.test.DummyVideo")
+    NewRelicVideoStart(m.nr, m.videoObject)
 End Sub
 
 Sub MainTestSuite__TearDown()
     print "TearDown"
+    ' Stop video tracking
+    NewRelicVideoStop(m.nr)
 End Sub
 
 Function TestCase__Main_CustomEvents() as String
