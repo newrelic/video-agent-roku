@@ -11,7 +11,7 @@ function startBuffering() as Void
 end function
 
 function endBuffering() as Void
-    m.top.state = "playing"
+    if m.top.state = "buffering" then m.top.state = "playing"
 end function
 
 function pausePlayback() as Void
@@ -19,7 +19,7 @@ function pausePlayback() as Void
 end function
 
 function resumePlayback() as Void
-    m.top.state = "playing"
+    if m.top.state = "paused" then m.top.state = "playing"
 end function
 
 function stopPlayback() as Void
