@@ -10,7 +10,7 @@
 
         <!-- Attributes -->
         <field id="mute" type="boolean" value="false"/>
-        <field id="duration" type="integer" value="33"/>
+        <field id="duration" type="time" value="33"/>
         <field id="position" type="time" value="0"/>
         <field id="streamInfo" type="assocarray"/>
         <field id="streamingSegment" type="assocarray"/>
