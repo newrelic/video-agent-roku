@@ -72,8 +72,10 @@ Function TestCase__Main_VideoEvents() as String
 
     m.videoObject.callFunc("startBuffering")
     m.videoObject.callFunc("startPlayback")
+    m.videoObject.callFunc("setPlayhead", 1.23)
     m.videoObject.callFunc("pausePlayback")
     m.videoObject.callFunc("resumePlayback")
+    m.videoObject.callFunc("setPlayhead", 2.34)
     m.videoObject.callFunc("endPlayback")
     m.videoObject.callFunc("error")
 

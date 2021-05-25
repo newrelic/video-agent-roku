@@ -33,3 +33,7 @@ end function
 function error() as Void
     m.top.state = "error"
 end function
+
+function setPlayhead(playhead as float) as Void
+    m.top.position = playhead
+end function
