@@ -8,10 +8,10 @@
 sub init()
     m.nrLogsState = false
     m.nrAgentVersion = m.top.version
-    print "********************************************************"
+    print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2021 New Relic Inc. All Rights Reserved."
-    print "********************************************************"
+    print "************************************************************"
 end sub
 
 '=========================='
