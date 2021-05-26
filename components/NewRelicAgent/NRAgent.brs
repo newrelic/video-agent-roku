@@ -275,7 +275,7 @@ function nrExtractAllEvents() as Object
 end function
 
 function nrGetBackEvents(events as Object) as Void
-    print "------> nrGetBackEvents, ev size = ", events.Count()
+    nrLog(["------> nrGetBackEvents, ev size = ", events.Count()])
     m.nrEventArray.Append(events)
 end function
 
