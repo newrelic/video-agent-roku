@@ -114,8 +114,7 @@ Function TestCase__Main_TimeSinceAttributes() as String
 
     Video_Tracking_SetUp(m)
 
-    'TODO: check timeSince attributes
-
+    sleep(100)
     m.videoObject.callFunc("startBuffering")
     sleep(200)
     m.videoObject.callFunc("startPlayback")
@@ -141,6 +140,36 @@ Function TestCase__Main_TimeSinceAttributes() as String
         m.assertEqual(events[6].actionName, "CONTENT_END")
     ])
     if x <> "" then return x
+
+    'CONTENT_REQUEST
+    if events[0].timeSinceTrackerReady < 100 OR events[0].timeSinceTrackerReady > 130
+        return m.fail("Invalid Time Since Tracker Ready: " + str(events[0].timeSinceTrackerReady))
+    end if
+
+    'CONTENT_BUFFER_END
+    if events[2].timeSinceBufferBegin < 200 OR events[2].timeSinceBufferBegin > 230
+        return m.fail("Invalid Time Since Buffer Begin: " + str(events[2].timeSinceBufferBegin))
+    end if
+
+    'CONTENT_START
+    if events[3].timeSinceRequested < 200 OR events[3].timeSinceRequested > 250
+        return m.fail("Invalid Time Since Requested: " + str(events[3].timeSinceRequested))
+    end if
+
+    'CONTENT_PAUSE
+    if events[4].timeSinceStarted < 400 OR events[4].timeSinceStarted > 430
+        return m.fail("Invalid Time Since Started: " + str(events[4].timeSinceStarted))
+    end if
+
+    'CONTENT_RESUME
+    if events[5].timeSincePaused < 200 OR events[5].timeSincePaused > 230
+        return m.fail("Invalid Time Since Paused: " + str(events[5].timeSincePaused))
+    end if
+
+    'CONTENT_END
+    if events[6].timeSinceRequested < 1200 OR events[6].timeSinceRequested > 1300
+        return m.fail("Invalid Time Since Requested on END: " + str(events[6].timeSinceRequested))
+    end if
 
     return ""
 End Function
