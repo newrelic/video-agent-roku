@@ -23,6 +23,7 @@
         <field id="errorCode" type="integer" value="12345"/>
 
         <!-- Functions -->
+        <function name="resetState"/>
         <function name="startPlayback"/>
         <function name="startBuffering"/>
         <function name="endBuffering"/>

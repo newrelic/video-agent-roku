@@ -12,6 +12,7 @@ Function TestSuite__Main() as Object
     ' Add tests to suite's tests collection
     this.addTest("CustomEvents", TestCase__Main_CustomEvents)
     this.addTest("VideoEvents", TestCase__Main_VideoEvents)
+    this.addTest("TimeSinceAttributes", TestCase__Main_TimeSinceAttributes)
 
     return this
 End Function
@@ -24,8 +25,7 @@ Function multiAssert(arr as Object) as String
 End Function
 
 Sub MainTestSuite__SetUp()
-    print "SetUp"
-
+    print "Main SetUp"
     ' Setup New Relic Agent
     m.nr = NewRelic("ACCOUNT_ID", "API_KEY", true)
     ' Disable harvest timer
@@ -37,19 +37,25 @@ Sub MainTestSuite__SetUp()
     videoContent.url = "http://fakedomain.com/fakevideo"
     videoContent.title = "Fake Video"
     m.videoObject.content = videoContent
-    NewRelicVideoStart(m.nr, m.videoObject)
-    'Remove initial video events (PLAYER_READY)
-    m.nr.callFunc("nrExtractAllEvents")
 End Sub
 
 Sub MainTestSuite__TearDown()
-    print "TearDown"
-    ' Stop video tracking
-    NewRelicVideoStop(m.nr)
+    print "Main TearDown"
+End Sub
+
+Sub Video_Tracking_SetUp(mm as Object)
+    print "Video SetUp"
+    NewRelicVideoStop(mm.nr)
+    mm.videoObject.callFunc("resetState")
+    NewRelicVideoStart(mm.nr, mm.videoObject)
+    'Remove initial video events (PLAYER_READY)
+    mm.nr.callFunc("nrExtractAllEvents")
 End Sub
 
 Function TestCase__Main_CustomEvents() as String
     print "Checking custom events..."
+    
+    Video_Tracking_SetUp(m)
     
     nrSendSystemEvent(m.nr, "TEST_SYSTEM_EVENT")
     events = m.nr.callFunc("nrExtractAllEvents")
@@ -66,9 +72,10 @@ Function TestCase__Main_CustomEvents() as String
     ])
 End Function
 
-
 Function TestCase__Main_VideoEvents() as String
-    print "Checking video events...", m.videoObject
+    print "Checking video events..."
+
+    Video_Tracking_SetUp(m)
 
     m.videoObject.callFunc("startBuffering")
     m.videoObject.callFunc("startPlayback")
@@ -96,6 +103,42 @@ Function TestCase__Main_VideoEvents() as String
         m.assertEqual(events[6].actionName, "CONTENT_END")
         m.assertEqual(Int(events[6].contentPlayhead), 2340)
         m.assertEqual(events[7].actionName, "CONTENT_ERROR")
+    ])
+    if x <> "" then return x
+
+    return ""
+End Function
+
+Function TestCase__Main_TimeSinceAttributes() as String
+    print "Checking time since attributes..."
+
+    Video_Tracking_SetUp(m)
+
+    'TODO: check timeSince attributes
+
+    m.videoObject.callFunc("startBuffering")
+    sleep(200)
+    m.videoObject.callFunc("startPlayback")
+    sleep(400)
+    m.videoObject.callFunc("pausePlayback")
+    sleep(200)
+    m.videoObject.callFunc("resumePlayback")
+    sleep(400)
+    m.videoObject.callFunc("endPlayback")
+
+    events = m.nr.callFunc("nrExtractAllEvents")
+
+    x = m.assertArrayCount(events, 7)
+    if x <> "" then return x
+
+    x = multiAssert([
+        m.assertEqual(events[0].actionName, "CONTENT_REQUEST")
+        m.assertEqual(events[1].actionName, "CONTENT_BUFFER_START")
+        m.assertEqual(events[2].actionName, "CONTENT_BUFFER_END")
+        m.assertEqual(events[3].actionName, "CONTENT_START")
+        m.assertEqual(events[4].actionName, "CONTENT_PAUSE")
+        m.assertEqual(events[5].actionName, "CONTENT_RESUME")
+        m.assertEqual(events[6].actionName, "CONTENT_END")
     ])
     if x <> "" then return x
 

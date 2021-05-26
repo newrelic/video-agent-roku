@@ -2,6 +2,11 @@ sub init()
     print "Init DummyVideo"
 end sub
 
+function resetState() as Void
+    m.top.state = "none"
+    setPlayhead(0)
+end function
+
 function startPlayback() as Void
     m.top.state = "playing"
 end function
