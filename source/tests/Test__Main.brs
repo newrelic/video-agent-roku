@@ -89,9 +89,12 @@ Function TestCase__Main_VideoEvents() as String
         m.assertEqual(events[1].actionName, "CONTENT_BUFFER_START")
         m.assertEqual(events[2].actionName, "CONTENT_BUFFER_END")
         m.assertEqual(events[3].actionName, "CONTENT_START")
+        m.assertEqual(Int(events[3].contentPlayhead), 0)
         m.assertEqual(events[4].actionName, "CONTENT_PAUSE")
+        m.assertEqual(Int(events[4].contentPlayhead), 1230)
         m.assertEqual(events[5].actionName, "CONTENT_RESUME")
         m.assertEqual(events[6].actionName, "CONTENT_END")
+        m.assertEqual(Int(events[6].contentPlayhead), 2340)
         m.assertEqual(events[7].actionName, "CONTENT_ERROR")
     ])
     if x <> "" then return x
