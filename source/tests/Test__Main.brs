@@ -77,6 +77,8 @@ Function TestCase__Main_VideoEvents() as String
 
     Video_Tracking_SetUp(m)
 
+    nrSetCustomAttribute(m.nr, "myAttrOne", 555)
+    nrSetCustomAttribute(m.nr, "myAttrTwo", 111, "CONTENT_ERROR")
     m.videoObject.callFunc("startBuffering")
     m.videoObject.callFunc("startPlayback")
     m.videoObject.callFunc("setPlayhead", 1.23)
@@ -93,6 +95,8 @@ Function TestCase__Main_VideoEvents() as String
 
     x = multiAssert([
         m.assertEqual(events[0].actionName, "CONTENT_REQUEST")
+        m.assertEqual(events[0].myAttrOne, 555)
+        m.assertInvalid(events[0].myAttrTwo)
         m.assertEqual(events[1].actionName, "CONTENT_BUFFER_START")
         m.assertEqual(events[2].actionName, "CONTENT_BUFFER_END")
         m.assertEqual(events[3].actionName, "CONTENT_START")
@@ -103,6 +107,8 @@ Function TestCase__Main_VideoEvents() as String
         m.assertEqual(events[6].actionName, "CONTENT_END")
         m.assertEqual(Int(events[6].contentPlayhead), 2340)
         m.assertEqual(events[7].actionName, "CONTENT_ERROR")
+        m.assertEqual(events[7].myAttrOne, 555)
+        m.assertEqual(events[7].myAttrTwo, 111)
     ])
     if x <> "" then return x
 
