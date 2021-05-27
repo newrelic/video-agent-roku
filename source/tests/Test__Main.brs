@@ -60,15 +60,11 @@ Function TestCase__Main_CustomEvents() as String
     
     nrSendSystemEvent(m.nr, "TEST_SYSTEM_EVENT")
     events = m.nr.callFunc("nrExtractAllEvents")
-
-    x = m.assertArrayCount(events, 1)
-    if x <> "" then return x
-
-    ev = events[0]
     
     return multiAssert([
-        m.assertEqual(ev.actionName, "TEST_SYSTEM_EVENT")
-        m.assertNotInvalid(ev.timeSinceLoad)
+        m.assertArrayCount(events, 1)
+        m.assertEqual(events[0].actionName, "TEST_SYSTEM_EVENT")
+        m.assertNotInvalid(events[0].timeSinceLoad)
     ])
 End Function
 
@@ -90,10 +86,8 @@ Function TestCase__Main_VideoEvents() as String
 
     events = m.nr.callFunc("nrExtractAllEvents")
 
-    x = m.assertArrayCount(events, 8)
-    if x <> "" then return x
-
     return multiAssert([
+        m.assertArrayCount(events, 8)
         m.assertEqual(events[0].actionName, "CONTENT_REQUEST")
         m.assertEqual(events[0].myAttrOne, 555)
         m.assertInvalid(events[0].myAttrTwo)
@@ -130,10 +124,8 @@ Function TestCase__Main_TimeSinceAttributes() as String
 
     events = m.nr.callFunc("nrExtractAllEvents")
 
-    x = m.assertArrayCount(events, 7)
-    if x <> "" then return x
-
-    x = multiAssert([
+    return multiAssert([
+        m.assertArrayCount(events, 7)
         m.assertEqual(events[0].actionName, "CONTENT_REQUEST")
         m.assertEqual(events[1].actionName, "CONTENT_BUFFER_START")
         m.assertEqual(events[2].actionName, "CONTENT_BUFFER_END")
@@ -141,40 +133,13 @@ Function TestCase__Main_TimeSinceAttributes() as String
         m.assertEqual(events[4].actionName, "CONTENT_PAUSE")
         m.assertEqual(events[5].actionName, "CONTENT_RESUME")
         m.assertEqual(events[6].actionName, "CONTENT_END")
+        m.assertTrue(events[0].timeSinceTrackerReady > 100 OR events[0].timeSinceTrackerReady < 130)
+        m.assertTrue(events[2].timeSinceBufferBegin > 200 OR events[2].timeSinceBufferBegin < 230)
+        m.assertTrue(events[3].timeSinceRequested > 200 OR events[3].timeSinceRequested < 250)
+        m.assertTrue(events[4].timeSinceStarted > 400 OR events[4].timeSinceStarted < 430)
+        m.assertTrue(events[5].timeSincePaused > 200 OR events[5].timeSincePaused < 230)
+        m.assertTrue(events[6].timeSinceRequested > 1200 OR events[6].timeSinceRequested < 1300)
     ])
-    if x <> "" then return x
-
-    'CONTENT_REQUEST
-    if events[0].timeSinceTrackerReady < 100 OR events[0].timeSinceTrackerReady > 130
-        return m.fail("Invalid Time Since Tracker Ready: " + str(events[0].timeSinceTrackerReady))
-    end if
-
-    'CONTENT_BUFFER_END
-    if events[2].timeSinceBufferBegin < 200 OR events[2].timeSinceBufferBegin > 230
-        return m.fail("Invalid Time Since Buffer Begin: " + str(events[2].timeSinceBufferBegin))
-    end if
-
-    'CONTENT_START
-    if events[3].timeSinceRequested < 200 OR events[3].timeSinceRequested > 250
-        return m.fail("Invalid Time Since Requested: " + str(events[3].timeSinceRequested))
-    end if
-
-    'CONTENT_PAUSE
-    if events[4].timeSinceStarted < 400 OR events[4].timeSinceStarted > 430
-        return m.fail("Invalid Time Since Started: " + str(events[4].timeSinceStarted))
-    end if
-
-    'CONTENT_RESUME
-    if events[5].timeSincePaused < 200 OR events[5].timeSincePaused > 230
-        return m.fail("Invalid Time Since Paused: " + str(events[5].timeSincePaused))
-    end if
-
-    'CONTENT_END
-    if events[6].timeSinceRequested < 1200 OR events[6].timeSinceRequested > 1300
-        return m.fail("Invalid Time Since Requested on END: " + str(events[6].timeSinceRequested))
-    end if
-
-    return ""
 End Function
 
 Function TestCase__Main_RAFTracker() as String
@@ -203,10 +168,8 @@ Function TestCase__Main_RAFTracker() as String
 
     events = m.nr.callFunc("nrExtractAllEvents")
 
-    x = m.assertArrayCount(events, 8)
-    if x <> "" then return x
-
-    x = multiAssert([
+    return multiAssert([
+        m.assertArrayCount(events, 8)
         m.assertEqual(events[0].actionName, "AD_BREAK_START")
         m.assertEqual(events[0].adDuration, 30000)
         m.assertEqual(events[0].adPosition, "pre")
@@ -220,33 +183,10 @@ Function TestCase__Main_RAFTracker() as String
         m.assertEqual(events[5].numberOfAds, 2)
         m.assertEqual(events[6].actionName, "AD_END")
         m.assertEqual(events[7].actionName, "AD_BREAK_END")
+        m.assertTrue(events[2].timeSinceAdRequested > 100 AND events[2].timeSinceAdRequested < 130)
+        m.assertTrue(events[3].timeSinceAdStarted > 500 AND events[3].timeSinceAdStarted < 530)
+        m.assertTrue(events[5].timeSinceAdRequested > 200 AND events[5].timeSinceAdRequested < 230)
+        m.assertTrue(events[6].timeSinceAdStarted > 600 AND events[6].timeSinceAdStarted < 630)
+        m.assertTrue(events[7].timeSinceAdBreakBegin > 1400 AND events[7].timeSinceAdBreakBegin < 1500)
     ])
-    if x <> "" then return x
-
-    'AD_START (1st)
-    if events[2].timeSinceAdRequested < 100 OR events[2].timeSinceAdRequested > 130
-        return m.fail("Invalid Time Since Ad Requested (1st Ad): " + str(events[2].timeSinceAdRequested))
-    end if
-
-    'AD_END (1st)
-    if events[3].timeSinceAdStarted < 500 OR events[3].timeSinceAdStarted > 530
-        return m.fail("Invalid Time Since Ad Started (1st Ad): " + str(events[3].timeSinceAdStarted))
-    end if
-
-    'AD_START (2nd)
-    if events[5].timeSinceAdRequested < 200 OR events[5].timeSinceAdRequested > 230
-        return m.fail("Invalid Time Since Ad Requested (2nd Ad): " + str(events[5].timeSinceAdRequested))
-    end if
-
-    'AD_END (2nd)
-    if events[6].timeSinceAdStarted < 600 OR events[6].timeSinceAdStarted > 630
-        return m.fail("Invalid Time Since Ad Started (2nd Ad): " + str(events[6].timeSinceAdStarted))
-    end if
-
-    'AD_BREAK_END
-    if events[7].timeSinceAdBreakBegin < 1400 OR events[7].timeSinceAdBreakBegin > 1500
-        return m.fail("Invalid Time Since Ad Break Begin: " + str(events[7].timeSinceAdBreakBegin))
-    end if
-
-    return ""
 End Function
