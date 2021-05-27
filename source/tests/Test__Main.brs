@@ -13,6 +13,7 @@ Function TestSuite__Main() as Object
     this.addTest("CustomEvents", TestCase__Main_CustomEvents)
     this.addTest("VideoEvents", TestCase__Main_VideoEvents)
     this.addTest("TimeSinceAttributes", TestCase__Main_TimeSinceAttributes)
+    this.addTest("RAFTracker", TestCase__Main_RAFTracker)
 
     return this
 End Function
@@ -68,7 +69,6 @@ Function TestCase__Main_CustomEvents() as String
     return multiAssert([
         m.assertEqual(ev.actionName, "TEST_SYSTEM_EVENT")
         m.assertNotInvalid(ev.timeSinceLoad)
-        m.assertEqual(ev.timeSinceLoad, 0)
     ])
 End Function
 
@@ -93,7 +93,7 @@ Function TestCase__Main_VideoEvents() as String
     x = m.assertArrayCount(events, 8)
     if x <> "" then return x
 
-    x = multiAssert([
+    return multiAssert([
         m.assertEqual(events[0].actionName, "CONTENT_REQUEST")
         m.assertEqual(events[0].myAttrOne, 555)
         m.assertInvalid(events[0].myAttrTwo)
@@ -110,9 +110,6 @@ Function TestCase__Main_VideoEvents() as String
         m.assertEqual(events[7].myAttrOne, 555)
         m.assertEqual(events[7].myAttrTwo, 111)
     ])
-    if x <> "" then return x
-
-    return ""
 End Function
 
 Function TestCase__Main_TimeSinceAttributes() as String
@@ -175,6 +172,80 @@ Function TestCase__Main_TimeSinceAttributes() as String
     'CONTENT_END
     if events[6].timeSinceRequested < 1200 OR events[6].timeSinceRequested > 1300
         return m.fail("Invalid Time Since Requested on END: " + str(events[6].timeSinceRequested))
+    end if
+
+    return ""
+End Function
+
+Function TestCase__Main_RAFTracker() as String
+    print "Checking RAF tracker..."
+    
+    Video_Tracking_SetUp(m)
+
+    ctx = {
+        "rendersequence": "preroll",
+        "duration": 30,
+        "server": "http://whatever.com/my_ad"
+    }
+
+    nrTrackRAF(m.nr, "PodStart", ctx)
+    nrTrackRAF(m.nr, "Impression", ctx)
+    sleep(100)
+    nrTrackRAF(m.nr, "Start", ctx)
+    sleep(500)
+    nrTrackRAF(m.nr, "Complete", ctx)
+    nrTrackRAF(m.nr, "Impression", ctx)
+    sleep(200)
+    nrTrackRAF(m.nr, "Start", ctx)
+    sleep(600)
+    nrTrackRAF(m.nr, "Complete", ctx)
+    nrTrackRAF(m.nr, "PodComplete", ctx)
+
+    events = m.nr.callFunc("nrExtractAllEvents")
+
+    x = m.assertArrayCount(events, 8)
+    if x <> "" then return x
+
+    x = multiAssert([
+        m.assertEqual(events[0].actionName, "AD_BREAK_START")
+        m.assertEqual(events[0].adDuration, 30000)
+        m.assertEqual(events[0].adPosition, "pre")
+        m.assertEqual(events[0].numberOfAds, 0)
+        m.assertEqual(events[1].actionName, "AD_REQUEST")
+        m.assertEqual(events[2].actionName, "AD_START")
+        m.assertEqual(events[2].numberOfAds, 1)
+        m.assertEqual(events[3].actionName, "AD_END")
+        m.assertEqual(events[4].actionName, "AD_REQUEST")
+        m.assertEqual(events[5].actionName, "AD_START")
+        m.assertEqual(events[5].numberOfAds, 2)
+        m.assertEqual(events[6].actionName, "AD_END")
+        m.assertEqual(events[7].actionName, "AD_BREAK_END")
+    ])
+    if x <> "" then return x
+
+    'AD_START (1st)
+    if events[2].timeSinceAdRequested < 100 OR events[2].timeSinceAdRequested > 130
+        return m.fail("Invalid Time Since Ad Requested (1st Ad): " + str(events[2].timeSinceAdRequested))
+    end if
+
+    'AD_END (1st)
+    if events[3].timeSinceAdStarted < 500 OR events[3].timeSinceAdStarted > 530
+        return m.fail("Invalid Time Since Ad Started (1st Ad): " + str(events[3].timeSinceAdStarted))
+    end if
+
+    'AD_START (2nd)
+    if events[5].timeSinceAdRequested < 200 OR events[5].timeSinceAdRequested > 230
+        return m.fail("Invalid Time Since Ad Requested (2nd Ad): " + str(events[5].timeSinceAdRequested))
+    end if
+
+    'AD_END (2nd)
+    if events[6].timeSinceAdStarted < 600 OR events[6].timeSinceAdStarted > 630
+        return m.fail("Invalid Time Since Ad Started (2nd Ad): " + str(events[6].timeSinceAdStarted))
+    end if
+
+    'AD_BREAK_END
+    if events[7].timeSinceAdBreakBegin < 1400 OR events[7].timeSinceAdBreakBegin > 1500
+        return m.fail("Invalid Time Since Ad Break Begin: " + str(events[7].timeSinceAdBreakBegin))
     end if
 
     return ""
