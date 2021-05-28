@@ -19,7 +19,7 @@ function nrRefUpdated()
     'NOTE: Uncomment ONE of the following setup calls
     
     'Setup the video player with a single video
-    'setupSingleVideo()
+    setupSingleVideo()
     
     'Setup the video player with a playlist
     'setupVideoPlaylist()
@@ -28,7 +28,7 @@ function nrRefUpdated()
     'setupVideoWithAds()
     
     'Setup the video player with a single video and Google IMA ads
-    setupVideoWithIMA()
+    'setupVideoWithIMA()
     
     'Activate video tracking
     NewRelicVideoStart(m.nr, m.video)
@@ -216,7 +216,6 @@ Sub playStream(url as Object)
   vidContent.title = m.videoTitle
   vidContent.streamformat = "hls"
   m.video.content = vidContent
-  m.video.setFocus(true)
   m.video.visible = true
   m.video.control = "play"
   m.video.EnableCookies()

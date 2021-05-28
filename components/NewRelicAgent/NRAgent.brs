@@ -8,10 +8,10 @@
 sub init()
     m.nrLogsState = false
     m.nrAgentVersion = m.top.version
-    print "********************************************************"
+    print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
-    print "   Copyright 2020 New Relic Inc. All Rights Reserved."
-    print "********************************************************"
+    print "   Copyright 2019-2021 New Relic Inc. All Rights Reserved."
+    print "************************************************************"
 end sub
 
 '=========================='
@@ -83,11 +83,10 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
     m.nrvideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
+
     'Init heartbeat timer
-    m.hbTimer = CreateObject("roSGNode", "Timer")
-    m.hbTimer.repeat = true
-    m.hbTimer.duration = 30
-    m.hbTimer.observeFieldScoped("fire", "nrHeartbeatHandler")
+    m.hbTimer = m.top.findNode("nrHeartbeatTimer")
+    m.hbTimer.ObserveField("fire", "nrHeartbeatHandler")
     m.hbTimer.control = "start"
     
     'Player Ready
@@ -96,12 +95,16 @@ end function
 
 function NewRelicVideoStop() as Void
     ' Remove event listeners
-    m.nrVideoObject.unobserveFieldScoped("state")
-    m.nrVideoObject.unobserveFieldScoped("contentIndex")
-    m.nrVideoObject = Invalid
+    if m.nrVideoObject <> invalid
+        m.nrVideoObject.unobserveFieldScoped("state")
+        m.nrVideoObject.unobserveFieldScoped("contentIndex")
+        m.nrVideoObject = Invalid
+    end if
     ' Stop heartbeat timer
-    m.hbTimer.unobserveFieldScoped("fire")
-    m.hbTimer.control = "stop"
+    if m.hbTimer <> invalid
+        m.hbTimer.unobserveFieldScoped("fire")
+        m.hbTimer.control = "stop"
+    end if
 end function
 
 function nrAppStarted(aa as Object) as Void
@@ -272,7 +275,7 @@ function nrExtractAllEvents() as Object
 end function
 
 function nrGetBackEvents(events as Object) as Void
-    print "------> nrGetBackEvents, ev size = ", events.Count()
+    nrLog(["------> nrGetBackEvents, ev size = ", events.Count()])
     m.nrEventArray.Append(events)
 end function
 

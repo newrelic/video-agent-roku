@@ -1,5 +1,28 @@
 'NR Video Agent Example - Main'
 
+sub RunUserInterface(args)
+    'TODO: remove this once finished creating tests
+    args.RunTests = "true"
+
+    if args.RunTests = "true" and type(TestRunner) = "Function" then
+        print "Run tests"
+        Runner = TestRunner()
+
+        Runner.SetFunctions([
+            TestSuite__Main
+        ])
+
+        Runner.Logger.SetVerbosity(3)
+        Runner.Logger.SetEcho(false)
+        Runner.Logger.SetJUnit(false)
+        Runner.SetFailFast(true)
+        
+        Runner.Run()
+    else
+        Main(args)
+    end if
+end sub
+
 sub Main(aa as Object)
     print "Main arg = ", aa
     
@@ -44,7 +67,8 @@ sub Main(aa as Object)
                     if msg.getData() = "OK"
                         'force crash
                         print "Crash!"
-                        anyfoo()
+                        x = invalid
+                        x.anyFoo()
                     end if
                 end if
             end if

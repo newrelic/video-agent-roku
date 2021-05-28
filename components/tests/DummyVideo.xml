@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component name="com.newrelic.test.DummyVideo" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+
+	<interface>
+		<!-- Observed state values -->
+		<field id="state" type="string" value="none"/>
+        <field id="contentIndex" type="integer" value="1"/>
+        <field id="licenseStatus" type="node"/>
+
+        <!-- Attributes -->
+        <field id="mute" type="boolean" value="false"/>
+        <field id="duration" type="time" value="33"/>
+        <field id="position" type="time" value="0"/>
+        <field id="streamInfo" type="assocarray"/>
+        <field id="streamingSegment" type="assocarray"/>
+        <field id="videoFormat" type="string" value="fake_format"/>
+        <field id="contentIsPlaylist" type="boolean" value="false"/>
+        <field id="timeToStartStreaming" type="time" value="2.1"/>
+        <field id="content" type="node"/>
+        <field id="manifestData" type="string" value="manifest data"/>
+        <field id="errorMsg" type="string" value="whatever error"/>
+        <field id="errorCode" type="integer" value="12345"/>
+
+        <!-- Functions -->
+        <function name="resetState"/>
+        <function name="startPlayback"/>
+        <function name="startBuffering"/>
+        <function name="endBuffering"/>
+        <function name="pausePlayback"/>
+        <function name="resumePlayback"/>
+        <function name="stopPlayback"/>
+        <function name="endPlayback"/>
+        <function name="error"/>
+        <function name="setPlayhead"/>
+    </interface>
+    
+	<script type="text/brightscript" uri="DummyVideo.brs"/>
+</component>
