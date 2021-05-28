@@ -1,6 +1,13 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.3.1] - 2021/05/28
+### Add
+- Unit testing.
+
+### Fix
+- `nrGetOSVersion` bug.
+
 ## [1.3.0] - 2021/05/13
 ### Add
 - Ad errors.

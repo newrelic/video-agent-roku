@@ -1,9 +1,6 @@
 'NR Video Agent Example - Main'
 
 sub RunUserInterface(args)
-    'TODO: remove this once finished creating tests
-    args.RunTests = "true"
-
     if args.RunTests = "true" and type(TestRunner) = "Function" then
         print "Run tests"
         Runner = TestRunner()
