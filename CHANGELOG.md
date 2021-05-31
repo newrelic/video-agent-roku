@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.3.2] - 2021/05/31
+### Add
+- `totalAdPlaytime` attribute and NRAgent `nrAddToTotalAdPlaytime` public method (not wrapped).
+
 ## [1.3.1] - 2021/05/28
 ### Add
 - Unit testing.
