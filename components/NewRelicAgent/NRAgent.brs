@@ -75,6 +75,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Playtimes
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
+    m.nrTotalAdPlaytime = 0
     'Counters
     m.nrVideoCounter = 0
     m.nrNumberOfErrors = 0
@@ -186,6 +187,7 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
         else if evtType = "PodComplete"
             'Calc attributes for Ad break end
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
+            nrAddToTotalAdPlaytime(timeSinceAdBreakBegin)
             nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
         else if evtType = "Impression"
             nrSendRAFEvent("AD_REQUEST", ctx)
@@ -308,6 +310,10 @@ function nrProcessSystemEvent(i as Object) as Boolean
         return true
     end if
     return false
+end function
+
+function nrAddToTotalAdPlaytime(adPlaytime as Integer) as Void
+    m.nrTotalAdPlaytime = m.nrTotalAdPlaytime + adPlaytime
 end function
 
 '=================='
@@ -720,6 +726,9 @@ function nrAddVideoAttributes(ev as Object) as Object
     else
         ev.AddReplace("playtimeSinceLastEvent", m.nrPlaytimeSinceLastEvent.TotalMilliseconds())
     end if
+    if m.nrTotalAdPlaytime > 0
+        ev.AddReplace("totalAdPlaytime", m.nrTotalAdPlaytime)
+    end if
     
     return ev
 end function
@@ -729,7 +738,6 @@ end function
 '=============='
 
 function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
-    'TODO: totalAdPlaytime
     if ctx.rendersequence <> invalid
         if ctx.rendersequence = "preroll" then ev.AddReplace("adPosition", "pre")
         if ctx.rendersequence = "midroll" then ev.AddReplace("adPosition", "mid")

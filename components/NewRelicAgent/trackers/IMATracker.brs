@@ -29,7 +29,9 @@ end function
 
 function nrSendIMAAdBreakEnd(adBreakInfo as Object) as Void
     attr = nrIMAAttributes(adBreakInfo, invalid)
-    attr.AddReplace("timeSinceAdBreakBegin", m.nrTimer.TotalMilliseconds() - m.adState.timeSinceAdBreakBegin)
+    timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.adState.timeSinceAdBreakBegin
+    m.top.nr.callFunc("nrAddToTotalAdPlaytime", timeSinceAdBreakBegin)
+    attr.AddReplace("timeSinceAdBreakBegin", timeSinceAdBreakBegin)
     m.top.nr.callFunc("nrSendVideoEvent", "AD_BREAK_END", attr)
 end function
 

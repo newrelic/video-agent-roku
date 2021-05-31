@@ -35,6 +35,7 @@
         <function name="nrGetBackEvents"/>
         <function name="nrRecordEvent"/>
         <function name="nrProcessSystemEvent"/>
+        <function name="nrAddToTotalAdPlaytime"/>
     </interface>
     
 	<script type="text/brightscript" uri="NRAgent.brs"/>
