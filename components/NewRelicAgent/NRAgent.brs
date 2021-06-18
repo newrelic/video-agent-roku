@@ -99,6 +99,7 @@ function NewRelicVideoStop() as Void
     if m.nrVideoObject <> invalid
         m.nrVideoObject.unobserveFieldScoped("state")
         m.nrVideoObject.unobserveFieldScoped("contentIndex")
+        m.nrVideoObject.unobserveFieldScoped("licenseStatus")
         m.nrVideoObject = Invalid
     end if
     ' Stop heartbeat timer
