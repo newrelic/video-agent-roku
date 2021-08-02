@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [1.3.4] - 2021/08/02
+### Fix
+- Fix hbTimer callback attachment
+
 ## [1.3.3] - 2021/06/18
 ### Fix
 - Fix NewRelicVideoStop function - remove license status observer.
