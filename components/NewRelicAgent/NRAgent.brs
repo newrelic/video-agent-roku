@@ -87,7 +87,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
 
     'Init heartbeat timer
     m.hbTimer = m.top.findNode("nrHeartbeatTimer")
-    m.hbTimer.ObserveField("fire", "nrHeartbeatHandler")
+    m.hbTimer.observeFieldScoped("fire", "nrHeartbeatHandler")
     m.hbTimer.control = "start"
     
     'Player Ready
