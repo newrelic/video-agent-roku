@@ -1,10 +1,8 @@
 # New Relic Roku Dashboard Import Instructions
 
-1. Copy the contents of ./roku-dashboard.json
+1. Copy the contents of one of the ./roku-dashboard-xxx.json files in this directory
 
-2. Replace '<account_id>' with the New Relic id where you have your Roku data
-
-(Steps 3-6 can only be performed by New Relic, so provide the JSON to a New Relic contact so it can be imported to your account)
+2. Replace '<your_account_id>' with the New Relic id where you have your Roku data
 
 3. Go to http://one.newrelic.com
 
