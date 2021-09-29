@@ -31,13 +31,8 @@ Will result in something like the following:
 
 ### Requirements
 
-Sending both system events and video events requires an Insights Pro subscription.   Insights Free accounts permit only one event type per API key.   If you are using an Insights Free account, you can enable only one type of Roku event capture at a time (system or video).
+To initialize the agent you need an [ACCOUNT ID](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/) and an [INSERT API KEY](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#insights-insert-key). 
 
-To initialize the agent you need an ACCOUNT ID and an API KEY. 
-
-The ACCOUNT ID indicates the New Relic account to which you would like to send the Roku data.   For example, https://insights.newrelic.com/accounts/xxx.  Where “xxx” is the Account ID.
-
-To register the API Key, follow the instructions found [here](https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/send-custom-events-event-api#register).
 
 <a name="installation"></a>
 
