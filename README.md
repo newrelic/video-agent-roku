@@ -4,7 +4,7 @@
 
 The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events and one to monitor video related events, for apps that use a video player.
 
-Internally, it uses the Insights API to send events using the REST interface. It sends two types of events: RokuSystem for system events and RokuVideo for video events. After the agent has sent some data it will be accessible in NR One Dashboards and Insights with a simple NRQL request like:
+Internally, it uses the Event API to send events using the REST interface. It sends two types of events: RokuSystem for system events and RokuVideo for video events. After the agent has sent some data it will be accessible in NR One Dashboards with a simple NRQL request like:
 
 ```
 SELECT * FROM RokuSystem, RokuVideo 
@@ -32,7 +32,6 @@ Will result in something like the following:
 ### Requirements
 
 To initialize the agent you need an [ACCOUNT ID](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/) and an [INSERT API KEY](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#insights-insert-key). 
-
 
 <a name="installation"></a>
 
@@ -170,7 +169,7 @@ Description:
 
 Arguments:
 	account: New Relic account number.
-	apikey: Insights API key.
+	apikey: API key.
 	activeLogs: (optional) Activate logs or not. Default False.
 	
 Return:
@@ -485,7 +484,7 @@ Example:
 nrSetHarvestTime(nr as Object, time as Integer) as Void
 
 Description:
-	Set harvest time, the time the events are buffered before being sent to Insights.
+	Set harvest time, the time the events are buffered before being sent to New Relic.
 
 Arguments:
 	nr: New Relic Agent object.
