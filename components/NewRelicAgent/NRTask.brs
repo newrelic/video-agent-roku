@@ -10,13 +10,12 @@ sub init()
 end sub
 
 function nrInsertInsightsEvents(events as Object) as Object
-    url = box("https://insights-collector.newrelic.com/v1/accounts/" + m.accountNumber + "/events")
     jsonString = FormatJson(events)
 
     rport = CreateObject("roMessagePort")
     urlReq = CreateObject("roUrlTransfer")
 
-    urlReq.SetUrl(url)
+    urlReq.SetUrl(m.serviceUrl)
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
@@ -57,7 +56,7 @@ function nrTaskMain() as Void
     if m.nr = invalid
         m.nr = m.top.getParent()
         m.apiKey = m.top.apiKey
-        m.accountNumber = m.top.accountNumber
+        m.serviceUrl = m.top.serviceUrl
     end if
     nrEventProcessor()
     'print "---- Ended running NRTask ----"

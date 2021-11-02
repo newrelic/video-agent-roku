@@ -8,6 +8,7 @@
 sub init()
     m.nrLogsState = false
     m.nrAgentVersion = m.top.version
+    m.serviceUrl = ""
     print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2021 New Relic Inc. All Rights Reserved."
@@ -40,9 +41,10 @@ function NewRelicInit(account as String, apikey as String) as Void
 
     'Create and configure NRTask
     m.bgTask = m.top.findNode("NRTask")
-    m.bgTask.setField("accountNumber", m.nrAccountNumber)
+    m.serviceUrl = box("https://insights-collector.newrelic.com/v1/accounts/" + account + "/events")
+    m.bgTask.setField("serviceUrl", m.serviceUrl)
     m.bgTask.setField("apiKey", m.nrInsightsApiKey)
-    
+
     'Init harvest timer
     m.nrHarvestTimer = m.top.findNode("nrHarvestTimer")
     m.nrHarvestTimer.ObserveField("fire", "nrHarvestTimerHandler")
@@ -107,6 +109,12 @@ function NewRelicVideoStop() as Void
         m.hbTimer.unobserveFieldScoped("fire")
         m.hbTimer.control = "stop"
     end if
+end function
+
+' modifies current configuration
+function UpdateConfig(config as object) as void
+    if config = invalid then return
+    if config.proxyUrl <> invalid then m.bgTask.setField("serviceUrl", config.proxyUrl + m.serviceUrl)
 end function
 
 function nrAppStarted(aa as Object) as Void
