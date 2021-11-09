@@ -18,7 +18,7 @@
         <function name="NewRelicInit"/>
         <function name="NewRelicVideoStart"/>
         <function name="NewRelicVideoStop"/>
-        <function name="UpdateConfig"/>
+        <function name="nrUpdateConfig"/>
         <function name="nrSceneLoaded"/>
         <function name="nrAppStarted"/>
         <function name="nrSendCustomEvent"/>

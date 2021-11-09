@@ -112,7 +112,7 @@ function NewRelicVideoStop() as Void
 end function
 
 ' modifies current configuration
-function UpdateConfig(config as object) as void
+function nrUpdateConfig(config as object) as void
     if config = invalid then return
     if config.proxyUrl <> invalid then m.bgTask.setField("serviceUrl", config.proxyUrl + m.serviceUrl)
 end function
