@@ -1,7 +1,7 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
-## [1.3.4] - 2021/11/09
+## [1.4.0] - 2021/11/09
 ### Add
 - added network proxy support
 
