@@ -81,6 +81,14 @@ function nrSetCustomAttributeList(nr as Object, attr as Object, actionName = "" 
     nr.callFunc("nrSetCustomAttributeList", attr, actionName)
 end function
 
+' modifies current configuration
+'
+' @param nr New Relic Agent object
+' @param obj { proxyUrl: string, delimited network proxy URL }
+function nrUpdateConfig(nr as object, config as object) as void
+    nr.callFunc("nrUpdateConfig", config)
+end function
+
 ' Send an APP_STARTED event of type RokuSystem.
 '
 ' @param nr New Relic Agent object.

@@ -12,7 +12,7 @@
 <component name="com.newrelic.NRTask" extends="Task" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
 	<interface>
 		<!-- Properties -->
-		<field id="accountNumber" type="string" value=""/>
+		<field id="serviceUrl" type="string" value=""/>
 		<field id="apiKey" type="string" value=""/>
     </interface>
 

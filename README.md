@@ -517,6 +517,26 @@ Example:
 	nrForceHarvest(m.nr)
 ```
 
+**nrUpdateConfig**
+
+```
+nrUpdateConfig(nr as Object, config as Object) as Void
+
+Description:
+	Updates configuration, such as network proxy URL.
+
+Arguments:
+	nr: New Relic Agent object
+	config: configuration object
+
+Return:
+	Nothing
+
+Example:
+	config = { networkProxy: "http://example.com:8888/;" }
+	nrUpdateConig(m.nr, config)
+```
+
 <a name="data-model"></a>
 
 ### Data Model
@@ -850,6 +870,9 @@ curl -d '' 'http://ROKU_IP:8060/launch/dev?RunTests=true'
 ```
 
 Where `ROKU_IP` is the address of the Roku device where the channel is installed. Connect to the debug terminal (port 8085) to see test results.
+
+### Debugging
+Network proxying is supported using URL re-write (see [App Level Proxying](https://rokulikeahurricane.io/proxying_network_requests)). To send all network requests via a proxy call `nrUpdateConfig()` function with the `proxyUrl` parameter object property. Be sure to specify the same URL delimiter as your proxy re-write rule.
 
 <a name="open-source"></a>
 

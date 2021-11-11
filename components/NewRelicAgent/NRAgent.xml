@@ -13,11 +13,12 @@
 
 	<interface>
 		<!-- Properties -->
-		<field id="version" type="string" value="1.3.4"/>
+		<field id="version" type="string" value="1.4.0"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
         <function name="NewRelicVideoStart"/>
         <function name="NewRelicVideoStop"/>
+        <function name="nrUpdateConfig"/>
         <function name="nrSceneLoaded"/>
         <function name="nrAppStarted"/>
         <function name="nrSendCustomEvent"/>
@@ -37,9 +38,9 @@
         <function name="nrProcessSystemEvent"/>
         <function name="nrAddToTotalAdPlaytime"/>
     </interface>
-    
+
 	<script type="text/brightscript" uri="NRAgent.brs"/>
-	
+
 	<children>
         <Timer id="nrHeartbeatTimer" repeat="true" duration="30"/>
 		<Timer id="nrHarvestTimer" repeat="true" duration="10"/>
