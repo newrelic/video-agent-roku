@@ -15,12 +15,12 @@ function nrInsertInsightsEvents(events as Object) as Object
     rport = CreateObject("roMessagePort")
     urlReq = CreateObject("roUrlTransfer")
 
-    urlReq.SetUrl(m.serviceUrl)
+    urlReq.SetUrl(m.eventApiUrl)
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
     urlReq.EnableEncodings(true)
-    urlReq.AddHeader("X-Insert-Key", m.apikey)
+    urlReq.AddHeader("Api-Key", m.apikey)
     urlReq.SetMessagePort(rport)
     urlReq.AsyncPostFromString(jsonString)
     
@@ -41,7 +41,7 @@ function nrEventProcessor() as Void
         if events.Count() > 0
             res = nrInsertInsightsEvents(events)
             if res <> 200
-                m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED, retry later --")
+                m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED with code " + Str(res) + ", retry later --")
                 m.nr.callFunc("nrGetBackEvents", events)
             end if
         end if
@@ -56,7 +56,8 @@ function nrTaskMain() as Void
     if m.nr = invalid
         m.nr = m.top.getParent()
         m.apiKey = m.top.apiKey
-        m.serviceUrl = m.top.serviceUrl
+        m.eventApiUrl = m.top.eventApiUrl
+        m.logApiUrl = m.top.logApiUrl
     end if
     nrEventProcessor()
     'print "---- Ended running NRTask ----"

@@ -8,7 +8,9 @@
 sub init()
     m.nrLogsState = false
     m.nrAgentVersion = m.top.version
-    m.serviceUrl = ""
+    m.eventApiUrl = ""
+    m.logApiUrl = ""
+    m.nrRegion = "US"
     print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2021 New Relic Inc. All Rights Reserved."
@@ -19,10 +21,10 @@ end sub
 ' Public Wrapped Functions '
 '=========================='
 
-function NewRelicInit(account as String, apikey as String) as Void
-    
+function NewRelicInit(account as String, apikey as String, region as String) as Void
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
+    m.nrRegion = region
     m.nrSessionId = nrGenerateId()
     m.nrEventArray = []
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
@@ -41,9 +43,11 @@ function NewRelicInit(account as String, apikey as String) as Void
 
     'Create and configure NRTask
     m.bgTask = m.top.findNode("NRTask")
-    m.serviceUrl = box("https://insights-collector.newrelic.com/v1/accounts/" + account + "/events")
-    m.bgTask.setField("serviceUrl", m.serviceUrl)
     m.bgTask.setField("apiKey", m.nrInsightsApiKey)
+    m.eventApiUrl = box(nrEventApiUrl())
+    m.bgTask.setField("eventApiUrl", m.eventApiUrl)
+    m.logApiUrl = box(nrLogApiUrl())
+    m.bgTask.setField("logApiUrl", m.logApiUrl)
 
     'Init harvest timer
     m.nrHarvestTimer = m.top.findNode("nrHarvestTimer")
@@ -114,7 +118,12 @@ end function
 ' modifies current configuration
 function nrUpdateConfig(config as object) as void
     if config = invalid then return
-    if config.proxyUrl <> invalid then m.bgTask.setField("serviceUrl", config.proxyUrl + m.serviceUrl)
+    if config.proxyUrl <> invalid
+        m.eventApiUrl = box(nrEventApiUrl())
+        m.logApiUrl = box(nrLogApiUrl())
+        m.bgTask.setField("eventApiUrl", config.proxyUrl + m.eventApiUrl)
+        m.bgTask.setField("logApiUrl", config.proxyUrl + m.logApiUrl)
+    end if
 end function
 
 function nrAppStarted(aa as Object) as Void
@@ -522,6 +531,22 @@ function nrSendBandwidth(info as Object) as Void
         "bandwidth": info["bandwidth"]
     }
     nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
+end function
+
+function nrEventApiUrl() as String
+    if m.nrRegion = "US"
+        return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
+    else
+        return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
+    end if
+end function
+
+function nrLogApiUrl() as String
+    if m.nrRegion = "US"
+        return "https://log-api.newrelic.com/log/v1"
+    else
+        return "https://log-api.eu.newrelic.com/log/v1"
+    end if
 end function
 
 '================='

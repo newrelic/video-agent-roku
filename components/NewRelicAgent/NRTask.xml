@@ -12,7 +12,8 @@
 <component name="com.newrelic.NRTask" extends="Task" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
 	<interface>
 		<!-- Properties -->
-		<field id="serviceUrl" type="string" value=""/>
+		<field id="eventApiUrl" type="string" value=""/>
+		<field id="logApiUrl" type="string" value=""/>
 		<field id="apiKey" type="string" value=""/>
     </interface>
 
