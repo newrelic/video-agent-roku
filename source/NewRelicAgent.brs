@@ -206,6 +206,17 @@ end function
 ' @param nr New Relic Agent object.
 ' @param evtType Event type.
 ' @param ctx Event context.
-function nrTrackRAF(nr as Object, evtType = invalid as Dynamic, ctx = invalid as Dynamic)
+function nrTrackRAF(nr as Object, evtType = invalid as Dynamic, ctx = invalid as Dynamic) as Void
     nr.callFunc("nrTrackRAF", evtType, ctx)
+end function
+
+' Record a log.
+'
+' @param nr New Relic Agent object.
+' @param message Log message.
+' @param logtype Log type.
+' @param fields Additonal fields to be included in the log.
+function nrSendLog(nr as Object, message as String, logtype as String, fields as Object) as Void
+    print "nrSendLog", message, logtype, fields
+    nr.callFunc("nrSendLog", message, logtype, fields)
 end function

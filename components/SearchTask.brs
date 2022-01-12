@@ -26,7 +26,8 @@ function searchTaskMain()
         msg = wait(5000, m.port)
         if type(msg) = "roUrlEvent" then
             'Send HTTP_RESPONSE action
-            nrSendHttpResponse(m.nr, _url, msg)
+            'nrSendHttpResponse(m.nr, _url, msg)
+            nrSendLog(m.nr, "Google Search", "URL Request", { "url": _url, "bodysize": Len(msg) })
         end if
         
         sleep(5000)

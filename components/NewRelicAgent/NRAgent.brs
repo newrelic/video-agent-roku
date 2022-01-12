@@ -27,6 +27,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrRegion = region
     m.nrSessionId = nrGenerateId()
     m.nrEventArray = []
+    m.nrLogArray = []
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
@@ -262,6 +263,26 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
     end if
 end function
 
+function nrSendLog(message as String, logtype as String, fields as Object) as Void
+    lg = CreateObject("roAssociativeArray")
+    print "nrSendLog args ", message, logtype, fields
+    if message <> invalid and message <> "" then lg["message"] = message
+    if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
+    if fields <> invalid then lg.Append(fields)
+    lg["timestamp"] = FormatJson(nrTimestamp())
+
+    if m.nrLogArray.Count() < 500
+        m.nrLogArray.Push(lg)
+        
+        nrLog("====================================")
+        nrLog(["RECORD NEW LOG = ", m.nrLogArray.Peek()])
+        nrLog(["LOGARRAY SIZE = ", m.nrLogArray.Count()])
+        nrLog("====================================")
+    else
+        nrLog("Logs overflow, discard log")
+    end if
+end function
+
 '=========================='
 ' Public Internal Functions '
 '=========================='
@@ -281,11 +302,6 @@ function nrLog(msg as Dynamic) as Void
             print msg
         end if
     end if
-end function
-
-function nrExtractEvent() as Object
-    res = m.nrEventArray.Pop()
-    return res
 end function
 
 function nrExtractAllEvents() as Object
@@ -311,6 +327,17 @@ function nrRecordEvent(event as Object) as Void
     else
         nrLog("Events overflow, discard event")
     end if
+end function
+
+function nrExtractAllLogs() as Object
+    logs = m.nrLogArray
+    m.nrLogArray = []
+    return logs
+end function
+
+function nrGetBackLogs(logs as Object) as Void
+    nrLog(["------> nrGetBackLogs, log size = ", logs.Count()])
+    m.nrLogArray.Append(logs)
 end function
 
 function nrProcessSystemEvent(i as Object) as Boolean
