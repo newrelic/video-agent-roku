@@ -265,7 +265,6 @@ end function
 
 function nrSendLog(message as String, logtype as String, fields as Object) as Void
     lg = CreateObject("roAssociativeArray")
-    print "nrSendLog args ", message, logtype, fields
     if message <> invalid and message <> "" then lg["message"] = message
     if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
     if fields <> invalid then lg.Append(fields)
