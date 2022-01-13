@@ -9,15 +9,13 @@ sub init()
     m.top.functionName = "nrTaskMain"
 end sub
 
-'TODO: factorize nrPush code
-
-function nrPushEvents(events as Object) as Object
-    jsonString = FormatJson(events)
+function nrPushSamples(samples as Object, endpoint as String) as Object
+    jsonString = FormatJson(samples)
 
     rport = CreateObject("roMessagePort")
     urlReq = CreateObject("roUrlTransfer")
 
-    urlReq.SetUrl(m.eventApiUrl)
+    urlReq.SetUrl(endpoint)
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
@@ -31,65 +29,32 @@ function nrPushEvents(events as Object) as Object
         return msg.GetResponseCode()
     else
         'Timeout, cancel transfer and return error code
-        m.nr.callFunc("nrLog", "-- nrPushEvents: timeout, cancel request and return --")
-        urlReq.AsyncCancel()
-        return 0
-    end if
-end function
-
-function nrPushLogs(logs as Object) as Object
-    jsonString = FormatJson(logs)
-
-    rport = CreateObject("roMessagePort")
-    urlReq = CreateObject("roUrlTransfer")
-
-    urlReq.SetUrl(m.logApiUrl)
-    urlReq.RetainBodyOnError(true)
-    urlReq.EnablePeerVerification(false)
-    urlReq.EnableHostVerification(false)
-    urlReq.EnableEncodings(true)
-    urlReq.AddHeader("Api-Key", m.apikey)
-    urlReq.SetMessagePort(rport)
-    urlReq.AsyncPostFromString(jsonString)
-    
-    msg = wait(10000, rport)
-    if type(msg) = "roUrlEvent" then
-        return msg.GetResponseCode()
-    else
-        'Timeout, cancel transfer and return error code
-        m.nr.callFunc("nrLog", "-- nrPushLogs: timeout, cancel request and return --")
+        m.nr.callFunc("nrLog", "-- nrPushSamples: timeout, cancel request and return --")
         urlReq.AsyncCancel()
         return 0
     end if
 end function
 
 function nrEventProcessor() as Void
-    if m.nr <> invalid
-        events = m.nr.callFunc("nrExtractAllEvents")
-        if events.Count() > 0
-            res = nrPushEvents(events)
-            if res <> 200
-                m.nr.callFunc("nrLog", "-- nrEventProcessor: FAILED with code " + Str(res) + ", retry later --")
-                m.nr.callFunc("nrGetBackEvents", events)
-            end if
-        end if
-    else
-        print("-- nrEventProcessor: m.nr is invalid!! --")
-    end if
+    nrSampleProcessor("nrExtractAllEvents", "nrGetBackEvents", m.eventApiUrl)
 end function
 
 function nrLogProcessor() as Void
+    nrSampleProcessor("nrExtractAllLogs", "nrGetBackLogs", m.logApiUrl)
+end function
+
+function nrSampleProcessor(extractFunc as String, getbackFunc as String, endpoint as String) as Void
     if m.nr <> invalid
-        logs = m.nr.callFunc("nrExtractAllLogs")
-        if logs.Count() > 0
-            res = nrPushLogs(logs)
-            if res <> 200 and res <> 202
-                m.nr.callFunc("nrLog", "-- nrLogProcessor: FAILED with code " + Str(res) + ", retry later --")
-                m.nr.callFunc("nrGetBackLogs", logs)
+        samples = m.nr.callFunc(extractFunc)
+        if samples.Count() > 0
+            res = nrPushSamples(samples, endpoint)
+            if res < 200 or res > 299
+                m.nr.callFunc("nrLog", "-- nrSampleProcessor: FAILED with code " + Str(res) + ", retry later --")
+                m.nr.callFunc(getbackFunc, samples)
             end if
         end if
     else
-        print("-- nrLogProcessor: m.nr is invalid!! --")
+        print("-- nrSampleProcessor: m.nr is invalid!! --")
     end if
 end function
 
