@@ -1,6 +1,11 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2022/01/25
+### Add
+- New Relic Logs.
+- US/EU end point selection.
+
 ## [1.4.0] - 2021/11/09
 ### Add
 - added network proxy support
