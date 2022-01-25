@@ -10,12 +10,13 @@
 '
 ' @param account New Relic account number.
 ' @param apikey Insights API key.
+' @param region (optional) New Relic API region, EU or US. Default US.
 ' @param activeLogs (optional) Activate logs or not. Default False.
 ' @return New Relic Agent object.
-function NewRelic(account as String, apikey as String, activeLogs = false as Boolean) as Object
+function NewRelic(account as String, apikey as String, region = "US" as String, activeLogs = false as Boolean) as Object
     nr = CreateObject("roSGNode", "com.newrelic.NRAgent")
     nr.callFunc("nrActivateLogging", activeLogs)
-    nr.callFunc("NewRelicInit", account, apikey)
+    nr.callFunc("NewRelicInit", account, apikey, region)
     return nr
 end function
 
@@ -205,6 +206,17 @@ end function
 ' @param nr New Relic Agent object.
 ' @param evtType Event type.
 ' @param ctx Event context.
-function nrTrackRAF(nr as Object, evtType = invalid as Dynamic, ctx = invalid as Dynamic)
+function nrTrackRAF(nr as Object, evtType = invalid as Dynamic, ctx = invalid as Dynamic) as Void
     nr.callFunc("nrTrackRAF", evtType, ctx)
+end function
+
+' Record a log.
+'
+' @param nr New Relic Agent object.
+' @param message Log message.
+' @param logtype Log type.
+' @param fields Additonal fields to be included in the log.
+function nrSendLog(nr as Object, message as String, logtype as String, fields = invalid as Object) as Void
+    print "nrSendLog", message, logtype, fields
+    nr.callFunc("nrSendLog", message, logtype, fields)
 end function

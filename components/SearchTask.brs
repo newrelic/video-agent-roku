@@ -10,6 +10,7 @@ end function
 function searchTaskMain()
     print "SearchTaskMain function"
     m.port = CreateObject("roMessagePort")
+    counter = 0
     while true
         _url = box("https://www.google.com/search?source=hp&q=" + m.top.searchString)
         urlReq = CreateObject("roUrlTransfer")
@@ -26,9 +27,11 @@ function searchTaskMain()
         msg = wait(5000, m.port)
         if type(msg) = "roUrlEvent" then
             'Send HTTP_RESPONSE action
-            nrSendHttpResponse(m.nr, _url, msg)
+            'nrSendHttpResponse(m.nr, _url, msg)
+            nrSendLog(m.nr, "Google Search", "URL Request", { "url": _url, "counter": counter, "bodysize": Len(msg) })
         end if
         
-        sleep(5000)
+        sleep(2500)
+        counter = counter + 1
     end while
 end function

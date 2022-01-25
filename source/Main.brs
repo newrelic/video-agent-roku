@@ -31,7 +31,7 @@ sub Main(aa as Object)
     screen.show()
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", true)
+    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "US", true)
     nrAppStarted(m.nr, aa)
     'Send a custom system
     nrSendSystemEvent(m.nr, "TEST_ACTION")

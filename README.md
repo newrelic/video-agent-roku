@@ -162,7 +162,7 @@ To interact with the New Relic Agent it provides a set of functions that wrap in
 **NewRelic**
 
 ```
-NewRelic(account as String, apikey as String, activeLogs = false as Boolean) as Object
+NewRelic(account as String, apikey as String, region = "US" as String, activeLogs = false as Boolean) as Object
 
 Description:
 	Build a New Relic Agent object.
@@ -170,6 +170,7 @@ Description:
 Arguments:
 	account: New Relic account number.
 	apikey: API key.
+	region: (optional) New Relic API region, EU or US. Default US.
 	activeLogs: (optional) Activate logs or not. Default False.
 	
 Return:
@@ -537,6 +538,24 @@ Example:
 	nrUpdateConig(m.nr, config)
 ```
 
+```
+nrSendLog(nr as Object, message as String, logtype as String, fields = invalid as Object) as Void
+
+Description:
+	Record a log using the New Relic Log API.
+
+Arguments:
+	nr: New Relic Agent object
+	message: Log message.
+	logtype: Log type.
+	fields: (optional) Additonal fields to be included in the log.
+
+Return:
+	Nothing
+
+Example:
+	nrSendLog(m.nr, "This is a log", "console", {"key": "value"})
+```
 <a name="data-model"></a>
 
 ### Data Model

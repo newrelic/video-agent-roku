@@ -8,7 +8,9 @@
 sub init()
     m.nrLogsState = false
     m.nrAgentVersion = m.top.version
-    m.serviceUrl = ""
+    m.eventApiUrl = ""
+    m.logApiUrl = ""
+    m.nrRegion = "US"
     print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2021 New Relic Inc. All Rights Reserved."
@@ -19,12 +21,13 @@ end sub
 ' Public Wrapped Functions '
 '=========================='
 
-function NewRelicInit(account as String, apikey as String) as Void
-    
+function NewRelicInit(account as String, apikey as String, region as String) as Void
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
+    m.nrRegion = region
     m.nrSessionId = nrGenerateId()
     m.nrEventArray = []
+    m.nrLogArray = []
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
@@ -41,9 +44,11 @@ function NewRelicInit(account as String, apikey as String) as Void
 
     'Create and configure NRTask
     m.bgTask = m.top.findNode("NRTask")
-    m.serviceUrl = box("https://insights-collector.newrelic.com/v1/accounts/" + account + "/events")
-    m.bgTask.setField("serviceUrl", m.serviceUrl)
     m.bgTask.setField("apiKey", m.nrInsightsApiKey)
+    m.eventApiUrl = box(nrEventApiUrl())
+    m.bgTask.setField("eventApiUrl", m.eventApiUrl)
+    m.logApiUrl = box(nrLogApiUrl())
+    m.bgTask.setField("logApiUrl", m.logApiUrl)
 
     'Init harvest timer
     m.nrHarvestTimer = m.top.findNode("nrHarvestTimer")
@@ -114,7 +119,12 @@ end function
 ' modifies current configuration
 function nrUpdateConfig(config as object) as void
     if config = invalid then return
-    if config.proxyUrl <> invalid then m.bgTask.setField("serviceUrl", config.proxyUrl + m.serviceUrl)
+    if config.proxyUrl <> invalid
+        m.eventApiUrl = box(nrEventApiUrl())
+        m.logApiUrl = box(nrLogApiUrl())
+        m.bgTask.setField("eventApiUrl", config.proxyUrl + m.eventApiUrl)
+        m.bgTask.setField("logApiUrl", config.proxyUrl + m.logApiUrl)
+    end if
 end function
 
 function nrAppStarted(aa as Object) as Void
@@ -253,6 +263,25 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
     end if
 end function
 
+function nrSendLog(message as String, logtype as String, fields as Object) as Void
+    lg = CreateObject("roAssociativeArray")
+    if message <> invalid and message <> "" then lg["message"] = message
+    if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
+    if fields <> invalid then lg.Append(fields)
+    lg["timestamp"] = FormatJson(nrTimestamp())
+
+    if m.nrLogArray.Count() < 500
+        m.nrLogArray.Push(lg)
+        
+        nrLog("====================================")
+        nrLog(["RECORD NEW LOG = ", m.nrLogArray.Peek()])
+        nrLog(["LOGARRAY SIZE = ", m.nrLogArray.Count()])
+        nrLog("====================================")
+    else
+        nrLog("Logs overflow, discard log")
+    end if
+end function
+
 '=========================='
 ' Public Internal Functions '
 '=========================='
@@ -272,11 +301,6 @@ function nrLog(msg as Dynamic) as Void
             print msg
         end if
     end if
-end function
-
-function nrExtractEvent() as Object
-    res = m.nrEventArray.Pop()
-    return res
 end function
 
 function nrExtractAllEvents() as Object
@@ -302,6 +326,17 @@ function nrRecordEvent(event as Object) as Void
     else
         nrLog("Events overflow, discard event")
     end if
+end function
+
+function nrExtractAllLogs() as Object
+    logs = m.nrLogArray
+    m.nrLogArray = []
+    return logs
+end function
+
+function nrGetBackLogs(logs as Object) as Void
+    nrLog(["------> nrGetBackLogs, log size = ", logs.Count()])
+    m.nrLogArray.Append(logs)
 end function
 
 function nrProcessSystemEvent(i as Object) as Boolean
@@ -522,6 +557,22 @@ function nrSendBandwidth(info as Object) as Void
         "bandwidth": info["bandwidth"]
     }
     nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
+end function
+
+function nrEventApiUrl() as String
+    if m.nrRegion = "US"
+        return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
+    else
+        return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
+    end if
+end function
+
+function nrLogApiUrl() as String
+    if m.nrRegion = "US"
+        return "https://log-api.newrelic.com/log/v1"
+    else
+        return "https://log-api.eu.newrelic.com/log/v1"
+    end if
 end function
 
 '================='
