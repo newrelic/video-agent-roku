@@ -217,6 +217,5 @@ end function
 ' @param logtype Log type.
 ' @param fields Additonal fields to be included in the log.
 function nrSendLog(nr as Object, message as String, logtype as String, fields = invalid as Object) as Void
-    print "nrSendLog", message, logtype, fields
     nr.callFunc("nrSendLog", message, logtype, fields)
 end function

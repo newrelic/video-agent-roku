@@ -27,6 +27,8 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrRegion = region
     m.nrSessionId = nrGenerateId()
     m.nrEventArray = []
+    m.nrEventArrayIndex = 0
+    m.nrEventArrayK = 10 'TODO: set K = 500
     m.nrLogArray = []
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
@@ -191,7 +193,7 @@ end function
 function nrSetHarvestTime(seconds as Integer) as Void
     if seconds < 60 then seconds = 60
     m.nrHarvestTimer.duration = seconds
-    print "Harvest time = ", m.nrHarvestTimer.duration
+    nrLog(["Harvest time = ", m.nrHarvestTimer.duration])
 end function
 
 function nrForceHarvest() as Void
@@ -272,6 +274,7 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
     if fields <> invalid then lg.Append(fields)
     lg["timestamp"] = FormatJson(nrTimestamp())
 
+    'TODO: pass though the random sampling system
     if m.nrLogArray.Count() < 500
         m.nrLogArray.Push(lg)
         
@@ -308,34 +311,40 @@ end function
 function nrExtractAllEvents() as Object
     events = m.nrEventArray
     m.nrEventArray = []
+    m.nrEventArrayIndex = 0
     return events
 end function
 
 function nrGetBackEvents(events as Object) as Void
     nrLog(["------> nrGetBackEvents, ev size = ", events.Count()])
-    m.nrEventArray.Append(events)
-end function
-
-function nrRecordEvent(event as Object) as Void
-    if m.nrEventArray.Count() < 500
-        m.nrEventArray.Push(event)
-        
-        nrLog("====================================")
-        nrLog(["RECORD NEW EVENT = ", m.nrEventArray.Peek()])
-        nrLog(["EVENTARRAY SIZE = ", m.nrEventArray.Count()])
-        nrLog("====================================")
-        'nrLogVideoInfo()
+    if events.Count() + m.nrEventArray.Count() > m.nrEventArrayK
+        ' Buffer size exceeded, we have to resample
+        tmpBuffer = m.nrEventArray
+        m.nrEventArray = events
+        m.nrEventArrayIndex = events.Count()
+        for each sample in tmpBuffer
+            m.nrEventArrayIndex = nrAddSample(sample, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
+        end for
+        nrLog(["RESERVOIR RESAMPLED AFTER GETBACK. ARRAY SIZE = ", m.nrEventArray.Count()])
     else
-        nrLog("Events overflow, discard event")
+        nrLog("GETBACK JUST APPEND ARRAY AS IS")
+        m.nrEventArray.Append(events)
     end if
 end function
 
+function nrRecordEvent(event as Object) as Void
+    nrLog(["RECORD NEW EVENT = ", event])
+    m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
+end function
+
+'TODO: pass though the random sampling system
 function nrExtractAllLogs() as Object
     logs = m.nrLogArray
     m.nrLogArray = []
     return logs
 end function
 
+'TODO: pass though the random sampling system
 function nrGetBackLogs(logs as Object) as Void
     nrLog(["------> nrGetBackLogs, log size = ", logs.Count()])
     m.nrLogArray.Append(logs)
@@ -977,6 +986,23 @@ function nrCalculateTotalPlaytime() as Integer
     else
         return m.nrTotalPlaytime
     end if
+end function
+
+' Implement simple reservoir sampling (Algorithm R)
+function nrAddSample(sample as Object, buffer as Object, i as Integer, k as Integer) as Integer
+    if i < k
+        buffer.Push(sample)
+        nrLog(["RESERVOIR BUFFER SIZE AFTER PUSH = ", buffer.Count()])
+    else
+        j = Rnd(i) - 1
+        if j < k
+            buffer[j] = sample
+            nrLog(["RESERVOIR: OVERWRITE SAMPLE AT = ", j])
+        else
+            nrLog("RESERVOIR: DISCARD SAMPLE")
+        end if
+    end if
+    return i + 1
 end function
 
 '================================'
