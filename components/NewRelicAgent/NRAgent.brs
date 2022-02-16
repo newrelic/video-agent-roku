@@ -189,7 +189,9 @@ function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as 
 end function
 
 function nrSetHarvestTime(seconds as Integer) as Void
+    if seconds < 60 then seconds = 60
     m.nrHarvestTimer.duration = seconds
+    print "Harvest time = ", m.nrHarvestTimer.duration
 end function
 
 function nrForceHarvest() as Void

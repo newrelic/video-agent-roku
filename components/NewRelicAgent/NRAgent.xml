@@ -46,7 +46,7 @@
 
 	<children>
         <Timer id="nrHeartbeatTimer" repeat="true" duration="30"/>
-		<Timer id="nrHarvestTimer" repeat="true" duration="10"/>
+		<Timer id="nrHarvestTimer" repeat="true" duration="300"/>
 		<com.newrelic.NRTask id="NRTask"/>
 	</children>
 </component>

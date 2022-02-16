@@ -189,7 +189,7 @@ end function
 ' Set harvest time, the time the events are buffered before being sent to Insights.
 '
 ' @param nr New Relic Agent object.
-' @param time Time in seconds.
+' @param time Time in seconds (min 60).
 function nrSetHarvestTime(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTime", time)
 end function

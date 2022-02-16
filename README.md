@@ -485,7 +485,7 @@ Example:
 nrSetHarvestTime(nr as Object, time as Integer) as Void
 
 Description:
-	Set harvest time, the time the events are buffered before being sent to New Relic.
+	Set harvest time, the time the events are buffered before being sent to New Relic. Min value is 60.
 
 Arguments:
 	nr: New Relic Agent object.
