@@ -28,8 +28,10 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrSessionId = nrGenerateId()
     m.nrEventArray = []
     m.nrEventArrayIndex = 0
-    m.nrEventArrayK = 10 'TODO: set K = 500
+    m.nrEventArrayK = 5 'TODO: set K = 400
     m.nrLogArray = []
+    m.nrLogArrayIndex = 0
+    m.nrLogArrayK = 5 'TODO: set K = 400
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
@@ -275,17 +277,9 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
     lg["timestamp"] = FormatJson(nrTimestamp())
     lg["newRelicAgentSource"] = "roku"
 
-    'TODO: pass though the random sampling system
-    if m.nrLogArray.Count() < 500
-        m.nrLogArray.Push(lg)
-        
-        nrLog("====================================")
-        nrLog(["RECORD NEW LOG = ", m.nrLogArray.Peek()])
-        nrLog(["LOGARRAY SIZE = ", m.nrLogArray.Count()])
-        nrLog("====================================")
-    else
-        nrLog("Logs overflow, discard log")
-    end if
+    nrLog(["RECORD NEW LOG = ", lg])
+
+    m.nrLogArrayIndex = nrAddSample(lg, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
 end function
 
 '=========================='
@@ -318,19 +312,7 @@ end function
 
 function nrGetBackEvents(events as Object) as Void
     nrLog(["------> nrGetBackEvents, ev size = ", events.Count()])
-    if events.Count() + m.nrEventArray.Count() > m.nrEventArrayK
-        ' Buffer size exceeded, we have to resample
-        tmpBuffer = m.nrEventArray
-        m.nrEventArray = events
-        m.nrEventArrayIndex = events.Count()
-        for each sample in tmpBuffer
-            m.nrEventArrayIndex = nrAddSample(sample, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
-        end for
-        nrLog(["RESERVOIR RESAMPLED AFTER GETBACK. ARRAY SIZE = ", m.nrEventArray.Count()])
-    else
-        nrLog("GETBACK JUST APPEND ARRAY AS IS")
-        m.nrEventArray.Append(events)
-    end if
+    m.nrEventArrayIndex = nrGetBackSamples(events, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
 end function
 
 function nrRecordEvent(event as Object) as Void
@@ -338,17 +320,16 @@ function nrRecordEvent(event as Object) as Void
     m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
 end function
 
-'TODO: pass though the random sampling system
 function nrExtractAllLogs() as Object
     logs = m.nrLogArray
     m.nrLogArray = []
+    m.nrLogArrayIndex = 0
     return logs
 end function
 
-'TODO: pass though the random sampling system
 function nrGetBackLogs(logs as Object) as Void
     nrLog(["------> nrGetBackLogs, log size = ", logs.Count()])
-    m.nrLogArray.Append(logs)
+    m.nrLogArrayIndex = nrGetBackSamples(logs, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
 end function
 
 function nrProcessSystemEvent(i as Object) as Boolean
@@ -1004,6 +985,29 @@ function nrAddSample(sample as Object, buffer as Object, i as Integer, k as Inte
         end if
     end if
     return i + 1
+end function
+
+' Get back samples after an error and resample buffer if necessary
+function nrGetBackSamples(samples as Object, buffer as Object, i as Integer, k as Integer) as Integer
+    if samples.Count() + buffer.Count() > k
+        ' Buffer size exceeded, we have to resample
+        tmpBuffer = []
+        tmpBuffer.Append(buffer)
+        buffer.Clear()
+        i = 0
+        for each s in samples
+            i = nrAddSample(s, buffer, i, k)
+        end for
+        for each s in tmpBuffer
+            i = nrAddSample(s, buffer, i, k)
+        end for
+        nrLog(["nrGetBackSamples: RESERVOIR RESAMPLED. ARRAY SIZE = ", buffer.Count()])
+    else
+        nrLog("nrGetBackSamples: JUST APPEND ARRAY AS IS")
+        buffer.Append(samples)
+        i = buffer.Count()
+    end if
+    return i
 end function
 
 '================================'
