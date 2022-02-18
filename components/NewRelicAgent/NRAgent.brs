@@ -273,6 +273,7 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
     if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
     if fields <> invalid then lg.Append(fields)
     lg["timestamp"] = FormatJson(nrTimestamp())
+    lg["newRelicAgentSource"] = "roku"
 
     'TODO: pass though the random sampling system
     if m.nrLogArray.Count() < 500
