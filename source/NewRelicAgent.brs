@@ -194,11 +194,41 @@ function nrSetHarvestTime(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTime", time)
 end function
 
+' Set harvest time for events, the time the events are buffered before being sent to Insights.
+'
+' @param nr New Relic Agent object.
+' @param time Time in seconds (min 60).
+function nrSetHarvestTimeEvents(nr as Object, time as Integer) as Void
+    nr.callFunc("nrSetHarvestTimeEvents", time)
+end function
+
+' Set harvest time for logs, the time the events are buffered before being sent to Insights.
+'
+' @param nr New Relic Agent object.
+' @param time Time in seconds (min 60).
+function nrSetHarvestTimeLogs(nr as Object, time as Integer) as Void
+    nr.callFunc("nrSetHarvestTimeLogs", time)
+end function
+
 ' Do harvest immediately. It doesn't reset the harvest timer.
 '
 ' @param nr New Relic Agent object.
 function nrForceHarvest(nr as Object) as Void
     nr.callFunc("nrForceHarvest")
+end function
+
+' Do harvest events immediately. It doesn't reset the harvest timer.
+'
+' @param nr New Relic Agent object.
+function nrForceHarvestEvents(nr as Object) as Void
+    nr.callFunc("nrForceHarvestEvents")
+end function
+
+' Do harvest logs immediately. It doesn't reset the harvest timer.
+'
+' @param nr New Relic Agent object.
+function nrForceHarvestLogs(nr as Object) as Void
+    nr.callFunc("nrForceHarvestLogs")
 end function
 
 ' Track an event from Roku Advertising Framework

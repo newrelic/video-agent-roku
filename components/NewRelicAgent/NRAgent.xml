@@ -9,7 +9,7 @@
 '**********************************************************
 -->
 
-<component name="com.newrelic.NRAgent" extends="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+<component name="com.newrelic.NRAgent" extends="Node">
 
 	<interface>
 		<!-- Properties -->
@@ -27,26 +27,35 @@
         <function name="nrSetCustomAttribute"/>
         <function name="nrSetCustomAttributeList"/>
         <function name="nrSetHarvestTime"/>
+        <function name="nrSetHarvestTimeEvents"/>
+        <function name="nrSetHarvestTimeLogs"/>
         <function name="nrForceHarvest"/>
+        <function name="nrForceHarvestEvents"/>
+        <function name="nrForceHarvestLogs"/>
         <function name="nrTrackRAF"/>
         <function name="nrSendLog"/>
         <!-- Internal Methods (not wrapped, but used from the outside by some internal components) -->
         <function name="nrActivateLogging"/>
         <function name="nrLog"/>
-        <function name="nrExtractAllEvents"/>
-        <function name="nrGetBackEvents"/>
+        <function name="nrExtractAllSamples"/>
+        <function name="nrGetBackAllSamples"/>
         <function name="nrRecordEvent"/>
         <function name="nrProcessSystemEvent"/>
         <function name="nrAddToTotalAdPlaytime"/>
-        <function name="nrExtractAllLogs"/>
-        <function name="nrGetBackLogs"/>
+        <function name="nrReqErrorTooManyReq"/>
+        <function name="nrReqErrorTooLarge"/>
+        <function name="nrReqOk"/>
     </interface>
 
 	<script type="text/brightscript" uri="NRAgent.brs"/>
 
 	<children>
         <Timer id="nrHeartbeatTimer" repeat="true" duration="30"/>
-		<Timer id="nrHarvestTimer" repeat="true" duration="300"/>
-		<com.newrelic.NRTask id="NRTask"/>
+        <!-- TODO: SET DEFAULT HARVEST TIME TO 300 -->
+		<Timer id="nrHarvestTimerEvents" repeat="true" duration="10"/>
+        <!-- TODO: SET DEFAULT HARVEST TIME TO 300 -->
+        <Timer id="nrHarvestTimerLogs" repeat="true" duration="10"/>
+		<com.newrelic.NRTask id="NRTaskEvents"/>
+        <com.newrelic.NRTask id="NRTaskLogs"/>
 	</children>
 </component>

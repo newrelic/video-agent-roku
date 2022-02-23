@@ -28,10 +28,16 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrSessionId = nrGenerateId()
     m.nrEventArray = []
     m.nrEventArrayIndex = 0
-    m.nrEventArrayK = 5 'TODO: set K = 400
+    m.nrEventArrayNormalK = 5 'TODO: set K = 400
+    m.nrEventArrayMinK = 1 'TODO: set Min K = 40
+    m.nrEventArrayDeltaK = 1 'TODO: set Delta K = 40
+    m.nrEventArrayK = m.nrEventArrayNormalK
     m.nrLogArray = []
     m.nrLogArrayIndex = 0
-    m.nrLogArrayK = 5 'TODO: set K = 400
+    m.nrLogArrayNormalK = 5 'TODO: set K = 400
+    m.nrLogArrayMinK = 1 'TODO: set Min K = 40
+    m.nrLogArrayDeltaK = 1 'TODO: set Delta K = 40
+    m.nrLogArrayK = m.nrLogArrayNormalK
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
@@ -46,18 +52,26 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrTimer = CreateObject("roTimespan")
     m.nrTimer.Mark()
 
-    'Create and configure NRTask
-    m.bgTask = m.top.findNode("NRTask")
-    m.bgTask.setField("apiKey", m.nrInsightsApiKey)
+    'Create and configure tasks
+    m.bgTaskEvents = m.top.findNode("NRTaskEvents")
+    m.bgTaskEvents.setField("apiKey", m.nrInsightsApiKey)
     m.eventApiUrl = box(nrEventApiUrl())
-    m.bgTask.setField("eventApiUrl", m.eventApiUrl)
+    m.bgTaskEvents.setField("eventApiUrl", m.eventApiUrl)
+    m.bgTaskEvents.sampleType = "event"
+    
+    m.bgTaskLogs = m.top.findNode("NRTaskLogs")
+    m.bgTaskLogs.setField("apiKey", m.nrInsightsApiKey)
     m.logApiUrl = box(nrLogApiUrl())
-    m.bgTask.setField("logApiUrl", m.logApiUrl)
+    m.bgTaskLogs.setField("logApiUrl", m.logApiUrl)
+    m.bgTaskLogs.sampleType = "log"
 
     'Init harvest timer
-    m.nrHarvestTimer = m.top.findNode("nrHarvestTimer")
-    m.nrHarvestTimer.ObserveField("fire", "nrHarvestTimerHandler")
-    m.nrHarvestTimer.control = "start"
+    m.nrHarvestTimerEvents = m.top.findNode("nrHarvestTimerEvents")
+    m.nrHarvestTimerEvents.ObserveField("fire", "nrHarvestTimerHandlerEvents")
+    m.nrHarvestTimerEvents.control = "start"
+    m.nrHarvestTimerLogs = m.top.findNode("nrHarvestTimerLogs")
+    m.nrHarvestTimerLogs.ObserveField("fire", "nrHarvestTimerHandlerLogs")
+    m.nrHarvestTimerLogs.control = "start"
     
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
@@ -193,13 +207,33 @@ function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as 
 end function
 
 function nrSetHarvestTime(seconds as Integer) as Void
+    nrSetHarvestTimeEvents(seconds)
+    nrSetHarvestTimeLogs(seconds)
+end function
+
+function nrSetHarvestTimeEvents(seconds as Integer) as Void
     if seconds < 60 then seconds = 60
-    m.nrHarvestTimer.duration = seconds
-    nrLog(["Harvest time = ", m.nrHarvestTimer.duration])
+    m.nrHarvestTimerEvents.duration = seconds
+    nrLog(["Harvest time events = ", seconds])
+end function
+
+function nrSetHarvestTimeLogs(seconds as Integer) as Void
+    if seconds < 60 then seconds = 60
+    m.nrHarvestTimerLogs.duration = seconds
+    nrLog(["Harvest time logs = ", seconds])
 end function
 
 function nrForceHarvest() as Void
-    nrHarvestTimerHandler()
+    nrHarvestTimerHandlerEvents()
+    nrHarvestTimerHandlerLogs()
+end function
+
+function nrForceHarvestEvents() as Void
+    nrHarvestTimerHandlerEvents()
+end function
+
+function nrForceHarvestLogs() as Void
+    nrHarvestTimerHandlerLogs()
 end function
 
 'Roku Advertising Framework tracking
@@ -303,33 +337,25 @@ function nrLog(msg as Dynamic) as Void
     end if
 end function
 
-function nrExtractAllEvents() as Object
-    events = m.nrEventArray
-    m.nrEventArray = []
-    m.nrEventArrayIndex = 0
-    return events
+function nrExtractAllSamples(sampleType as String) as Object
+    if sampleType = "event"
+        return nrExtractAllEvents()
+    else if sampleType = "log"
+        return nrExtractAllLogs()
+    end if
 end function
 
-function nrGetBackEvents(events as Object) as Void
-    nrLog(["------> nrGetBackEvents, ev size = ", events.Count()])
-    m.nrEventArrayIndex = nrGetBackSamples(events, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
+function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
+    if sampleType = "event"
+        nrGetBackEvents(samples)
+    else if sampleType = "log"
+        nrGetBackLogs(samples)
+    end if
 end function
 
 function nrRecordEvent(event as Object) as Void
     nrLog(["RECORD NEW EVENT = ", event])
     m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
-end function
-
-function nrExtractAllLogs() as Object
-    logs = m.nrLogArray
-    m.nrLogArray = []
-    m.nrLogArrayIndex = 0
-    return logs
-end function
-
-function nrGetBackLogs(logs as Object) as Void
-    nrLog(["------> nrGetBackLogs, log size = ", logs.Count()])
-    m.nrLogArrayIndex = nrGetBackSamples(logs, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
 end function
 
 function nrProcessSystemEvent(i as Object) as Boolean
@@ -351,6 +377,24 @@ end function
 
 function nrAddToTotalAdPlaytime(adPlaytime as Integer) as Void
     m.nrTotalAdPlaytime = m.nrTotalAdPlaytime + adPlaytime
+end function
+
+function nrReqErrorTooManyReq(sampleType as String) as Void
+    'TODO: error too many requests, increase harvest time temporarly (until next harvest cycle)
+    ' - IF currentHarvestTime < maxHarvestTime THEN currentHarvestTime += DELTA_T
+    nrLog("NR API ERROR, TOO MANY REQUESTS")
+end function
+
+function nrReqErrorTooLarge(sampleType as String) as Void
+    'TODO: error content too large, decrease buffer K temporarly (until next harvest cycle)
+    ' - IF currentK > minK THEN currentK -= DELTA_K
+    nrLog("NR API ERROR, BODY TOO LARGE")
+end function
+
+function nrReqOk(sampleType as String) as Void
+    ' TODO: IF currentHarvestTime > normalHarvestTime THEN currentHarvestTime -= DELTA_T
+    ' TODO: IF currentK < normalK THEN currentK += DELTA_K
+    nrLog("NR API OK")
 end function
 
 '=================='
@@ -1010,6 +1054,30 @@ function nrGetBackSamples(samples as Object, buffer as Object, i as Integer, k a
     return i
 end function
 
+function nrExtractAllEvents() as Object
+    events = m.nrEventArray
+    m.nrEventArray = []
+    m.nrEventArrayIndex = 0
+    return events
+end function
+
+function nrGetBackEvents(events as Object) as Void
+    nrLog(["------> nrGetBackEvents, ev size = ", events.Count()])
+    m.nrEventArrayIndex = nrGetBackSamples(events, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
+end function
+
+function nrExtractAllLogs() as Object
+    logs = m.nrLogArray
+    m.nrLogArray = []
+    m.nrLogArrayIndex = 0
+    return logs
+end function
+
+function nrGetBackLogs(logs as Object) as Void
+    nrLog(["------> nrGetBackLogs, log size = ", logs.Count()])
+    m.nrLogArrayIndex = nrGetBackSamples(logs, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
+end function
+
 '================================'
 ' Observers, States and Handlers '
 '================================'
@@ -1133,17 +1201,27 @@ function nrHeartbeatHandler() as Void
     end if
 end function
 
-function nrHarvestTimerHandler() as Void
-    nrLog("--- nrHarvestTimerHandler ---")
+function nrHarvestTimerHandlerEvents() as Void
+    nrLog("--- nrHarvestTimerHandlerEvents ---")
     
-    'NRTask still running
-    if LCase(m.bgTask.state) = "run"
-        nrLog("NRTask still running, abort")
+    if LCase(m.bgTaskEvents.state) = "run"
+        nrLog("NRTaskEvents still running, abort")
         return
     end if
     
     nrProcessGroupedEvents()
-    m.bgTask.control = "RUN"
+    m.bgTaskEvents.control = "RUN"
+end function
+
+function nrHarvestTimerHandlerLogs() as Void
+    nrLog("--- nrHarvestTimerHandlerLogs ---")
+    
+    if LCase(m.bgTaskLogs.state) = "run"
+        nrLog("NRTaskLogs still running, abort")
+        return
+    end if
+    
+    m.bgTaskLogs.control = "RUN"
 end function
 
 '=================='

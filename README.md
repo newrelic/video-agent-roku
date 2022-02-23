@@ -485,7 +485,7 @@ Example:
 nrSetHarvestTime(nr as Object, time as Integer) as Void
 
 Description:
-	Set harvest time, the time the events are buffered before being sent to New Relic. Min value is 60.
+	Set harvest time, the time the samples are buffered before being sent to New Relic for both Events and Logs. Min value is 60.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -499,13 +499,53 @@ Example:
 	nrSetHarvestTime(m.nr, 60)
 ```
 
+**nrSetHarvestTimeEvents**
+
+```
+nrSetHarvestTimeEvents(nr as Object, time as Integer) as Void
+
+Description:
+	Set harvest time for Events, the time the events are buffered before being sent to New Relic. Min value is 60.
+
+Arguments:
+	nr: New Relic Agent object.
+	time: Time in seconds.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrSetHarvestTimeEvents(m.nr, 60)
+```
+
+**nrSetHarvestTimeLogs**
+
+```
+nrSetHarvestTimeLogs(nr as Object, time as Integer) as Void
+
+Description:
+	Set harvest time for Logs, the time the logs are buffered before being sent to New Relic. Min value is 60.
+
+Arguments:
+	nr: New Relic Agent object.
+	time: Time in seconds.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrSetHarvestTimeLogs(m.nr, 60)
+```
+
 **nrForceHarvest**
 
 ```
 nrForceHarvest(nr as Object) as Void
 
 Description:
-	Do harvest immediately. It doesn't reset the harvest timer.
+	Do harvest events and logs immediately. It doesn't reset the harvest timer.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -516,6 +556,44 @@ Return:
 Example:
 
 	nrForceHarvest(m.nr)
+```
+
+**nrForceHarvestEvents**
+
+```
+nrForceHarvestEvents(nr as Object) as Void
+
+Description:
+	Do harvest events immediately. It doesn't reset the harvest timer.
+
+Arguments:
+	nr: New Relic Agent object.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrForceHarvestEvents(m.nr)
+```
+
+**nrForceHarvestLogs**
+
+```
+nrForceHarvestLogs(nr as Object) as Void
+
+Description:
+	Do harvest logs immediately. It doesn't reset the harvest timer.
+
+Arguments:
+	nr: New Relic Agent object.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrForceHarvestLogs(m.nr)
 ```
 
 **nrUpdateConfig**
