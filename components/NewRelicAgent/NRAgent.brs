@@ -32,12 +32,18 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrEventArrayMinK = 1 'TODO: set Min K = 40
     m.nrEventArrayDeltaK = 1 'TODO: set Delta K = 40
     m.nrEventArrayK = m.nrEventArrayNormalK
+    m.nrEventHarvestTimeNormal = 10 'TODO: set to 60
+    m.nrEventHarvestTimeMax = 1 'TODO: set to 10
+    m.nrEventHarvestTimeDelta = 1 'TODO: set to 10
     m.nrLogArray = []
     m.nrLogArrayIndex = 0
     m.nrLogArrayNormalK = 5 'TODO: set K = 400
     m.nrLogArrayMinK = 1 'TODO: set Min K = 40
     m.nrLogArrayDeltaK = 1 'TODO: set Delta K = 40
     m.nrLogArrayK = m.nrLogArrayNormalK
+    m.nrLogHarvestTimeNormal = 10 'TODO: set to 60
+    m.nrLogHarvestTimeMax = 1 'TODO: set to 10
+    m.nrLogHarvestTimeDelta = 1 'TODO: set to 10
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
@@ -68,9 +74,11 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     'Init harvest timer
     m.nrHarvestTimerEvents = m.top.findNode("nrHarvestTimerEvents")
     m.nrHarvestTimerEvents.ObserveField("fire", "nrHarvestTimerHandlerEvents")
+    m.nrHarvestTimerEvents.duration = m.nrEventHarvestTimeNormal
     m.nrHarvestTimerEvents.control = "start"
     m.nrHarvestTimerLogs = m.top.findNode("nrHarvestTimerLogs")
     m.nrHarvestTimerLogs.ObserveField("fire", "nrHarvestTimerHandlerLogs")
+    m.nrHarvestTimerLogs.duration = m.nrLogHarvestTimeNormal
     m.nrHarvestTimerLogs.control = "start"
     
     'Ad tracker states
@@ -213,12 +221,14 @@ end function
 
 function nrSetHarvestTimeEvents(seconds as Integer) as Void
     if seconds < 60 then seconds = 60
+    m.nrEventHarvestTimeNormal = seconds
     m.nrHarvestTimerEvents.duration = seconds
     nrLog(["Harvest time events = ", seconds])
 end function
 
 function nrSetHarvestTimeLogs(seconds as Integer) as Void
     if seconds < 60 then seconds = 60
+    m.nrLogHarvestTimeNormal = seconds
     m.nrHarvestTimerLogs.duration = seconds
     nrLog(["Harvest time logs = ", seconds])
 end function
@@ -380,21 +390,50 @@ function nrAddToTotalAdPlaytime(adPlaytime as Integer) as Void
 end function
 
 function nrReqErrorTooManyReq(sampleType as String) as Void
-    'TODO: error too many requests, increase harvest time temporarly (until next harvest cycle)
-    ' - IF currentHarvestTime < maxHarvestTime THEN currentHarvestTime += DELTA_T
+    ' Error too many requests, increase harvest time
     nrLog("NR API ERROR, TOO MANY REQUESTS")
+    if sampleType = "event"
+        if m.nrHarvestTimerEvents.duration < m.nrEventHarvestTimeMax
+            m.nrHarvestTimerEvents.duration = m.nrHarvestTimerEvents.duration + m.nrEventHarvestTimeDelta
+        end if
+    else if sampleType = "log"
+        if m.nrHarvestTimerLogs.duration < m.nrLogHarvestTimeMax
+            m.nrHarvestTimerLogs.duration = m.nrHarvestTimerLogs.duration + m.nrLogHarvestTimeDelta
+        end if
+    end if
 end function
 
 function nrReqErrorTooLarge(sampleType as String) as Void
-    'TODO: error content too large, decrease buffer K temporarly (until next harvest cycle)
-    ' - IF currentK > minK THEN currentK -= DELTA_K
+    ' Error content too large, decrease buffer K temporarly (until next harvest cycle)
     nrLog("NR API ERROR, BODY TOO LARGE")
+    if sampleType = "event"
+        if m.nrEventArrayK > m.nrEventArrayMinK
+            m.nrEventArrayK = m.nrEventArrayK - m.nrEventArrayDeltaK
+        end if
+    else if sampleType = "log"
+        if m.nrLogArrayK > m.nrLogArrayMinK
+            m.nrLogArrayK = m.nrLogArrayK - m.nrLogArrayDeltaK
+        end if
+    end if
 end function
 
 function nrReqOk(sampleType as String) as Void
-    ' TODO: IF currentHarvestTime > normalHarvestTime THEN currentHarvestTime -= DELTA_T
-    ' TODO: IF currentK < normalK THEN currentK += DELTA_K
     nrLog("NR API OK")
+    if sampleType = "event"
+        if m.nrHarvestTimerEvents.duration > m.nrEventHarvestTimeNormal
+            m.nrHarvestTimerEvents.duration = m.nrHarvestTimerEvents.duration - m.nrEventHarvestTimeDelta
+        end if
+        if m.nrEventArrayK < m.nrEventArrayNormalK
+            m.nrEventArrayK = m.nrEventArrayK + m.nrEventArrayDeltaK
+        end if
+    else if sampleType = "log"
+        if m.nrHarvestTimerLogs.duration > m.nrLogHarvestTimeNormal
+            m.nrHarvestTimerLogs.duration = m.nrHarvestTimerLogs.duration - m.nrLogHarvestTimeDelta
+        end if
+        if m.nrLogArrayK < m.nrLogArrayNormalK
+            m.nrLogArrayK = m.nrLogArrayK + m.nrLogArrayDeltaK
+        end if
+    end if
 end function
 
 '=================='
