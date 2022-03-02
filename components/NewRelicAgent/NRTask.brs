@@ -26,9 +26,6 @@ function nrPushSamples(samples as Object, endpoint as String) as Object
     
     msg = wait(10000, rport)
     if type(msg) = "roUrlEvent" then
-        'm.nr.callFunc("nrLog", "Sleeping for a while...")
-        'Sleep(10000)
-        'm.nr.callFunc("nrLog", "Done, return from request")
         return msg.GetResponseCode()
     else
         'Timeout, cancel transfer and return error code

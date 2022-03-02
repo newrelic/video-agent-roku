@@ -51,11 +51,10 @@
 
 	<children>
         <Timer id="nrHeartbeatTimer" repeat="true" duration="30"/>
-        <!-- TODO: SET DEFAULT HARVEST TIME TO 300 -->
-		<Timer id="nrHarvestTimerEvents" repeat="true" duration="10"/>
-        <!-- TODO: SET DEFAULT HARVEST TIME TO 300 -->
-        <Timer id="nrHarvestTimerLogs" repeat="true" duration="10"/>
+        <Timer id="nrGroupingTimer" repeat="true" duration="10"/>
 		<com.newrelic.NRTask id="NRTaskEvents"/>
+		<Timer id="nrHarvestTimerEvents" repeat="true"/>
         <com.newrelic.NRTask id="NRTaskLogs"/>
+        <Timer id="nrHarvestTimerLogs" repeat="true"/>
 	</children>
 </component>

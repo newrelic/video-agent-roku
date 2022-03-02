@@ -13,7 +13,7 @@ sub init()
     m.nrRegion = "US"
     print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
-    print "   Copyright 2019-2021 New Relic Inc. All Rights Reserved."
+    print "   Copyright 2019-2022 New Relic Inc. All Rights Reserved."
     print "************************************************************"
 end sub
 
@@ -28,18 +28,18 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrSessionId = nrGenerateId()
     m.nrEventArray = []
     m.nrEventArrayIndex = 0
-    m.nrEventArrayNormalK = 5 'TODO: set K = 400
-    m.nrEventArrayMinK = 1 'TODO: set Min K = 40
-    m.nrEventArrayDeltaK = 1 'TODO: set Delta K = 40
+    m.nrEventArrayNormalK = 400
+    m.nrEventArrayMinK = 40
+    m.nrEventArrayDeltaK = 40
     m.nrEventArrayK = m.nrEventArrayNormalK
     m.nrEventHarvestTimeNormal = 10 'TODO: set to 60
     m.nrEventHarvestTimeMax = 1 'TODO: set to 10
     m.nrEventHarvestTimeDelta = 1 'TODO: set to 10
     m.nrLogArray = []
     m.nrLogArrayIndex = 0
-    m.nrLogArrayNormalK = 5 'TODO: set K = 400
-    m.nrLogArrayMinK = 1 'TODO: set Min K = 40
-    m.nrLogArrayDeltaK = 1 'TODO: set Delta K = 40
+    m.nrLogArrayNormalK = 400
+    m.nrLogArrayMinK = 40
+    m.nrLogArrayDeltaK = 40
     m.nrLogArrayK = m.nrLogArrayNormalK
     m.nrLogHarvestTimeNormal = 10 'TODO: set to 60
     m.nrLogHarvestTimeMax = 1 'TODO: set to 10
@@ -80,6 +80,11 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrHarvestTimerLogs.ObserveField("fire", "nrHarvestTimerHandlerLogs")
     m.nrHarvestTimerLogs.duration = m.nrLogHarvestTimeNormal
     m.nrHarvestTimerLogs.control = "start"
+
+    'Init grouping timer
+    m.nrGroupingTimer = m.top.findNode("nrGroupingTimer")
+    m.nrGroupingTimer.observeFieldScoped("fire", "nrGroupingHandler")
+    m.nrGroupingTimer.control = "start"
     
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
@@ -526,7 +531,7 @@ end function
 
 function nrConvertGroupsToEvents(group as Object) as Void
     for each item in group.Items()
-        item.value["matchUrl"] = item.key
+        item.value["matchPatern"] = item.key
 
         'Calculate averages
         if item.value["actionName"] = "HTTP_COMPLETE"
@@ -556,27 +561,24 @@ function nrAddCommonHTTPAttr(info as Object) as Object
 end function
 
 function nrGroupNewEvent(ev as Object, actionName as String) as Void
-    if ev["Url"] = invalid then return
-    urlKey = ev["Url"]
-    matchUrl = nrParseVideoStreamUrl(urlKey)
-    if matchUrl <> "" then urlKey = matchUrl
+    matchPatern = nrParseVideoStreamUrl(ev)
     ev["actionName"] = actionName
     
     if actionName = "HTTP_COMPLETE"
-        m.nrEventGroupsComplete = nrGroupMergeEvent(urlKey, m.nrEventGroupsComplete, ev)
+        m.nrEventGroupsComplete = nrGroupMergeEvent(matchPatern, m.nrEventGroupsComplete, ev)
     else if actionName = "HTTP_CONNECT"
-        m.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.nrEventGroupsConnect, ev)
+        m.nrEventGroupsConnect = nrGroupMergeEvent(matchPatern, m.nrEventGroupsConnect, ev)
     end if
 end function
 
-function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as Object
-    evGroup = group[urlKey]
+function nrGroupMergeEvent(matchPatern as String, group as Object, ev as Object) as Object
+    evGroup = group[matchPatern]
     if evGroup = invalid
         'Create new group from event
         ev["counter"] = 1
         ev["initialTimestamp"] = nrTimestamp()
         ev["finalTimestamp"] = ev["initialTimestamp"]
-        group[urlKey] = ev
+        group[matchPatern] = ev
     else
         'Add new event to existing group
         evGroup["counter"] = evGroup["counter"] + 1
@@ -596,7 +598,7 @@ function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as O
             evGroup["firstByteTime"] = evGroup["firstByteTime"] + ev["firstByteTime"]
         end if 
         
-        group[urlKey] = evGroup
+        group[matchPatern] = evGroup
     end if
     return group
 end function
@@ -950,21 +952,17 @@ function isAction(name as String, action as String) as Boolean
     return r.isMatch(action)
 end function
 
-function nrParseVideoStreamUrl(url as String) as String
+function nrParseVideoStreamUrl(ev as Object) as String
+    if ev["Url"] = invalid then return ""
+    url = ev["Url"]
     r = CreateObject("roRegex", "\/\/|\/", "")
     arr = r.Split(url)
     
-    if arr.Count() = 0 then return ""
+    if arr.Count() < 2 then return ""
     if arr[0] <> "http:" and arr[0] <> "https:" then return ""
-    
-    lastItem = arr[arr.Count() - 1]
-    r = CreateObject("roRegex", "^\w+\.\w+$", "")
-    
-    if r.IsMatch(lastItem) = false then return ""
-    
-    matchUrl = Left(url, url.Len() - lastItem.Len())
-    
-    return matchUrl
+    if arr[1] = "" then return ""
+    'Return domain part of the URL
+    return arr[1]
 end function
 
 function nrGenerateId() as String
@@ -1248,7 +1246,6 @@ function nrHarvestTimerHandlerEvents() as Void
         return
     end if
     
-    nrProcessGroupedEvents()
     m.bgTaskEvents.control = "RUN"
 end function
 
@@ -1261,6 +1258,12 @@ function nrHarvestTimerHandlerLogs() as Void
     end if
     
     m.bgTaskLogs.control = "RUN"
+end function
+
+function nrGroupingHandler() as Void
+    nrLog("--- nrGroupingHandler ---")
+    
+    nrProcessGroupedEvents()
 end function
 
 '=================='
