@@ -596,6 +596,45 @@ Example:
 	nrForceHarvestLogs(m.nr)
 ```
 
+**nrSetGroupingPatternGenerator**
+
+```
+nrSetGroupingPatternGenerator(nr as Object, callbackNode as Object) as Void
+
+Description:
+	Set pattern generator. This method accepts a Node that must contain a public function called "callback". This callback must return a string, that is used as a pattern to group HTTP_CONNECT and HTTP_COMPLETE events. The pattern generator callback is called every time a HTTP_CONNECT or HTTP_COMPLETE event happens and the raw event is passed as argument to the function.
+
+	It is reccomended to be called immediately or short after the New Relic Agent object is created.
+
+Arguments:
+	nr: New Relic Agent object.
+	func: Pattern generator.
+	
+Return:
+	Nothing.
+		
+Example:
+	'Define a Node that contains the callback
+	<?xml version="1.0" encoding="UTF-8"?>
+	<component name="PatternGen" extends="Node">
+		<interface>
+			<function name="callback"/>
+		</interface>
+		<script type="text/brightscript">
+			<![CDATA[
+				function callback(ev as Object) as String
+					pattern = ... 'do whatever with ev attributes and generate a pattern
+					return pattern
+				end function
+			]]>
+		</script>
+	</component>
+
+	'And use it
+	patgen = createObject("roSGNode", "PatternGen")
+    nrSetGroupingPatternGenerator(m.nr, patgen)
+```
+
 **nrUpdateConfig**
 
 ```
@@ -706,6 +745,7 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `httpCode` | Response code. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR`, `HTTP_RESPONSE` |
 | `method` | HTTP method. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR`, `HTTP_REQUEST ` | 
 | `origUrl` | Original URL of request. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR`, `HTTP_REQUEST`, `HTTP_RESPONSE` |
+| `matchPattern` | Matching pattern used in event grouping. | `HTTP_COMPLETE`, `HTTP_CONNECT` |
 | `status` | Current request status. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR` |
 | `targetIp` | Target IP address of request. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR` |
 | `url` | Actual URL of request. | `HTTP_COMPLETE`, `HTTP_CONNECT`, `HTTP_ERROR` |

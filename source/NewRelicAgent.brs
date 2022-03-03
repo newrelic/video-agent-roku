@@ -231,6 +231,15 @@ function nrForceHarvestLogs(nr as Object) as Void
     nr.callFunc("nrForceHarvestLogs")
 end function
 
+' Set pattern generator. This method accepts a Node that must contain a public function called "callback". This callback must return a string, that is used as a pattern to group HTTP_CONNECT and HTTP_COMPLETE events. The pattern generator callback is called every time a HTTP_CONNECT or HTTP_COMPLETE event happens and the raw event is passed as argument to the function.
+'
+' @param nr New Relic Agent object.
+' @param callbackNode Pattern generator node.
+function nrSetGroupingPatternGenerator(nr as Object, callbackNode as Object) as Void
+    nr.setField("patternGen", callbackNode)
+    nr.callFunc("nrSetGroupingPatternGenerator")
+end function
+
 ' Track an event from Roku Advertising Framework
 '
 ' @param nr New Relic Agent object.

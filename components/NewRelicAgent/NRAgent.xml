@@ -14,6 +14,7 @@
 	<interface>
 		<!-- Properties -->
 		<field id="version" type="string" value="2.0.0"/>
+        <field id="patternGen" type="node"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
         <function name="NewRelicVideoStart"/>
@@ -32,6 +33,7 @@
         <function name="nrForceHarvest"/>
         <function name="nrForceHarvestEvents"/>
         <function name="nrForceHarvestLogs"/>
+        <function name="nrSetGroupingPatternGenerator"/>
         <function name="nrTrackRAF"/>
         <function name="nrSendLog"/>
         <!-- Internal Methods (not wrapped, but used from the outside by some internal components) -->

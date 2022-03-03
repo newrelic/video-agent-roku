@@ -50,6 +50,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrCustomAttributes = CreateObject("roAssociativeArray")
     m.nrLastTimestamp = 0
     m.nrTicks = 0
+    m.nrGroupingPatternCallback = invalid
     
     date = CreateObject("roDateTime")
     m.nrInitTimestamp = date.AsSeconds()
@@ -249,6 +250,10 @@ end function
 
 function nrForceHarvestLogs() as Void
     nrHarvestTimerHandlerLogs()
+end function
+
+function nrSetGroupingPatternGenerator() as Void
+    m.nrGroupingPatternCallback = m.top.patternGen
 end function
 
 'Roku Advertising Framework tracking
@@ -531,7 +536,7 @@ end function
 
 function nrConvertGroupsToEvents(group as Object) as Void
     for each item in group.Items()
-        item.value["matchPatern"] = item.key
+        item.value["matchPattern"] = item.key
 
         'Calculate averages
         if item.value["actionName"] = "HTTP_COMPLETE"
@@ -561,24 +566,29 @@ function nrAddCommonHTTPAttr(info as Object) as Object
 end function
 
 function nrGroupNewEvent(ev as Object, actionName as String) as Void
-    matchPatern = nrParseVideoStreamUrl(ev)
+    if m.nrGroupingPatternCallback <> invalid
+        matchPattern = m.nrGroupingPatternCallback.callFunc("callback", ev)
+    else
+        matchPattern = nrParseVideoStreamUrl(ev)
+    end if
+        
     ev["actionName"] = actionName
     
     if actionName = "HTTP_COMPLETE"
-        m.nrEventGroupsComplete = nrGroupMergeEvent(matchPatern, m.nrEventGroupsComplete, ev)
+        m.nrEventGroupsComplete = nrGroupMergeEvent(matchPattern, m.nrEventGroupsComplete, ev)
     else if actionName = "HTTP_CONNECT"
-        m.nrEventGroupsConnect = nrGroupMergeEvent(matchPatern, m.nrEventGroupsConnect, ev)
+        m.nrEventGroupsConnect = nrGroupMergeEvent(matchPattern, m.nrEventGroupsConnect, ev)
     end if
 end function
 
-function nrGroupMergeEvent(matchPatern as String, group as Object, ev as Object) as Object
-    evGroup = group[matchPatern]
+function nrGroupMergeEvent(matchPattern as String, group as Object, ev as Object) as Object
+    evGroup = group[matchPattern]
     if evGroup = invalid
         'Create new group from event
         ev["counter"] = 1
         ev["initialTimestamp"] = nrTimestamp()
         ev["finalTimestamp"] = ev["initialTimestamp"]
-        group[matchPatern] = ev
+        group[matchPattern] = ev
     else
         'Add new event to existing group
         evGroup["counter"] = evGroup["counter"] + 1
@@ -598,7 +608,7 @@ function nrGroupMergeEvent(matchPatern as String, group as Object, ev as Object)
             evGroup["firstByteTime"] = evGroup["firstByteTime"] + ev["firstByteTime"]
         end if 
         
-        group[matchPatern] = evGroup
+        group[matchPattern] = evGroup
     end if
     return group
 end function
