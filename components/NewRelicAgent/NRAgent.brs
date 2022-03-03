@@ -26,31 +26,37 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrInsightsApiKey = apikey
     m.nrRegion = region
     m.nrSessionId = nrGenerateId()
+
+    'Reservoir sampling for events
     m.nrEventArray = []
     m.nrEventArrayIndex = 0
     m.nrEventArrayNormalK = 400
     m.nrEventArrayMinK = 40
     m.nrEventArrayDeltaK = 40
     m.nrEventArrayK = m.nrEventArrayNormalK
-    m.nrEventHarvestTimeNormal = 10 'TODO: set to 60
-    m.nrEventHarvestTimeMax = 1 'TODO: set to 10
-    m.nrEventHarvestTimeDelta = 1 'TODO: set to 10
+    'Harvest cycles for events
+    m.nrEventHarvestTimeNormal = 60
+    m.nrEventHarvestTimeMax = 600
+    m.nrEventHarvestTimeDelta = 60
+    'Reservoir sampling for logs
     m.nrLogArray = []
     m.nrLogArrayIndex = 0
     m.nrLogArrayNormalK = 400
     m.nrLogArrayMinK = 40
     m.nrLogArrayDeltaK = 40
     m.nrLogArrayK = m.nrLogArrayNormalK
-    m.nrLogHarvestTimeNormal = 10 'TODO: set to 60
-    m.nrLogHarvestTimeMax = 1 'TODO: set to 10
-    m.nrLogHarvestTimeDelta = 1 'TODO: set to 10
+    'Harvest cycles for logs
+    m.nrLogHarvestTimeNormal = 60
+    m.nrLogHarvestTimeMax = 600
+    m.nrLogHarvestTimeDelta = 60
+
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
+    m.nrGroupingPatternCallback = invalid
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
     m.nrCustomAttributes = CreateObject("roAssociativeArray")
     m.nrLastTimestamp = 0
     m.nrTicks = 0
-    m.nrGroupingPatternCallback = invalid
     
     date = CreateObject("roDateTime")
     m.nrInitTimestamp = date.AsSeconds()
@@ -59,13 +65,13 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrTimer = CreateObject("roTimespan")
     m.nrTimer.Mark()
 
-    'Create and configure tasks
+    'Create and configure tasks (events)
     m.bgTaskEvents = m.top.findNode("NRTaskEvents")
     m.bgTaskEvents.setField("apiKey", m.nrInsightsApiKey)
     m.eventApiUrl = box(nrEventApiUrl())
     m.bgTaskEvents.setField("eventApiUrl", m.eventApiUrl)
     m.bgTaskEvents.sampleType = "event"
-    
+    'Create and configure tasks (logs)
     m.bgTaskLogs = m.top.findNode("NRTaskLogs")
     m.bgTaskLogs.setField("apiKey", m.nrInsightsApiKey)
     m.logApiUrl = box(nrLogApiUrl())
@@ -571,7 +577,7 @@ function nrGroupNewEvent(ev as Object, actionName as String) as Void
     else
         matchPattern = nrParseVideoStreamUrl(ev)
     end if
-        
+
     ev["actionName"] = actionName
     
     if actionName = "HTTP_COMPLETE"
@@ -971,7 +977,7 @@ function nrParseVideoStreamUrl(ev as Object) as String
     if arr.Count() < 2 then return ""
     if arr[0] <> "http:" and arr[0] <> "https:" then return ""
     if arr[1] = "" then return ""
-    'Return domain part of the URL
+    'Return host name part of the URL
     return arr[1]
 end function
 
