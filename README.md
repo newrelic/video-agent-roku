@@ -700,7 +700,7 @@ This event groups all actions related to system tracking.
 
 ##### 1.1.1 Grouping
 
-`HTTP_CONNECT` and `HTTP_COMPLETE` are generated from [roSystemLogEvent](https://developer.roku.com/en-gb/docs/references/brightscript/events/rosystemlogevent.md), but there is no one-to-one correspondence because the volume of event traffic could be considerable. Instead, the New Relic Agent groups events and generates one New Relic event out of multiple Roku system log events. The default grouping criterion is using the domain name of the requested URL, but the user can define custom patterns. Check out `nrSetGroupingPatternGenerator` documentation for further details.
+`HTTP_CONNECT` and `HTTP_COMPLETE` are generated from [roSystemLogEvent](https://developer.roku.com/en-gb/docs/references/brightscript/events/rosystemlogevent.md), but there is no one-to-one correspondence because the volume of event traffic could be considerable. Instead, the New Relic Agent groups events and generates one New Relic event out of multiple Roku system log events. The default grouping criterion is using the host part of the requested URL, but the user can define custom patterns. Check out `nrSetGroupingPatternGenerator` documentation for further details.
 
 #### 1.2 Attributes
 

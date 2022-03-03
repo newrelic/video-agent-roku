@@ -1,6 +1,12 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2022/03/03
+### Add
+- System log events custom grouping mechanism.
+### Fix
+- Improve harvest performance in high density event traffic situations.
+
 ## [2.0.0] - 2022/01/25
 ### Add
 - New Relic Logs.
