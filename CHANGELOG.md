@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [2.1.1] - 2022/03/08
+### Add
+- `counter` attribute into `HTTP_ERROR` events, with value 1, to simplify HTTP related NRQL requests.
+
 ## [2.1.0] - 2022/03/03
 ### Add
 - System log events custom grouping mechanism.
