@@ -36,21 +36,34 @@ function nrPushSamples(samples as Object, endpoint as String) as Object
 end function
 
 function nrEventProcessor() as Void
-    nrSampleProcessor("nrExtractAllEvents", "nrGetBackEvents", m.eventApiUrl)
+    m.nr.callFunc("nrLog", "-- nrEventProcessor --")
+    nrSampleProcessor("event", m.eventApiUrl)
 end function
 
 function nrLogProcessor() as Void
-    nrSampleProcessor("nrExtractAllLogs", "nrGetBackLogs", m.logApiUrl)
+    m.nr.callFunc("nrLog", "-- nrLogProcessor --")
+    nrSampleProcessor("log", m.logApiUrl)
 end function
 
-function nrSampleProcessor(extractFunc as String, getbackFunc as String, endpoint as String) as Void
+function isStatusErr(res) as boolean
+    return res >= 400
+end function
+
+function nrSampleProcessor(sampleType as String, endpoint as String) as Void
     if m.nr <> invalid
-        samples = m.nr.callFunc(extractFunc)
+        samples = m.nr.callFunc("nrExtractAllSamples", sampleType)
         if samples.Count() > 0
             res = nrPushSamples(samples, endpoint)
-            if res < 200 or res > 299
-                m.nr.callFunc("nrLog", "-- nrSampleProcessor: FAILED with code " + Str(res) + ", retry later --")
-                m.nr.callFunc(getbackFunc, samples)
+            if isStatusErr(res)
+                m.nr.callFunc("nrLog", "-- nrSampleProcessor (" + sampleType + "): FAILED with code " + Str(res) + ", retry later --")
+                if res = 429
+                    m.nr.callFunc("nrReqErrorTooManyReq", sampleType)
+                else if res = 413
+                    m.nr.callFunc("nrReqErrorTooLarge", sampleType)
+                end if
+                m.nr.callFunc("nrGetBackAllSamples", sampleType, samples)
+            else
+                m.nr.callFunc("nrReqOk", sampleType)
             end if
         end if
     else
@@ -66,8 +79,12 @@ function nrTaskMain() as Void
         m.apiKey = m.top.apiKey
         m.eventApiUrl = m.top.eventApiUrl
         m.logApiUrl = m.top.logApiUrl
+        m.sampleType = m.top.sampleType
     end if
-    nrEventProcessor()
-    nrLogProcessor()
+    if m.sampleType = "event"
+        nrEventProcessor()
+    else if m.sampleType = "log"
+        nrLogProcessor()
+    end if
     'print "---- Ended running NRTask ----"
 end function

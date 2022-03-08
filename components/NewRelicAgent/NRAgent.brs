@@ -13,7 +13,7 @@ sub init()
     m.nrRegion = "US"
     print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
-    print "   Copyright 2019-2021 New Relic Inc. All Rights Reserved."
+    print "   Copyright 2019-2022 New Relic Inc. All Rights Reserved."
     print "************************************************************"
 end sub
 
@@ -26,10 +26,33 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrInsightsApiKey = apikey
     m.nrRegion = region
     m.nrSessionId = nrGenerateId()
+
+    'Reservoir sampling for events
     m.nrEventArray = []
+    m.nrEventArrayIndex = 0
+    m.nrEventArrayNormalK = 400
+    m.nrEventArrayMinK = 40
+    m.nrEventArrayDeltaK = 40
+    m.nrEventArrayK = m.nrEventArrayNormalK
+    'Harvest cycles for events
+    m.nrEventHarvestTimeNormal = 60
+    m.nrEventHarvestTimeMax = 600
+    m.nrEventHarvestTimeDelta = 60
+    'Reservoir sampling for logs
     m.nrLogArray = []
+    m.nrLogArrayIndex = 0
+    m.nrLogArrayNormalK = 400
+    m.nrLogArrayMinK = 40
+    m.nrLogArrayDeltaK = 40
+    m.nrLogArrayK = m.nrLogArrayNormalK
+    'Harvest cycles for logs
+    m.nrLogHarvestTimeNormal = 60
+    m.nrLogHarvestTimeMax = 600
+    m.nrLogHarvestTimeDelta = 60
+
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
+    m.nrGroupingPatternCallback = invalid
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
     m.nrCustomAttributes = CreateObject("roAssociativeArray")
     m.nrLastTimestamp = 0
@@ -42,18 +65,33 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrTimer = CreateObject("roTimespan")
     m.nrTimer.Mark()
 
-    'Create and configure NRTask
-    m.bgTask = m.top.findNode("NRTask")
-    m.bgTask.setField("apiKey", m.nrInsightsApiKey)
+    'Create and configure tasks (events)
+    m.bgTaskEvents = m.top.findNode("NRTaskEvents")
+    m.bgTaskEvents.setField("apiKey", m.nrInsightsApiKey)
     m.eventApiUrl = box(nrEventApiUrl())
-    m.bgTask.setField("eventApiUrl", m.eventApiUrl)
+    m.bgTaskEvents.setField("eventApiUrl", m.eventApiUrl)
+    m.bgTaskEvents.sampleType = "event"
+    'Create and configure tasks (logs)
+    m.bgTaskLogs = m.top.findNode("NRTaskLogs")
+    m.bgTaskLogs.setField("apiKey", m.nrInsightsApiKey)
     m.logApiUrl = box(nrLogApiUrl())
-    m.bgTask.setField("logApiUrl", m.logApiUrl)
+    m.bgTaskLogs.setField("logApiUrl", m.logApiUrl)
+    m.bgTaskLogs.sampleType = "log"
 
     'Init harvest timer
-    m.nrHarvestTimer = m.top.findNode("nrHarvestTimer")
-    m.nrHarvestTimer.ObserveField("fire", "nrHarvestTimerHandler")
-    m.nrHarvestTimer.control = "start"
+    m.nrHarvestTimerEvents = m.top.findNode("nrHarvestTimerEvents")
+    m.nrHarvestTimerEvents.ObserveField("fire", "nrHarvestTimerHandlerEvents")
+    m.nrHarvestTimerEvents.duration = m.nrEventHarvestTimeNormal
+    m.nrHarvestTimerEvents.control = "start"
+    m.nrHarvestTimerLogs = m.top.findNode("nrHarvestTimerLogs")
+    m.nrHarvestTimerLogs.ObserveField("fire", "nrHarvestTimerHandlerLogs")
+    m.nrHarvestTimerLogs.duration = m.nrLogHarvestTimeNormal
+    m.nrHarvestTimerLogs.control = "start"
+
+    'Init grouping timer
+    m.nrGroupingTimer = m.top.findNode("nrGroupingTimer")
+    m.nrGroupingTimer.observeFieldScoped("fire", "nrGroupingHandler")
+    m.nrGroupingTimer.control = "start"
     
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
@@ -189,11 +227,39 @@ function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as 
 end function
 
 function nrSetHarvestTime(seconds as Integer) as Void
-    m.nrHarvestTimer.duration = seconds
+    nrSetHarvestTimeEvents(seconds)
+    nrSetHarvestTimeLogs(seconds)
+end function
+
+function nrSetHarvestTimeEvents(seconds as Integer) as Void
+    if seconds < 60 then seconds = 60
+    m.nrEventHarvestTimeNormal = seconds
+    m.nrHarvestTimerEvents.duration = seconds
+    nrLog(["Harvest time events = ", seconds])
+end function
+
+function nrSetHarvestTimeLogs(seconds as Integer) as Void
+    if seconds < 60 then seconds = 60
+    m.nrLogHarvestTimeNormal = seconds
+    m.nrHarvestTimerLogs.duration = seconds
+    nrLog(["Harvest time logs = ", seconds])
 end function
 
 function nrForceHarvest() as Void
-    nrHarvestTimerHandler()
+    nrHarvestTimerHandlerEvents()
+    nrHarvestTimerHandlerLogs()
+end function
+
+function nrForceHarvestEvents() as Void
+    nrHarvestTimerHandlerEvents()
+end function
+
+function nrForceHarvestLogs() as Void
+    nrHarvestTimerHandlerLogs()
+end function
+
+function nrSetGroupingPatternGenerator() as Void
+    m.nrGroupingPatternCallback = m.top.patternGen
 end function
 
 'Roku Advertising Framework tracking
@@ -269,17 +335,11 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
     if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
     if fields <> invalid then lg.Append(fields)
     lg["timestamp"] = FormatJson(nrTimestamp())
+    lg["newRelicAgentSource"] = "roku"
 
-    if m.nrLogArray.Count() < 500
-        m.nrLogArray.Push(lg)
-        
-        nrLog("====================================")
-        nrLog(["RECORD NEW LOG = ", m.nrLogArray.Peek()])
-        nrLog(["LOGARRAY SIZE = ", m.nrLogArray.Count()])
-        nrLog("====================================")
-    else
-        nrLog("Logs overflow, discard log")
-    end if
+    nrLog(["RECORD NEW LOG = ", lg])
+
+    m.nrLogArrayIndex = nrAddSample(lg, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
 end function
 
 '=========================='
@@ -303,40 +363,25 @@ function nrLog(msg as Dynamic) as Void
     end if
 end function
 
-function nrExtractAllEvents() as Object
-    events = m.nrEventArray
-    m.nrEventArray = []
-    return events
-end function
-
-function nrGetBackEvents(events as Object) as Void
-    nrLog(["------> nrGetBackEvents, ev size = ", events.Count()])
-    m.nrEventArray.Append(events)
-end function
-
-function nrRecordEvent(event as Object) as Void
-    if m.nrEventArray.Count() < 500
-        m.nrEventArray.Push(event)
-        
-        nrLog("====================================")
-        nrLog(["RECORD NEW EVENT = ", m.nrEventArray.Peek()])
-        nrLog(["EVENTARRAY SIZE = ", m.nrEventArray.Count()])
-        nrLog("====================================")
-        'nrLogVideoInfo()
-    else
-        nrLog("Events overflow, discard event")
+function nrExtractAllSamples(sampleType as String) as Object
+    if sampleType = "event"
+        return nrExtractAllEvents()
+    else if sampleType = "log"
+        return nrExtractAllLogs()
     end if
 end function
 
-function nrExtractAllLogs() as Object
-    logs = m.nrLogArray
-    m.nrLogArray = []
-    return logs
+function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
+    if sampleType = "event"
+        nrGetBackEvents(samples)
+    else if sampleType = "log"
+        nrGetBackLogs(samples)
+    end if
 end function
 
-function nrGetBackLogs(logs as Object) as Void
-    nrLog(["------> nrGetBackLogs, log size = ", logs.Count()])
-    m.nrLogArray.Append(logs)
+function nrRecordEvent(event as Object) as Void
+    nrLog(["RECORD NEW EVENT = ", event])
+    m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
 end function
 
 function nrProcessSystemEvent(i as Object) as Boolean
@@ -358,6 +403,55 @@ end function
 
 function nrAddToTotalAdPlaytime(adPlaytime as Integer) as Void
     m.nrTotalAdPlaytime = m.nrTotalAdPlaytime + adPlaytime
+end function
+
+function nrReqErrorTooManyReq(sampleType as String) as Void
+    ' Error too many requests, increase harvest time
+    if sampleType = "event"
+        nrLog("NR API ERROR, TOO MANY REQUESTS, current event harvest time = " + str(m.nrHarvestTimerEvents.duration))
+        if m.nrHarvestTimerEvents.duration < m.nrEventHarvestTimeMax
+            m.nrHarvestTimerEvents.duration = m.nrHarvestTimerEvents.duration + m.nrEventHarvestTimeDelta
+        end if
+    else if sampleType = "log"
+        nrLog("NR API ERROR, TOO MANY REQUESTS, current log harvest time = " + str(m.nrHarvestTimerLogs.duration))
+        if m.nrHarvestTimerLogs.duration < m.nrLogHarvestTimeMax
+            m.nrHarvestTimerLogs.duration = m.nrHarvestTimerLogs.duration + m.nrLogHarvestTimeDelta
+        end if
+    end if
+end function
+
+function nrReqErrorTooLarge(sampleType as String) as Void
+    ' Error content too large, decrease buffer K temporarly (until next harvest cycle)
+    nrLog("NR API ERROR, BODY TOO LARGE")
+    if sampleType = "event"
+        if m.nrEventArrayK > m.nrEventArrayMinK
+            m.nrEventArrayK = m.nrEventArrayK - m.nrEventArrayDeltaK
+        end if
+    else if sampleType = "log"
+        if m.nrLogArrayK > m.nrLogArrayMinK
+            m.nrLogArrayK = m.nrLogArrayK - m.nrLogArrayDeltaK
+        end if
+    end if
+end function
+
+function nrReqOk(sampleType as String) as Void
+    if sampleType = "event"
+        if m.nrHarvestTimerEvents.duration > m.nrEventHarvestTimeNormal
+            m.nrHarvestTimerEvents.duration = m.nrHarvestTimerEvents.duration - m.nrEventHarvestTimeDelta
+        end if
+        if m.nrEventArrayK < m.nrEventArrayNormalK
+            m.nrEventArrayK = m.nrEventArrayK + m.nrEventArrayDeltaK
+        end if
+        nrLog("NR API OK event, post K = " + str(m.nrEventArrayK) + " harvest time = " + str(m.nrHarvestTimerEvents.duration))
+    else if sampleType = "log"
+        if m.nrHarvestTimerLogs.duration > m.nrLogHarvestTimeNormal
+            m.nrHarvestTimerLogs.duration = m.nrHarvestTimerLogs.duration - m.nrLogHarvestTimeDelta
+        end if
+        if m.nrLogArrayK < m.nrLogArrayNormalK
+            m.nrLogArrayK = m.nrLogArrayK + m.nrLogArrayDeltaK
+        end if
+        nrLog("NR API OK logs, post K = " + str(m.nrLogArrayK) + " harvest time = " + str(m.nrHarvestTimerLogs.duration))
+    end if
 end function
 
 '=================='
@@ -450,7 +544,7 @@ end function
 
 function nrConvertGroupsToEvents(group as Object) as Void
     for each item in group.Items()
-        item.value["matchUrl"] = item.key
+        item.value["matchPattern"] = item.key
 
         'Calculate averages
         if item.value["actionName"] = "HTTP_COMPLETE"
@@ -480,27 +574,29 @@ function nrAddCommonHTTPAttr(info as Object) as Object
 end function
 
 function nrGroupNewEvent(ev as Object, actionName as String) as Void
-    if ev["Url"] = invalid then return
-    urlKey = ev["Url"]
-    matchUrl = nrParseVideoStreamUrl(urlKey)
-    if matchUrl <> "" then urlKey = matchUrl
+    if m.nrGroupingPatternCallback <> invalid
+        matchPattern = m.nrGroupingPatternCallback.callFunc("callback", ev)
+    else
+        matchPattern = nrParseVideoStreamUrl(ev)
+    end if
+
     ev["actionName"] = actionName
     
     if actionName = "HTTP_COMPLETE"
-        m.nrEventGroupsComplete = nrGroupMergeEvent(urlKey, m.nrEventGroupsComplete, ev)
+        m.nrEventGroupsComplete = nrGroupMergeEvent(matchPattern, m.nrEventGroupsComplete, ev)
     else if actionName = "HTTP_CONNECT"
-        m.nrEventGroupsConnect = nrGroupMergeEvent(urlKey, m.nrEventGroupsConnect, ev)
+        m.nrEventGroupsConnect = nrGroupMergeEvent(matchPattern, m.nrEventGroupsConnect, ev)
     end if
 end function
 
-function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as Object
-    evGroup = group[urlKey]
+function nrGroupMergeEvent(matchPattern as String, group as Object, ev as Object) as Object
+    evGroup = group[matchPattern]
     if evGroup = invalid
         'Create new group from event
         ev["counter"] = 1
         ev["initialTimestamp"] = nrTimestamp()
         ev["finalTimestamp"] = ev["initialTimestamp"]
-        group[urlKey] = ev
+        group[matchPattern] = ev
     else
         'Add new event to existing group
         evGroup["counter"] = evGroup["counter"] + 1
@@ -520,7 +616,7 @@ function nrGroupMergeEvent(urlKey as String, group as Object, ev as Object) as O
             evGroup["firstByteTime"] = evGroup["firstByteTime"] + ev["firstByteTime"]
         end if 
         
-        group[urlKey] = evGroup
+        group[matchPattern] = evGroup
     end if
     return group
 end function
@@ -562,16 +658,22 @@ end function
 function nrEventApiUrl() as String
     if m.nrRegion = "US"
         return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
-    else
+    else if m.nrRegion = "EU"
         return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
+    else if m.nrRegion = "TEST"
+        'NOTE: set address hosting the test server
+        return "http://x.x.x.x:5000/event"
     end if
 end function
 
 function nrLogApiUrl() as String
     if m.nrRegion = "US"
         return "https://log-api.newrelic.com/log/v1"
-    else
+    else if m.nrRegion = "EU"
         return "https://log-api.eu.newrelic.com/log/v1"
+    else if m.nrRegion = "TEST"
+        'NOTE: set address hosting the test server
+        return "http://x.x.x.x:5000/log"
     end if
 end function
 
@@ -874,21 +976,17 @@ function isAction(name as String, action as String) as Boolean
     return r.isMatch(action)
 end function
 
-function nrParseVideoStreamUrl(url as String) as String
+function nrParseVideoStreamUrl(ev as Object) as String
+    if ev["Url"] = invalid then return ""
+    url = ev["Url"]
     r = CreateObject("roRegex", "\/\/|\/", "")
     arr = r.Split(url)
     
-    if arr.Count() = 0 then return ""
+    if arr.Count() < 2 then return ""
     if arr[0] <> "http:" and arr[0] <> "https:" then return ""
-    
-    lastItem = arr[arr.Count() - 1]
-    r = CreateObject("roRegex", "^\w+\.\w+$", "")
-    
-    if r.IsMatch(lastItem) = false then return ""
-    
-    matchUrl = Left(url, url.Len() - lastItem.Len())
-    
-    return matchUrl
+    if arr[1] = "" then return ""
+    'Return host name part of the URL
+    return arr[1]
 end function
 
 function nrGenerateId() as String
@@ -975,6 +1073,70 @@ function nrCalculateTotalPlaytime() as Integer
     else
         return m.nrTotalPlaytime
     end if
+end function
+
+' Implement simple reservoir sampling (Algorithm R)
+function nrAddSample(sample as Object, buffer as Object, i as Integer, k as Integer) as Integer
+    if i < k
+        buffer.Push(sample)
+        nrLog(["RESERVOIR BUFFER SIZE AFTER PUSH = ", buffer.Count()])
+    else
+        j = Rnd(i) - 1
+        if j < k
+            buffer[j] = sample
+            nrLog(["RESERVOIR: OVERWRITE SAMPLE AT = ", j])
+        else
+            nrLog("RESERVOIR: DISCARD SAMPLE")
+        end if
+    end if
+    return i + 1
+end function
+
+' Get back samples after an error and resample buffer if necessary
+function nrGetBackSamples(samples as Object, buffer as Object, i as Integer, k as Integer) as Integer
+    if samples.Count() + buffer.Count() > k
+        ' Buffer size exceeded, we have to resample
+        tmpBuffer = []
+        tmpBuffer.Append(buffer)
+        buffer.Clear()
+        i = 0
+        for each s in samples
+            i = nrAddSample(s, buffer, i, k)
+        end for
+        for each s in tmpBuffer
+            i = nrAddSample(s, buffer, i, k)
+        end for
+        nrLog(["nrGetBackSamples: RESERVOIR RESAMPLED. ARRAY SIZE = ", buffer.Count()])
+    else
+        nrLog("nrGetBackSamples: JUST APPEND ARRAY AS IS")
+        buffer.Append(samples)
+        i = buffer.Count()
+    end if
+    return i
+end function
+
+function nrExtractAllEvents() as Object
+    events = m.nrEventArray
+    m.nrEventArray = []
+    m.nrEventArrayIndex = 0
+    return events
+end function
+
+function nrGetBackEvents(events as Object) as Void
+    nrLog("------> nrGetBackEvents, current K = " + str(m.nrEventArrayK) + ", ev size = " + str(events.Count()))
+    m.nrEventArrayIndex = nrGetBackSamples(events, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
+end function
+
+function nrExtractAllLogs() as Object
+    logs = m.nrLogArray
+    m.nrLogArray = []
+    m.nrLogArrayIndex = 0
+    return logs
+end function
+
+function nrGetBackLogs(logs as Object) as Void
+    nrLog("------> nrGetBackLogs, current K = " + str(m.nrLogArrayK) + ", log size = " + str(logs.Count()))
+    m.nrLogArrayIndex = nrGetBackSamples(logs, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
 end function
 
 '================================'
@@ -1100,17 +1262,32 @@ function nrHeartbeatHandler() as Void
     end if
 end function
 
-function nrHarvestTimerHandler() as Void
-    nrLog("--- nrHarvestTimerHandler ---")
+function nrHarvestTimerHandlerEvents() as Void
+    nrLog("--- nrHarvestTimerHandlerEvents ---")
     
-    'NRTask still running
-    if LCase(m.bgTask.state) = "run"
-        nrLog("NRTask still running, abort")
+    if LCase(m.bgTaskEvents.state) = "run"
+        nrLog("NRTaskEvents still running, abort")
         return
     end if
     
+    m.bgTaskEvents.control = "RUN"
+end function
+
+function nrHarvestTimerHandlerLogs() as Void
+    nrLog("--- nrHarvestTimerHandlerLogs ---")
+    
+    if LCase(m.bgTaskLogs.state) = "run"
+        nrLog("NRTaskLogs still running, abort")
+        return
+    end if
+    
+    m.bgTaskLogs.control = "RUN"
+end function
+
+function nrGroupingHandler() as Void
+    nrLog("--- nrGroupingHandler ---")
+    
     nrProcessGroupedEvents()
-    m.bgTask.control = "RUN"
 end function
 
 '=================='

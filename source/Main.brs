@@ -21,8 +21,6 @@ sub RunUserInterface(args)
 end sub
 
 sub Main(aa as Object)
-    print "Main arg = ", aa
-    
     screen = CreateObject("roSGScreen")
     m.port = CreateObject("roMessagePort")
     screen.setMessagePort(m.port)
@@ -35,8 +33,9 @@ sub Main(aa as Object)
     nrAppStarted(m.nr, aa)
     'Send a custom system
     nrSendSystemEvent(m.nr, "TEST_ACTION")
-    
-    print "Main m = ", m
+    'generate a custom pattern for HTTP_ system event grouping
+    patgen = createObject("roSGNode", "PatternGen")
+    nrSetGroupingPatternGenerator(m.nr, patgen)
     
     'Pass NewRelicAgent object to scene
     scene.setField("nr", m.nr)

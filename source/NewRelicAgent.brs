@@ -189,9 +189,25 @@ end function
 ' Set harvest time, the time the events are buffered before being sent to Insights.
 '
 ' @param nr New Relic Agent object.
-' @param time Time in seconds.
+' @param time Time in seconds (min 60).
 function nrSetHarvestTime(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTime", time)
+end function
+
+' Set harvest time for events, the time the events are buffered before being sent to Insights.
+'
+' @param nr New Relic Agent object.
+' @param time Time in seconds (min 60).
+function nrSetHarvestTimeEvents(nr as Object, time as Integer) as Void
+    nr.callFunc("nrSetHarvestTimeEvents", time)
+end function
+
+' Set harvest time for logs, the time the events are buffered before being sent to Insights.
+'
+' @param nr New Relic Agent object.
+' @param time Time in seconds (min 60).
+function nrSetHarvestTimeLogs(nr as Object, time as Integer) as Void
+    nr.callFunc("nrSetHarvestTimeLogs", time)
 end function
 
 ' Do harvest immediately. It doesn't reset the harvest timer.
@@ -199,6 +215,29 @@ end function
 ' @param nr New Relic Agent object.
 function nrForceHarvest(nr as Object) as Void
     nr.callFunc("nrForceHarvest")
+end function
+
+' Do harvest events immediately. It doesn't reset the harvest timer.
+'
+' @param nr New Relic Agent object.
+function nrForceHarvestEvents(nr as Object) as Void
+    nr.callFunc("nrForceHarvestEvents")
+end function
+
+' Do harvest logs immediately. It doesn't reset the harvest timer.
+'
+' @param nr New Relic Agent object.
+function nrForceHarvestLogs(nr as Object) as Void
+    nr.callFunc("nrForceHarvestLogs")
+end function
+
+' Set pattern generator. This method accepts a Node that must contain a public function called "callback". This callback must return a string, that is used as a pattern to group HTTP_CONNECT and HTTP_COMPLETE events. The pattern generator callback is called every time a HTTP_CONNECT or HTTP_COMPLETE event happens and the raw event is passed as argument to the function.
+'
+' @param nr New Relic Agent object.
+' @param callbackNode Pattern generator node.
+function nrSetGroupingPatternGenerator(nr as Object, callbackNode as Object) as Void
+    nr.setField("patternGen", callbackNode)
+    nr.callFunc("nrSetGroupingPatternGenerator")
 end function
 
 ' Track an event from Roku Advertising Framework
@@ -217,6 +256,5 @@ end function
 ' @param logtype Log type.
 ' @param fields Additonal fields to be included in the log.
 function nrSendLog(nr as Object, message as String, logtype as String, fields = invalid as Object) as Void
-    print "nrSendLog", message, logtype, fields
     nr.callFunc("nrSendLog", message, logtype, fields)
 end function
