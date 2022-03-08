@@ -407,12 +407,13 @@ end function
 
 function nrReqErrorTooManyReq(sampleType as String) as Void
     ' Error too many requests, increase harvest time
-    nrLog("NR API ERROR, TOO MANY REQUESTS")
     if sampleType = "event"
+        nrLog("NR API ERROR, TOO MANY REQUESTS, current event harvest time = " + str(m.nrHarvestTimerEvents.duration))
         if m.nrHarvestTimerEvents.duration < m.nrEventHarvestTimeMax
             m.nrHarvestTimerEvents.duration = m.nrHarvestTimerEvents.duration + m.nrEventHarvestTimeDelta
         end if
     else if sampleType = "log"
+        nrLog("NR API ERROR, TOO MANY REQUESTS, current log harvest time = " + str(m.nrHarvestTimerLogs.duration))
         if m.nrHarvestTimerLogs.duration < m.nrLogHarvestTimeMax
             m.nrHarvestTimerLogs.duration = m.nrHarvestTimerLogs.duration + m.nrLogHarvestTimeDelta
         end if
@@ -434,7 +435,6 @@ function nrReqErrorTooLarge(sampleType as String) as Void
 end function
 
 function nrReqOk(sampleType as String) as Void
-    nrLog("NR API OK")
     if sampleType = "event"
         if m.nrHarvestTimerEvents.duration > m.nrEventHarvestTimeNormal
             m.nrHarvestTimerEvents.duration = m.nrHarvestTimerEvents.duration - m.nrEventHarvestTimeDelta
@@ -442,6 +442,7 @@ function nrReqOk(sampleType as String) as Void
         if m.nrEventArrayK < m.nrEventArrayNormalK
             m.nrEventArrayK = m.nrEventArrayK + m.nrEventArrayDeltaK
         end if
+        nrLog("NR API OK event, post K = " + str(m.nrEventArrayK) + " harvest time = " + str(m.nrHarvestTimerEvents.duration))
     else if sampleType = "log"
         if m.nrHarvestTimerLogs.duration > m.nrLogHarvestTimeNormal
             m.nrHarvestTimerLogs.duration = m.nrHarvestTimerLogs.duration - m.nrLogHarvestTimeDelta
@@ -449,6 +450,7 @@ function nrReqOk(sampleType as String) as Void
         if m.nrLogArrayK < m.nrLogArrayNormalK
             m.nrLogArrayK = m.nrLogArrayK + m.nrLogArrayDeltaK
         end if
+        nrLog("NR API OK logs, post K = " + str(m.nrLogArrayK) + " harvest time = " + str(m.nrHarvestTimerLogs.duration))
     end if
 end function
 
@@ -656,16 +658,22 @@ end function
 function nrEventApiUrl() as String
     if m.nrRegion = "US"
         return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
-    else
+    else if m.nrRegion = "EU"
         return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
+    else if m.nrRegion = "TEST"
+        'NOTE: set address hosting the test server
+        return "http://x.x.x.x:5000/event"
     end if
 end function
 
 function nrLogApiUrl() as String
     if m.nrRegion = "US"
         return "https://log-api.newrelic.com/log/v1"
-    else
+    else if m.nrRegion = "EU"
         return "https://log-api.eu.newrelic.com/log/v1"
+    else if m.nrRegion = "TEST"
+        'NOTE: set address hosting the test server
+        return "http://x.x.x.x:5000/log"
     end if
 end function
 
@@ -1115,7 +1123,7 @@ function nrExtractAllEvents() as Object
 end function
 
 function nrGetBackEvents(events as Object) as Void
-    nrLog(["------> nrGetBackEvents, ev size = ", events.Count()])
+    nrLog("------> nrGetBackEvents, current K = " + str(m.nrEventArrayK) + ", ev size = " + str(events.Count()))
     m.nrEventArrayIndex = nrGetBackSamples(events, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
 end function
 
@@ -1127,7 +1135,7 @@ function nrExtractAllLogs() as Object
 end function
 
 function nrGetBackLogs(logs as Object) as Void
-    nrLog(["------> nrGetBackLogs, log size = ", logs.Count()])
+    nrLog("------> nrGetBackLogs, current K = " + str(m.nrLogArrayK) + ", log size = " + str(logs.Count()))
     m.nrLogArrayIndex = nrGetBackSamples(logs, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
 end function
 

@@ -36,10 +36,12 @@ function nrPushSamples(samples as Object, endpoint as String) as Object
 end function
 
 function nrEventProcessor() as Void
+    m.nr.callFunc("nrLog", "-- nrEventProcessor --")
     nrSampleProcessor("event", m.eventApiUrl)
 end function
 
 function nrLogProcessor() as Void
+    m.nr.callFunc("nrLog", "-- nrLogProcessor --")
     nrSampleProcessor("log", m.logApiUrl)
 end function
 
@@ -53,12 +55,12 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
         if samples.Count() > 0
             res = nrPushSamples(samples, endpoint)
             if isStatusErr(res)
+                m.nr.callFunc("nrLog", "-- nrSampleProcessor (" + sampleType + "): FAILED with code " + Str(res) + ", retry later --")
                 if res = 429
                     m.nr.callFunc("nrReqErrorTooManyReq", sampleType)
                 else if res = 413
                     m.nr.callFunc("nrReqErrorTooLarge", sampleType)
                 end if
-                m.nr.callFunc("nrLog", "-- nrSampleProcessor (" + sampleType + "): FAILED with code " + Str(res) + ", retry later --")
                 m.nr.callFunc("nrGetBackAllSamples", sampleType, samples)
             else
                 m.nr.callFunc("nrReqOk", sampleType)
