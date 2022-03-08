@@ -622,7 +622,8 @@ function nrGroupMergeEvent(matchPattern as String, group as Object, ev as Object
 end function
 
 function nrSendHTTPError(info as Object) as Void
-    attr = nrAddCommonHTTPAttr(info)   
+    attr = nrAddCommonHTTPAttr(info)
+    attr["counter"] = 1
     nrSendCustomEvent("RokuSystem", "HTTP_ERROR", attr)
 end function
 
