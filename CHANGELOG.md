@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [2.1.2] - 2022/04/21
+### Add
+- `timeSinceHttpRequest` attribute into `HTTP_RESPONSE` events.
+
 ## [2.1.1] - 2022/03/08
 ### Add
 - `counter` attribute into `HTTP_ERROR` events, with value 1, to simplify HTTP related NRQL requests.

@@ -772,6 +772,7 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `http*` | Multiple attributes. All the header keys. | `HTTP_RESPONSE` |
 | `transferIdentity` | HTTP request identificator. | `HTTP_REQUEST`, `HTTP_RESPONSE` |
 | `sceneName` | Identifier of the scene. | `SCENE_LOADED` |
+| `timeSinceHttpRequest` | Time since `HTTP_REQUEST` in milliseconds. | `HTTP_RESPONSE` |
 
 <a name="roku-video"></a>
 

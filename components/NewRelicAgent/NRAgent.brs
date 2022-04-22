@@ -22,11 +22,11 @@ end sub
 '=========================='
 
 function NewRelicInit(account as String, apikey as String, region as String) as Void
+    'Session
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
     m.nrRegion = region
     m.nrSessionId = nrGenerateId()
-
     'Reservoir sampling for events
     m.nrEventArray = []
     m.nrEventArrayIndex = 0
@@ -49,7 +49,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrLogHarvestTimeNormal = 60
     m.nrLogHarvestTimeMax = 600
     m.nrLogHarvestTimeDelta = 60
-
+    'Groups and attributes
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
     m.nrGroupingPatternCallback = invalid
@@ -57,6 +57,8 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrCustomAttributes = CreateObject("roAssociativeArray")
     m.nrLastTimestamp = 0
     m.nrTicks = 0
+    'HTTP Request/Response IDs
+    m.nrRequestIdentifiers = CreateObject("roAssociativeArray")
     
     date = CreateObject("roDateTime")
     m.nrInitTimestamp = date.AsSeconds()
@@ -202,6 +204,33 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     'Backup attributes (cloning it)
     m.nrBackupAttributes = {}
     m.nrBackupAttributes.Append(ev)
+end function
+
+function nrSendHttpRequest(attr as Object) as Void
+    transId = stri(attr["transferIdentity"])
+    m.nrRequestIdentifiers[transId] = nrTimestamp()
+    'Clean up old transfers
+    toDeleteKeys = []
+    for each item in m.nrRequestIdentifiers.Items()
+        'More than 2 minutes without a response
+        if nrTimestamp() - item.value > 120000
+            toDeleteKeys.Push(item.key)
+        end if
+    end for
+    for each key in toDeleteKeys
+        m.nrRequestIdentifiers.Delete(key)
+    end for
+    nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
+end function
+
+function nrSendHttpResponse(attr as Object) as Void
+    transId = stri(attr["transferIdentity"])
+    if m.nrRequestIdentifiers[transId] <> invalid
+        deltaMs = nrTimestamp() - m.nrRequestIdentifiers[transId]
+        attr["timeSinceHttpRequest"] = deltaMs
+        m.nrRequestIdentifiers.Delete(transId)
+    end if
+    nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
 end function
 
 function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String) as Void

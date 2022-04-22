@@ -139,15 +139,14 @@ end function
 ' @param nr New Relic Agent object.
 ' @param urlReq URL request, roUrlTransfer object.
 function nrSendHttpRequest(nr as Object, urlReq as Object) as Void
-    if type(urlReq) <> "roUrlTransfer" return
-    
-    attr = {
-        "origUrl": urlReq.GetUrl(),
-        "transferIdentity": urlReq.GetIdentity(),
-        "method": urlReq.GetRequest()
-    }
-    
-    nrSendCustomEvent(nr, "RokuSystem", "HTTP_REQUEST", attr)
+    if type(urlReq) = "roUrlTransfer"
+        attr = {
+            "origUrl": urlReq.GetUrl(),
+            "transferIdentity": urlReq.GetIdentity(),
+            "method": urlReq.GetRequest()
+        }
+        nr.callFunc("nrSendHttpRequest", attr)
+    end if
 end function
 
 ' Send an HTTP_RESPONSE event of type RokuSystem.
@@ -156,34 +155,33 @@ end function
 ' @param _url Request URL.
 ' @param msg A message of type roUrlEvent.
 function nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
-    
-    if type(msg) <> "roUrlEvent" return
-    
-    attr = {
-        "origUrl": _url
-    }
-    
-    attr.AddReplace("httpCode", msg.GetResponseCode())
-    attr.AddReplace("httpResult", msg.GetFailureReason())
-    attr.AddReplace("transferIdentity", msg.GetSourceIdentity())
-    
-    header = msg.GetResponseHeaders()
-    
-    for each key in header
-        parts = key.Tokenize("-")
-        finalKey = "http"
-        finalValue = header[key]
-        for each part in parts
-            firstChar = Left(part, 1)
-            firstChar = UCase(firstChar)
-            restStr = Right(part, Len(part) - 1)
-            restStr = LCase(restStr)
-            finalKey = finalKey + firstChar + restStr
+    if type(msg) = "roUrlEvent"
+        attr = {
+            "origUrl": _url
+        }
+        
+        attr.AddReplace("httpCode", msg.GetResponseCode())
+        attr.AddReplace("httpResult", msg.GetFailureReason())
+        attr.AddReplace("transferIdentity", msg.GetSourceIdentity())
+        
+        header = msg.GetResponseHeaders()
+        
+        for each key in header
+            parts = key.Tokenize("-")
+            finalKey = "http"
+            finalValue = header[key]
+            for each part in parts
+                firstChar = Left(part, 1)
+                firstChar = UCase(firstChar)
+                restStr = Right(part, Len(part) - 1)
+                restStr = LCase(restStr)
+                finalKey = finalKey + firstChar + restStr
+            end for
+            attr.AddReplace(finalKey, finalValue)
         end for
-        attr.AddReplace(finalKey, finalValue)
-    end for
-    
-    nrSendCustomEvent(nr, "RokuSystem", "HTTP_RESPONSE", attr)
+        
+        nr.callFunc("nrSendHttpResponse", attr)
+    end if
 end function
 
 ' Set harvest time, the time the events are buffered before being sent to Insights.
