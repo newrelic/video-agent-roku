@@ -55,8 +55,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrGroupingPatternCallback = invalid
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
     m.nrCustomAttributes = CreateObject("roAssociativeArray")
-    m.nrLastTimestamp = 0
-    m.nrTicks = 0
+
     'HTTP Request/Response IDs
     m.nrRequestIdentifiers = CreateObject("roAssociativeArray")
     
@@ -1046,19 +1045,13 @@ function nrGenerateStreamUrl() as String
 end function
 
 function nrTimestamp() as LongInteger
-    timestamp = CreateObject("roDateTime").asSeconds()
+    timestampObj = CreateObject("roDateTime")
+    timestamp = timestampObj.asSeconds()
+    nowMilliseconds = timestampObj.GetMilliseconds()
+
     timestampLong& = timestamp
-    timestampMS& = timestampLong& * 1000
-    
-    if timestamp = m.nrLastTimestamp
-        m.nrTicks = m.nrTicks + 1
-    else
-        m.nrTicks = 0
-    end if
-    
-    timestampMS& = timestampMS& + m.nrTicks
-    m.nrLastTimestamp = timestamp
-    
+    timestampMS& = timestampLong& * 1000 + nowMilliseconds
+
     return timestampMS&
 end function
 
