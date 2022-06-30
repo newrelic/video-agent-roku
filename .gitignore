@@ -2,3 +2,4 @@
 .vscode
 out/
 source/testFramework/
+.DS_Store
