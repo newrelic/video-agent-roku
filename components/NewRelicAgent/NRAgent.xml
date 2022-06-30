@@ -60,5 +60,7 @@
 		<Timer id="nrHarvestTimerEvents" repeat="true"/>
         <com.newrelic.NRTask id="NRTaskLogs"/>
         <Timer id="nrHarvestTimerLogs" repeat="true"/>
+        <com.newrelic.NRTask id="NRTaskMetrics"/>
+        <Timer id="nrHarvestTimerMetrics" repeat="true"/>
 	</children>
 </component>

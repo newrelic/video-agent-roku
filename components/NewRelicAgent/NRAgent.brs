@@ -10,6 +10,7 @@ sub init()
     m.nrAgentVersion = m.top.version
     m.eventApiUrl = ""
     m.logApiUrl = ""
+    m.metricApiUrl = ""
     m.nrRegion = "US"
     print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
@@ -49,6 +50,11 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrLogHarvestTimeNormal = 60
     m.nrLogHarvestTimeMax = 600
     m.nrLogHarvestTimeDelta = 60
+
+    'TODO: array structure and rest of harves times
+    'Harvest cycles for metrics
+    m.nrMetricHarvestTimeNormal = 5 'TODO: set 60
+
     'Groups and attributes
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
     m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
@@ -78,16 +84,28 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.logApiUrl = box(nrLogApiUrl())
     m.bgTaskLogs.setField("logApiUrl", m.logApiUrl)
     m.bgTaskLogs.sampleType = "log"
+    'Create and configure tasks (metrics)
+    m.bgTaskMetrics = m.top.findNode("NRTaskMetrics")
+    m.bgTaskMetrics.setField("apiKey", m.nrInsightsApiKey)
+    m.metricApiUrl = box(nrMetricsApiUrl())
+    m.bgTaskMetrics.setField("metricApiUrl", m.metricApiUrl)
+    m.bgTaskMetrics.sampleType = "metric"
 
-    'Init harvest timer
+    'Init harvest timer (events)
     m.nrHarvestTimerEvents = m.top.findNode("nrHarvestTimerEvents")
     m.nrHarvestTimerEvents.ObserveField("fire", "nrHarvestTimerHandlerEvents")
     m.nrHarvestTimerEvents.duration = m.nrEventHarvestTimeNormal
     m.nrHarvestTimerEvents.control = "start"
+    'Init harvest timer (logs)
     m.nrHarvestTimerLogs = m.top.findNode("nrHarvestTimerLogs")
     m.nrHarvestTimerLogs.ObserveField("fire", "nrHarvestTimerHandlerLogs")
     m.nrHarvestTimerLogs.duration = m.nrLogHarvestTimeNormal
     m.nrHarvestTimerLogs.control = "start"
+    'Init harvest timer (metrics)
+    m.nrHarvestTimerMetrics = m.top.findNode("nrHarvestTimerMetrics")
+    m.nrHarvestTimerMetrics.ObserveField("fire", "nrHarvestTimerHandlerMetrics")
+    m.nrHarvestTimerMetrics.duration = m.nrMetricHarvestTimeNormal
+    m.nrHarvestTimerMetrics.control = "start"
 
     'Init grouping timer
     m.nrGroupingTimer = m.top.findNode("nrGroupingTimer")
@@ -273,9 +291,12 @@ function nrSetHarvestTimeLogs(seconds as Integer) as Void
     nrLog(["Harvest time logs = ", seconds])
 end function
 
+'TODO: create public function nrSetHarvestTimeMetrics
+
 function nrForceHarvest() as Void
     nrHarvestTimerHandlerEvents()
     nrHarvestTimerHandlerLogs()
+    nrHarvestTimerHandlerMetrics()
 end function
 
 function nrForceHarvestEvents() as Void
@@ -285,6 +306,8 @@ end function
 function nrForceHarvestLogs() as Void
     nrHarvestTimerHandlerLogs()
 end function
+
+'TODO: create public funcion nrForceHarvestMetrics
 
 function nrSetGroupingPatternGenerator() as Void
     m.nrGroupingPatternCallback = m.top.patternGen
@@ -397,6 +420,7 @@ function nrExtractAllSamples(sampleType as String) as Object
     else if sampleType = "log"
         return nrExtractAllLogs()
     end if
+    'TODO: add case for 'metric'
 end function
 
 function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
@@ -405,6 +429,7 @@ function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
     else if sampleType = "log"
         nrGetBackLogs(samples)
     end if
+    'TODO: add case for 'metric'
 end function
 
 function nrRecordEvent(event as Object) as Void
@@ -446,6 +471,7 @@ function nrReqErrorTooManyReq(sampleType as String) as Void
             m.nrHarvestTimerLogs.duration = m.nrHarvestTimerLogs.duration + m.nrLogHarvestTimeDelta
         end if
     end if
+    'TODO: add case for 'metric'
 end function
 
 function nrReqErrorTooLarge(sampleType as String) as Void
@@ -460,6 +486,7 @@ function nrReqErrorTooLarge(sampleType as String) as Void
             m.nrLogArrayK = m.nrLogArrayK - m.nrLogArrayDeltaK
         end if
     end if
+    'TODO: add case for 'metric'
 end function
 
 function nrReqOk(sampleType as String) as Void
@@ -480,6 +507,7 @@ function nrReqOk(sampleType as String) as Void
         end if
         nrLog("NR API OK logs, post K = " + str(m.nrLogArrayK) + " harvest time = " + str(m.nrHarvestTimerLogs.duration))
     end if
+    'TODO: add case for 'metric'
 end function
 
 '=================='
@@ -703,6 +731,17 @@ function nrLogApiUrl() as String
     else if m.nrRegion = "TEST"
         'NOTE: set address hosting the test server
         return "http://x.x.x.x:5000/log"
+    end if
+end function
+
+function nrMetricsApiUrl() as String
+    if m.nrRegion = "US"
+        return "https://metric-api.newrelic.com/metric/v1"
+    else if m.nrRegion = "EU"
+        return "https://metric-api.eu.newrelic.com/metric/v1"
+    else if m.nrRegion = "TEST"
+        'NOTE: set address hosting the test server
+        return "http://x.x.x.x:5000/metric"
     end if
 end function
 
@@ -1305,6 +1344,17 @@ function nrHarvestTimerHandlerLogs() as Void
     end if
     
     m.bgTaskLogs.control = "RUN"
+end function
+
+function nrHarvestTimerHandlerMetrics() as Void
+    nrLog("--- nrHarvestTimerHandlerMetrics ---")
+    
+    if LCase(m.bgTaskMetrics.state) = "run"
+        nrLog("NRTaskMetrics still running, abort")
+        return
+    end if
+    
+    m.bgTaskMetrics.control = "RUN"
 end function
 
 function nrGroupingHandler() as Void

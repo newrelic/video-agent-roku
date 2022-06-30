@@ -9,6 +9,7 @@ sub init()
     m.top.functionName = "nrTaskMain"
 end sub
 
+'TODO: check that this works for metrics end point
 function nrPushSamples(samples as Object, endpoint as String) as Object
     jsonString = FormatJson(samples)
 
@@ -45,6 +46,12 @@ function nrLogProcessor() as Void
     nrSampleProcessor("log", m.logApiUrl)
 end function
 
+function nrMetricProcessor() as Void
+    m.nr.callFunc("nrLog", "-- nrMetricProcessor --")
+    'TODO: call sample processor. Prepare called functions to handle metrics
+    'nrSampleProcessor("metric", m.metricApiUrl)
+end function
+
 function isStatusErr(res) as boolean
     return res >= 400
 end function
@@ -72,19 +79,22 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
 end function
 
 function nrTaskMain() as Void
-    'Assuming that parent node is com.newrelic.NRAgent
     'print "---- Running NRTask ----"
     if m.nr = invalid
+        'Assuming that parent node is com.newrelic.NRAgent
         m.nr = m.top.getParent()
         m.apiKey = m.top.apiKey
         m.eventApiUrl = m.top.eventApiUrl
         m.logApiUrl = m.top.logApiUrl
+        m.metricApiUrl = m.top.metricApiUrl
         m.sampleType = m.top.sampleType
     end if
     if m.sampleType = "event"
         nrEventProcessor()
     else if m.sampleType = "log"
         nrLogProcessor()
+    else if m.sampleType = "metric"
+        nrMetricProcessor()
     end if
     'print "---- Ended running NRTask ----"
 end function

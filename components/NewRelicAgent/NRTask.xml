@@ -14,6 +14,7 @@
 		<!-- Properties -->
 		<field id="eventApiUrl" type="string" value=""/>
 		<field id="logApiUrl" type="string" value=""/>
+		<field id="metricApiUrl" type="string" value=""/>
 		<field id="apiKey" type="string" value=""/>
 		<field id="sampleType" type="string" value=""/>
     </interface>
