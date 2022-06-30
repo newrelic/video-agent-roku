@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [2.1.3] - 2022/05/16
+### Fix
+- Timing issue.
+
 ## [2.1.2] - 2022/04/21
 ### Add
 - `timeSinceHttpRequest` attribute into `HTTP_RESPONSE` events.
