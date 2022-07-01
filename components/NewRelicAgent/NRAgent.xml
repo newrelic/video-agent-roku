@@ -32,6 +32,7 @@
         <function name="nrSetHarvestTime"/>
         <function name="nrSetHarvestTimeEvents"/>
         <function name="nrSetHarvestTimeLogs"/>
+        <function name="nrSetHarvestTimeMetrics"/>
         <function name="nrForceHarvest"/>
         <function name="nrForceHarvestEvents"/>
         <function name="nrForceHarvestLogs"/>

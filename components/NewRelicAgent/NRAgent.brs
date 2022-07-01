@@ -57,9 +57,10 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrMetricArrayMinK = 40
     m.nrMetricArrayDeltaK = 40
     m.nrMetricArrayK = m.nrMetricArrayNormalK
-    'TODO: array structure and rest of harves times
     'Harvest cycles for metrics
     m.nrMetricHarvestTimeNormal = 5 'TODO: set 60
+    m.nrMetricHarvestTimeMax = 10 'TODO: set 600
+    m.nrMetricHarvestTimeDelta = 1 'TODO: set 60
 
     'Groups and attributes
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
@@ -297,7 +298,12 @@ function nrSetHarvestTimeLogs(seconds as Integer) as Void
     nrLog(["Harvest time logs = ", seconds])
 end function
 
-'TODO: create public function nrSetHarvestTimeMetrics
+function nrSetHarvestTimeMetrics(seconds as Integer) as Void
+    if seconds < 60 then seconds = 60
+    m.nrMetricHarvestTimeNormal = seconds
+    m.nrHarvestTimerMetrics.duration = seconds
+    nrLog(["Harvest time metrics = ", seconds])
+end function
 
 function nrForceHarvest() as Void
     nrHarvestTimerHandlerEvents()
@@ -421,7 +427,6 @@ function nrSendMetric(name as String, value as dynamic, attr = invalid as Object
     nrLog(["RECORD NEW METRIC = ", metric])
 
     m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
-    nrLog(["METRIC ARRAY = ", m.nrMetricArray])
 end function
 
 'TODO: send count metric
@@ -453,8 +458,9 @@ function nrExtractAllSamples(sampleType as String) as Object
         return nrExtractAllEvents()
     else if sampleType = "log"
         return nrExtractAllLogs()
+    else if sampleType = "metric"
+        return nrExtractAllMetrics()
     end if
-    'TODO: add case for 'metric'
 end function
 
 function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
@@ -462,8 +468,9 @@ function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
         nrGetBackEvents(samples)
     else if sampleType = "log"
         nrGetBackLogs(samples)
+    else if sampleType = "metric"
+        nrGetBackMetrics(samples)
     end if
-    'TODO: add case for 'metric'
 end function
 
 function nrRecordEvent(event as Object) as Void
@@ -504,8 +511,12 @@ function nrReqErrorTooManyReq(sampleType as String) as Void
         if m.nrHarvestTimerLogs.duration < m.nrLogHarvestTimeMax
             m.nrHarvestTimerLogs.duration = m.nrHarvestTimerLogs.duration + m.nrLogHarvestTimeDelta
         end if
+    else if sampleType = "metric"
+        nrLog("NR API ERROR, TOO MANY REQUESTS, current metric harvest time = " + str(m.nrHarvestTimerMetrics.duration))
+        if m.nrHarvestTimerMetrics.duration < m.nrMetricHarvestTimeMax
+            m.nrHarvestTimerMetrics.duration = m.nrHarvestTimerMetrics.duration + m.nrMetricHarvestTimeDelta
+        end if
     end if
-    'TODO: add case for 'metric'
 end function
 
 function nrReqErrorTooLarge(sampleType as String) as Void
@@ -519,8 +530,11 @@ function nrReqErrorTooLarge(sampleType as String) as Void
         if m.nrLogArrayK > m.nrLogArrayMinK
             m.nrLogArrayK = m.nrLogArrayK - m.nrLogArrayDeltaK
         end if
+    else if sampleType = "metric"
+        if m.nrMetricArrayK > m.nrMetricArrayMinK
+            m.nrMetricArrayK = m.nrMetricArrayK - m.nrMetricArrayDeltaK
+        end if
     end if
-    'TODO: add case for 'metric'
 end function
 
 function nrReqOk(sampleType as String) as Void
@@ -540,8 +554,15 @@ function nrReqOk(sampleType as String) as Void
             m.nrLogArrayK = m.nrLogArrayK + m.nrLogArrayDeltaK
         end if
         nrLog("NR API OK logs, post K = " + str(m.nrLogArrayK) + " harvest time = " + str(m.nrHarvestTimerLogs.duration))
+    else if sampleType = "metric"
+        if m.nrHarvestTimerMetrics.duration > m.nrMetricHarvestTimeNormal
+            m.nrHarvestTimerMetrics.duration = m.nrHarvestTimerMetrics.duration - m.nrMetricHarvestTimeDelta
+        end if
+        if m.nrMetricArrayK < m.nrMetricArrayNormalK
+            m.nrMetricArrayK = m.nrMetricArrayK + m.nrMetricArrayDeltaK
+        end if
+        nrLog("NR API OK metrics, post K = " + str(m.nrMetricArrayK) + " harvest time = " + str(m.nrHarvestTimerMetrics.duration))
     end if
-    'TODO: add case for 'metric'
 end function
 
 '=================='
@@ -1233,6 +1254,18 @@ end function
 function nrGetBackLogs(logs as Object) as Void
     nrLog("------> nrGetBackLogs, current K = " + str(m.nrLogArrayK) + ", log size = " + str(logs.Count()))
     m.nrLogArrayIndex = nrGetBackSamples(logs, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
+end function
+
+function nrExtractAllMetrics() as Object
+    metrics = m.nrMetricArray
+    m.nrMetricArray = []
+    m.nrMetricArrayIndex = 0
+    return metrics
+end function
+
+function nrGetBackMetrics(metrics as Object) as Void
+    nrLog("------> nrGetBackMetrics, current K = " + str(m.nrMetricArrayK) + ", metric size = " + str(metrics.Count()))
+    m.nrMetricArrayIndex = nrGetBackSamples(metrics, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
 end function
 
 '================================'

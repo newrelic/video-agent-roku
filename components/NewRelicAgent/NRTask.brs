@@ -9,8 +9,15 @@ sub init()
     m.top.functionName = "nrTaskMain"
 end sub
 
-'TODO: check that this works for metrics end point
-function nrPushSamples(samples as Object, endpoint as String) as Object
+function nrPushSamples(samples as Object, endpoint as String, sampleType as String) as Object
+    'Metric API requires a specific format
+    if sampleType = "metric"
+        metricsModel = [{
+            "metrics": samples
+        }]
+        samples = metricsModel
+    end if
+
     jsonString = FormatJson(samples)
 
     rport = CreateObject("roMessagePort")
@@ -48,8 +55,7 @@ end function
 
 function nrMetricProcessor() as Void
     m.nr.callFunc("nrLog", "-- nrMetricProcessor --")
-    'TODO: call sample processor. Prepare called functions to handle metrics
-    'nrSampleProcessor("metric", m.metricApiUrl)
+    nrSampleProcessor("metric", m.metricApiUrl)
 end function
 
 function isStatusErr(res) as boolean
@@ -60,7 +66,7 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
     if m.nr <> invalid
         samples = m.nr.callFunc("nrExtractAllSamples", sampleType)
         if samples.Count() > 0
-            res = nrPushSamples(samples, endpoint)
+            res = nrPushSamples(samples, endpoint, sampleType)
             if isStatusErr(res)
                 m.nr.callFunc("nrLog", "-- nrSampleProcessor (" + sampleType + "): FAILED with code " + Str(res) + ", retry later --")
                 if res = 429

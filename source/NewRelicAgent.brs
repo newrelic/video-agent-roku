@@ -184,7 +184,7 @@ function nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
     end if
 end function
 
-' Set harvest time, the time the events are buffered before being sent to Insights.
+' Set harvest time, the time the events are buffered before being sent.
 '
 ' @param nr New Relic Agent object.
 ' @param time Time in seconds (min 60).
@@ -192,7 +192,7 @@ function nrSetHarvestTime(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTime", time)
 end function
 
-' Set harvest time for events, the time the events are buffered before being sent to Insights.
+' Set harvest time for events, the time the events are buffered before being sent.
 '
 ' @param nr New Relic Agent object.
 ' @param time Time in seconds (min 60).
@@ -200,12 +200,20 @@ function nrSetHarvestTimeEvents(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTimeEvents", time)
 end function
 
-' Set harvest time for logs, the time the events are buffered before being sent to Insights.
+' Set harvest time for logs, the time the events are buffered before being sent.
 '
 ' @param nr New Relic Agent object.
 ' @param time Time in seconds (min 60).
 function nrSetHarvestTimeLogs(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTimeLogs", time)
+end function
+
+' Set harvest time for metrics, the time the events are buffered before being sent.
+'
+' @param nr New Relic Agent object.
+' @param time Time in seconds (min 60).
+function nrSetHarvestTimeMetrics(nr as Object, time as Integer) as Void
+    nr.callFunc("nrSetHarvestTimeMetrics", time)
 end function
 
 ' Do harvest immediately. It doesn't reset the harvest timer.
