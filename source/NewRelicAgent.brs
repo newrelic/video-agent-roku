@@ -256,3 +256,13 @@ end function
 function nrSendLog(nr as Object, message as String, logtype as String, fields = invalid as Object) as Void
     nr.callFunc("nrSendLog", message, logtype, fields)
 end function
+
+' Record a gauge metric.
+'
+' @param nr New Relic Agent object.
+' @param name Metric name
+' @param value Metric value.
+' @param attr (optional) Metric attributes.
+function nrSendMetric(nr as Object, name as String, value as float, attr = invalid as Object) as Void
+    nr.callFunc("nrSendMetric", name, value, attr)
+end function

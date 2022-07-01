@@ -50,7 +50,13 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrLogHarvestTimeNormal = 60
     m.nrLogHarvestTimeMax = 600
     m.nrLogHarvestTimeDelta = 60
-
+    'Reservoir sampling for metrics
+    m.nrMetricArray = []
+    m.nrMetricArrayIndex = 0
+    m.nrMetricArrayNormalK = 400
+    m.nrMetricArrayMinK = 40
+    m.nrMetricArrayDeltaK = 40
+    m.nrMetricArrayK = m.nrMetricArrayNormalK
     'TODO: array structure and rest of harves times
     'Harvest cycles for metrics
     m.nrMetricHarvestTimeNormal = 5 'TODO: set 60
@@ -392,6 +398,34 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
 
     m.nrLogArrayIndex = nrAddSample(lg, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
 end function
+
+'Send a Gauge metric
+function nrSendMetric(name as String, value as dynamic, attr = invalid as Object) as Void
+    metric = CreateObject("roAssociativeArray")
+    metric["type"] = "gauge"
+    metric["name"] = name
+    metric["timestamp"] = nrTimestamp()
+    if GetInterface(value, "ifInt") <> invalid
+        metric["value"] = value.GetInt()
+    else if GetInterface(value, "ifLongInt") <> invalid
+        metric["value"] = value.GetLongInt()
+    else if GetInterface(value, "ifFloat") <> invalid
+        metric["value"] = value.GetFloat()
+    else if GetInterface(value, "ifDouble") <> invalid
+        metric["value"] = value.GetDouble()
+    else
+        metric["value"] = 0
+    end if
+    if attr <> invalid then metric["attributes"] = attr
+
+    nrLog(["RECORD NEW METRIC = ", metric])
+
+    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+    nrLog(["METRIC ARRAY = ", m.nrMetricArray])
+end function
+
+'TODO: send count metric
+'TODO: send summary metric
 
 '=========================='
 ' Public Internal Functions '
