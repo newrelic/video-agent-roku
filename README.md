@@ -1005,7 +1005,7 @@ Not all events and attributes are supported in all Ad trackers.
 
 ### Testing
 
-To run the unit tests, first copy the file `UnitTestFramework.brs` from [unit-testing-framework](https://github.com/rokudev/unit-testing-framework) to `source/testFramework/`. Then edit the file `source/tests/Test__Main.brs` and set your New Relic credentials in function `MainTestSuite__SetUp()`. Finally install the demo channel provided in the present repo and from a terminal run:
+To run the unit tests, first copy the file `UnitTestFramework.brs` from [unit-testing-framework](https://github.com/rokudev/unit-testing-framework) to `source/testFramework/`. Then install the demo channel provided in the present repo and from a terminal run:
 
 ```bash
 ./test.sh ROKU_IP
