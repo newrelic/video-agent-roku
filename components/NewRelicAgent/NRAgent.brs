@@ -58,9 +58,9 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrMetricArrayDeltaK = 40
     m.nrMetricArrayK = m.nrMetricArrayNormalK
     'Harvest cycles for metrics
-    m.nrMetricHarvestTimeNormal = 5 'TODO: set 60
-    m.nrMetricHarvestTimeMax = 10 'TODO: set 600
-    m.nrMetricHarvestTimeDelta = 1 'TODO: set 60
+    m.nrMetricHarvestTimeNormal = 60
+    m.nrMetricHarvestTimeMax = 600
+    m.nrMetricHarvestTimeDelta = 60
 
     'Groups and attributes
     m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
@@ -282,6 +282,7 @@ end function
 function nrSetHarvestTime(seconds as Integer) as Void
     nrSetHarvestTimeEvents(seconds)
     nrSetHarvestTimeLogs(seconds)
+    nrSetHarvestTimeMetrics(seconds)
 end function
 
 function nrSetHarvestTimeEvents(seconds as Integer) as Void
@@ -319,7 +320,9 @@ function nrForceHarvestLogs() as Void
     nrHarvestTimerHandlerLogs()
 end function
 
-'TODO: create public funcion nrForceHarvestMetrics
+function nrForceHarvestMetrics() as Void
+    nrHarvestTimerHandlerMetrics()
+end function
 
 function nrSetGroupingPatternGenerator() as Void
     m.nrGroupingPatternCallback = m.top.patternGen
