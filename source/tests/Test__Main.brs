@@ -28,10 +28,10 @@ End Function
 Sub MainTestSuite__SetUp()
     print "Main SetUp"
     ' Setup New Relic Agent
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", true)
+    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "US", true)
     ' Disable harvest timer
-    nrHarvestTimer = m.nr.findNode("nrHarvestTimer")
-    nrHarvestTimer.control = "stop"
+    nrHarvestTimerEvents = m.nr.findNode("nrHarvestTimerEvents")
+    nrHarvestTimerEvents.control = "stop"
     ' Create Dummy Video object and start video tracking
     m.videoObject = CreateObject("roSGNode", "com.newrelic.test.DummyVideo")
     videoContent = createObject("RoSGNode", "ContentNode")
@@ -50,7 +50,7 @@ Sub Video_Tracking_SetUp(mm as Object)
     mm.videoObject.callFunc("resetState")
     NewRelicVideoStart(mm.nr, mm.videoObject)
     'Remove initial video events (PLAYER_READY)
-    mm.nr.callFunc("nrExtractAllEvents")
+    mm.nr.callFunc("nrExtractAllSamples", "event")
 End Sub
 
 Function TestCase__Main_CustomEvents() as String
@@ -59,7 +59,7 @@ Function TestCase__Main_CustomEvents() as String
     Video_Tracking_SetUp(m)
     
     nrSendSystemEvent(m.nr, "TEST_SYSTEM_EVENT")
-    events = m.nr.callFunc("nrExtractAllEvents")
+    events = m.nr.callFunc("nrExtractAllSamples", "event")
     
     return multiAssert([
         m.assertArrayCount(events, 1)
@@ -84,7 +84,7 @@ Function TestCase__Main_VideoEvents() as String
     m.videoObject.callFunc("endPlayback")
     m.videoObject.callFunc("error")
 
-    events = m.nr.callFunc("nrExtractAllEvents")
+    events = m.nr.callFunc("nrExtractAllSamples", "event")
 
     return multiAssert([
         m.assertArrayCount(events, 8)
@@ -122,7 +122,7 @@ Function TestCase__Main_TimeSinceAttributes() as String
     sleep(400)
     m.videoObject.callFunc("endPlayback")
 
-    events = m.nr.callFunc("nrExtractAllEvents")
+    events = m.nr.callFunc("nrExtractAllSamples", "event")
 
     return multiAssert([
         m.assertArrayCount(events, 7)
@@ -166,7 +166,7 @@ Function TestCase__Main_RAFTracker() as String
     nrTrackRAF(m.nr, "Complete", ctx)
     nrTrackRAF(m.nr, "PodComplete", ctx)
 
-    events = m.nr.callFunc("nrExtractAllEvents")
+    events = m.nr.callFunc("nrExtractAllSamples", "event")
 
     return multiAssert([
         m.assertArrayCount(events, 8)

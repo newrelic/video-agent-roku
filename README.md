@@ -1005,13 +1005,13 @@ Not all events and attributes are supported in all Ad trackers.
 
 ### Testing
 
-To run the unit tests, first copy the file `UnitTestFramework.brs` from [unit-testing-framework](https://github.com/rokudev/unit-testing-framework) to `source/testFramework/`. Then install the demo channel provided in the present repo and from a terminal run:
+To run the unit tests, first copy the file `UnitTestFramework.brs` from [unit-testing-framework](https://github.com/rokudev/unit-testing-framework) to `source/testFramework/`. Then edit the file `source/tests/Test__Main.brs` and set your New Relic credentials in function `MainTestSuite__SetUp()`. Finally install the demo channel provided in the present repo and from a terminal run:
 
 ```bash
-curl -d '' 'http://ROKU_IP:8060/launch/dev?RunTests=true'
+./test.sh ROKU_IP
 ```
 
-Where `ROKU_IP` is the address of the Roku device where the channel is installed. Connect to the debug terminal (port 8085) to see test results.
+Where `ROKU_IP` is the address of the Roku device where the channel is installed. Connect to the debug terminal (port 8085) to see test results. You can also provide the dev password as a second argument if you want to compile and deploy before running tests.
 
 ### Debugging
 Network proxying is supported using URL re-write (see [App Level Proxying](https://rokulikeahurricane.io/proxying_network_requests)). To send all network requests via a proxy call `nrUpdateConfig()` function with the `proxyUrl` parameter object property. Be sure to specify the same URL delimiter as your proxy re-write rule.
