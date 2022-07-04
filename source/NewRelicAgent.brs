@@ -274,3 +274,14 @@ end function
 function nrSendMetric(nr as Object, name as String, value as float, attr = invalid as Object) as Void
     nr.callFunc("nrSendMetric", name, value, attr)
 end function
+
+' Record a count metric. This kind of metrics measure the number of occurences of an event during a time interval.
+'
+' @param nr New Relic Agent object.
+' @param name Metric name
+' @param value Metric value.
+' @param interval Metric time interval in milliseconds.
+' @param attr (optional) Metric attributes.
+function nrSendCountMetric(nr as Object, name as String, value as float, interval as Integer, attr = invalid as Object) as Void
+    nr.callFunc("nrSendCountMetric", name, value, interval, attr)
+end function

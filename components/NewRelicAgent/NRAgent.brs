@@ -432,7 +432,31 @@ function nrSendMetric(name as String, value as dynamic, attr = invalid as Object
     m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
 end function
 
-'TODO: send count metric
+'Send Count metric
+function nrSendCountMetric(name as String, value as dynamic, interval as Integer, attr = invalid as Object) as Void
+    metric = CreateObject("roAssociativeArray")
+    metric["type"] = "count"
+    metric["name"] = name
+    metric["interval.ms"] = interval
+    metric["timestamp"] = nrTimestamp()
+    if GetInterface(value, "ifInt") <> invalid
+        metric["value"] = value.GetInt()
+    else if GetInterface(value, "ifLongInt") <> invalid
+        metric["value"] = value.GetLongInt()
+    else if GetInterface(value, "ifFloat") <> invalid
+        metric["value"] = value.GetFloat()
+    else if GetInterface(value, "ifDouble") <> invalid
+        metric["value"] = value.GetDouble()
+    else
+        metric["value"] = 0
+    end if
+    if attr <> invalid then metric["attributes"] = attr
+
+    nrLog(["RECORD NEW COUNT METRIC = ", metric])
+
+    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+end function
+
 'TODO: send summary metric
 
 '=========================='

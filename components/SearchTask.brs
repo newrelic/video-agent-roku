@@ -11,6 +11,8 @@ function searchTaskMain()
     print "SearchTaskMain function"
     m.port = CreateObject("roMessagePort")
     counter = 0
+    countTimer = CreateObject("roTimespan")
+    countTimer.Mark()
     while true
         _url = box("https://www.google.com/search?source=hp&q=" + m.top.searchString)
         urlReq = CreateObject("roUrlTransfer")
@@ -37,5 +39,11 @@ function searchTaskMain()
         
         sleep(2500)
         counter = counter + 1
+
+        if countTimer.TotalMilliseconds() > 7500
+            nrSendCountMetric(m.nr, "roku.http.request.count", counter, countTimer.TotalMilliseconds())
+            counter = 0
+            countTimer.Mark()
+        end if
     end while
 end function

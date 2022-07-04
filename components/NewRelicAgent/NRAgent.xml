@@ -40,6 +40,7 @@
         <function name="nrTrackRAF"/>
         <function name="nrSendLog"/>
         <function name="nrSendMetric"/>
+        <function name="nrSendCountMetric"/>
         <!-- Internal Methods (not wrapped, but used from the outside by some internal components) -->
         <function name="nrActivateLogging"/>
         <function name="nrLog"/>
