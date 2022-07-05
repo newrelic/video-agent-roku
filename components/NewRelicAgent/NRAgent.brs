@@ -457,7 +457,20 @@ function nrSendCountMetric(name as String, value as dynamic, interval as Integer
     m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
 end function
 
-'TODO: send summary metric
+'Send Summary metric
+function nrSendSummaryMetric(name as String, interval as Integer, value as Object, attr = invalid as Object) as Void
+    metric = CreateObject("roAssociativeArray")
+    metric["type"] = "summary"
+    metric["name"] = name
+    metric["interval.ms"] = interval
+    metric["timestamp"] = nrTimestamp()
+    metric["value"] = value
+    if attr <> invalid then metric["attributes"] = attr
+
+    nrLog(["RECORD NEW SUMMARY METRIC = ", metric])
+
+    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+end function
 
 '=========================='
 ' Public Internal Functions '

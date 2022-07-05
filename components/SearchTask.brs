@@ -13,6 +13,11 @@ function searchTaskMain()
     counter = 0
     countTimer = CreateObject("roTimespan")
     countTimer.Mark()
+
+    m_min = 999999
+    m_max = 0
+    m_sum = 0
+
     while true
         _url = box("https://www.google.com/search?source=hp&q=" + m.top.searchString)
         urlReq = CreateObject("roUrlTransfer")
@@ -35,6 +40,11 @@ function searchTaskMain()
             'nrSendHttpResponse(m.nr, _url, msg)
             'nrSendLog(m.nr, "Google Search", "URL Request", { "url": _url, "counter": counter, "bodysize": Len(msg) })
             nrSendMetric(m.nr, "roku.http.response", requestTimer.TotalMilliseconds())
+
+            ' Update max, min and sum
+            if requestTimer.TotalMilliseconds() > m_max then m_max = requestTimer.TotalMilliseconds()
+            if requestTimer.TotalMilliseconds() < m_min then m_min = requestTimer.TotalMilliseconds()
+            m_sum = m_sum + requestTimer.TotalMilliseconds()
         end if
         
         sleep(2500)
@@ -42,6 +52,10 @@ function searchTaskMain()
 
         if countTimer.TotalMilliseconds() > 7500
             nrSendCountMetric(m.nr, "roku.http.request.count", counter, countTimer.TotalMilliseconds())
+            nrSendSummaryMetric(m.nr, "roku.http.response.summary", countTimer.TotalMilliseconds(), counter, m_sum, m_min, m_max)
+            m_min = 999999
+            m_max = 0
+            m_sum = 0
             counter = 0
             countTimer.Mark()
         end if

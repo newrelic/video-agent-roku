@@ -265,23 +265,40 @@ function nrSendLog(nr as Object, message as String, logtype as String, fields = 
     nr.callFunc("nrSendLog", message, logtype, fields)
 end function
 
-' Record a gauge metric.
+' Record a gauge metric. Represents a value that can increase or decrease with time.
 '
 ' @param nr New Relic Agent object.
 ' @param name Metric name
-' @param value Metric value.
+' @param value Metric value. Number.
 ' @param attr (optional) Metric attributes.
-function nrSendMetric(nr as Object, name as String, value as float, attr = invalid as Object) as Void
+function nrSendMetric(nr as Object, name as String, value as dynamic, attr = invalid as Object) as Void
     nr.callFunc("nrSendMetric", name, value, attr)
 end function
 
-' Record a count metric. This kind of metrics measure the number of occurences of an event during a time interval.
+' Record a count metric. Measures the number of occurences of an event during a time interval.
 '
 ' @param nr New Relic Agent object.
 ' @param name Metric name
-' @param value Metric value.
+' @param value Metric value. Number.
 ' @param interval Metric time interval in milliseconds.
 ' @param attr (optional) Metric attributes.
-function nrSendCountMetric(nr as Object, name as String, value as float, interval as Integer, attr = invalid as Object) as Void
+function nrSendCountMetric(nr as Object, name as String, value as dynamic, interval as Integer, attr = invalid as Object) as Void
     nr.callFunc("nrSendCountMetric", name, value, interval, attr)
+end function
+
+' Record a summary metric. Used to report pre-aggregated data, or information on aggregated discrete events.
+'
+' @param nr New Relic Agent object.
+' @param name Metric name
+' @param value Metric value. Number.
+' @param interval Metric time interval in milliseconds.
+' @param attr (optional) Metric attributes.
+function nrSendSummaryMetric(nr as Object, name as String, interval as Integer, counter as dynamic, m_sum as dynamic, m_min as dynamic, m_max as dynamic, attr = invalid as Object) as Void
+    value = {
+        "count": counter,
+        "sum": m_sum,
+        "max": m_max,
+        "min": m_min
+    }
+    nr.callFunc("nrSendSummaryMetric", name, interval, value, attr)
 end function
