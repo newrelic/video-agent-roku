@@ -28,7 +28,9 @@ End Function
 Sub MainTestSuite__SetUp()
     print "Main SetUp"
     ' Setup New Relic Agent
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "US", true)
+    if m.nr = invalid
+        m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "US", true)
+    end if
     ' Disable harvest timer
     nrHarvestTimerEvents = m.nr.findNode("nrHarvestTimerEvents")
     nrHarvestTimerEvents.control = "stop"
