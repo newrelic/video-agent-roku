@@ -7,6 +7,8 @@ sub RunUserInterface(args)
 
         Runner.SetFunctions([
             TestSuite__Main
+            TestSuite__Logs
+            TestSuite__Metrics
         ])
 
         Runner.Logger.SetVerbosity(3)
