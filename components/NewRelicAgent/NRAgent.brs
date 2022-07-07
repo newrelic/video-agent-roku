@@ -784,11 +784,12 @@ function nrSendError(video as Object) as Void
     end if
     if video.errorInfo <> invalid
         attr.append({
-            "errorClipId": video.errorInfo.clip_id,
+            "errorClipId": video.errorInfo.clipid,
             "errorIgnored": video.errorInfo.ignored,
             "errorSource": video.errorInfo.source,
             "errorCategory": video.errorInfo.category,
-            "errorInfoCode": video.errorInfo.error_code,
+            "errorInfoCode": video.errorInfo.errcode,
+            "errorDrmInfoCode": video.errorInfo.drmerrcode,
             "errorDebugMsg": video.errorInfo.dbgmsg,
             "errorAttributes": video.errorInfo.error_attributes
         })
