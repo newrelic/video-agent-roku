@@ -259,12 +259,6 @@ function nrSendHttpResponse(attr as Object) as Void
     nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
 end function
 
-'TODO: on event harvest, count the number of HTTP_REQUEST and HTTP_RESPONSE events, and generate a count metric for each
-'TODO: check if error, and generate error count:
-'   if attr["httpCode"] >= 400 or attr["httpCode"] < 0
-'       ...
-'   end if
-
 function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String) as Void
     dict = CreateObject("roAssociativeArray")
     dict[key] = value
@@ -1440,8 +1434,55 @@ function nrHeartbeatHandler() as Void
     end if
 end function
 
+function nrCalculateCountMetrics() as Void
+    num_http_request = 0
+    http_request_min_ts = 0
+    http_request_max_ts = 0
+
+    num_http_response = 0
+    http_response_min_ts = 0
+    http_response_max_ts = 0
+    num_http_response_errors = 0
+
+    events = nrExtractAllEvents()
+
+    for each ev in events
+        timestamp = parseJson(ev["timestamp"])
+        if ev["actionName"] = "HTTP_REQUEST"
+            num_http_request = num_http_request + 1
+            if http_request_min_ts = 0
+                http_request_min_ts = timestamp
+                http_request_max_ts = timestamp
+            else
+                if http_request_min_ts > timestamp then http_request_min_ts = timestamp
+                if http_request_max_ts < timestamp then http_request_max_ts = timestamp
+            end if
+        else if ev["actionName"] = "HTTP_RESPONSE"
+            num_http_response = num_http_response + 1
+            if http_response_min_ts = 0
+                http_response_min_ts = timestamp
+                http_response_max_ts = timestamp
+            else
+                if http_response_min_ts > timestamp then http_response_min_ts = timestamp
+                if http_response_max_ts < timestamp then http_response_max_ts = timestamp
+            end if
+            if ev["httpCode"] >= 400 or ev["httpCode"] < 0
+                num_http_response_errors = num_http_response_errors + 1
+            end if
+        end if
+    end for
+
+    nrGetBackEvents(events)
+
+    nrSendCountMetric("roku.http.request.count", num_http_request, http_request_max_ts - http_request_min_ts)
+    nrSendCountMetric("roku.http.response.count", num_http_response, http_response_max_ts - http_response_min_ts)
+    nrSendCountMetric("roku.http.response.error.count", num_http_response_errors, http_response_max_ts - http_response_min_ts)
+end function
+
 function nrHarvestTimerHandlerEvents() as Void
     nrLog("--- nrHarvestTimerHandlerEvents ---")
+
+    nrCalculateCountMetrics()
     
     if LCase(m.bgTaskEvents.state) = "run"
         nrLog("NRTaskEvents still running, abort")
