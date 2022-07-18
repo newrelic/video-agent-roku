@@ -85,7 +85,6 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
 end function
 
 function nrTaskMain() as Void
-    'print "---- Running NRTask ----"
     if m.nr = invalid
         'Assuming that parent node is com.newrelic.NRAgent
         m.nr = m.top.getParent()
@@ -95,6 +94,7 @@ function nrTaskMain() as Void
         m.metricApiUrl = m.top.metricApiUrl
         m.sampleType = m.top.sampleType
     end if
+    'print "---- Running NRTask ----", m.sampleType
     if m.sampleType = "event"
         nrEventProcessor()
     else if m.sampleType = "log"

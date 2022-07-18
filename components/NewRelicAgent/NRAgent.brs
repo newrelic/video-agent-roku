@@ -36,7 +36,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrEventArrayDeltaK = 40
     m.nrEventArrayK = m.nrEventArrayNormalK
     'Harvest cycles for events
-    m.nrEventHarvestTimeNormal = 60
+    m.nrEventHarvestTimeNormal = 10 'TODO: 60
     m.nrEventHarvestTimeMax = 600
     m.nrEventHarvestTimeDelta = 60
     'Reservoir sampling for logs
@@ -58,7 +58,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrMetricArrayDeltaK = 40
     m.nrMetricArrayK = m.nrMetricArrayNormalK
     'Harvest cycles for metrics
-    m.nrMetricHarvestTimeNormal = 60
+    m.nrMetricHarvestTimeNormal = 10 'TODO: 60
     m.nrMetricHarvestTimeMax = 600
     m.nrMetricHarvestTimeDelta = 60
 
@@ -236,8 +236,8 @@ function nrSendHttpRequest(attr as Object) as Void
     'Clean up old transfers
     toDeleteKeys = []
     for each item in m.nrRequestIdentifiers.Items()
-        'More than 2 minutes without a response
-        if nrTimestamp() - item.value > 120000
+        'More than 10 minutes without a response, delete the request ID
+        if nrTimestamp() - item.value > 10*60*1000
             toDeleteKeys.Push(item.key)
         end if
     end for
@@ -253,9 +253,17 @@ function nrSendHttpResponse(attr as Object) as Void
         deltaMs = nrTimestamp() - m.nrRequestIdentifiers[transId]
         attr["timeSinceHttpRequest"] = deltaMs
         m.nrRequestIdentifiers.Delete(transId)
+        'Generate metrics
+        nrSendMetric("roku.http.response.time", deltaMs, {"origUrl": attr["origUrl"]})
     end if
     nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
 end function
+
+'TODO: on event harvest, count the number of HTTP_REQUEST and HTTP_RESPONSE events, and generate a count metric for each
+'TODO: check if error, and generate error count:
+'   if attr["httpCode"] >= 400 or attr["httpCode"] < 0
+'       ...
+'   end if
 
 function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String) as Void
     dict = CreateObject("roAssociativeArray")
