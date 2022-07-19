@@ -36,7 +36,6 @@
         <function name="nrForceHarvest"/>
         <function name="nrForceHarvestEvents"/>
         <function name="nrForceHarvestLogs"/>
-        <function name="nrSetGroupingPatternGenerator"/>
         <function name="nrTrackRAF"/>
         <function name="nrSendLog"/>
         <function name="nrSendMetric"/>
@@ -59,7 +58,6 @@
 
 	<children>
         <Timer id="nrHeartbeatTimer" repeat="true" duration="30"/>
-        <Timer id="nrGroupingTimer" repeat="true" duration="10"/>
 		<com.newrelic.NRTask id="NRTaskEvents"/>
 		<Timer id="nrHarvestTimerEvents" repeat="true"/>
         <com.newrelic.NRTask id="NRTaskLogs"/>

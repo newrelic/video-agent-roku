@@ -62,10 +62,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrMetricHarvestTimeMax = 600
     m.nrMetricHarvestTimeDelta = 60
 
-    'Groups and attributes
-    m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
-    m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
-    m.nrGroupingPatternCallback = invalid
+    'Attributes
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
     m.nrCustomAttributes = CreateObject("roAssociativeArray")
 
@@ -113,11 +110,6 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrHarvestTimerMetrics.ObserveField("fire", "nrHarvestTimerHandlerMetrics")
     m.nrHarvestTimerMetrics.duration = m.nrMetricHarvestTimeNormal
     m.nrHarvestTimerMetrics.control = "start"
-
-    'Init grouping timer
-    m.nrGroupingTimer = m.top.findNode("nrGroupingTimer")
-    m.nrGroupingTimer.observeFieldScoped("fire", "nrGroupingHandler")
-    m.nrGroupingTimer.control = "start"
     
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
@@ -324,10 +316,6 @@ end function
 
 function nrForceHarvestMetrics() as Void
     nrHarvestTimerHandlerMetrics()
-end function
-
-function nrSetGroupingPatternGenerator() as Void
-    m.nrGroupingPatternCallback = m.top.patternGen
 end function
 
 'Roku Advertising Framework tracking
@@ -678,42 +666,6 @@ function nrAddAttributes(ev as Object) as Object
     return ev
 end function
 
-function nrProcessGroupedEvents() as Void
-    'Convert groups into custom events and flush the groups dictionaries
-    
-    nrLog("-- Process Grouped Events --")
-    nrLogEvGroups()
-    
-    if m.nrEventGroupsConnect.Count() > 0
-        nrConvertGroupsToEvents(m.nrEventGroupsConnect)
-        m.nrEventGroupsConnect = {}
-    end if
-    
-    if m.nrEventGroupsComplete.Count() > 0
-        nrConvertGroupsToEvents(m.nrEventGroupsComplete)
-        m.nrEventGroupsComplete = {}
-    end if
-end function
-
-function nrConvertGroupsToEvents(group as Object) as Void
-    for each item in group.Items()
-        item.value["matchPattern"] = item.key
-
-        'Calculate averages
-        if item.value["actionName"] = "HTTP_COMPLETE"
-            counter = Cdbl(item.value["counter"])
-            item.value["transferTime"] = item.value["transferTime"] / counter
-            item.value["connectTime"] = item.value["connectTime"] / counter
-            item.value["dnsLookupTime"] = item.value["dnsLookupTime"] / counter
-            item.value["downloadSpeed"] = item.value["downloadSpeed"] / counter
-            item.value["uploadSpeed"] = item.value["uploadSpeed"] / counter
-            item.value["firstByteTime"] = item.value["firstByteTime"] / counter
-        end if
-        
-        nrSendCustomEvent("RokuSystem", item.value["actionName"], item.value)
-    end for
-end function
-
 function nrAddCommonHTTPAttr(info as Object) as Object
     attr = {
         "httpCode": info["HttpCode"],
@@ -726,53 +678,7 @@ function nrAddCommonHTTPAttr(info as Object) as Object
     return attr
 end function
 
-function nrGroupNewEvent(ev as Object, actionName as String) as Void
-    if m.nrGroupingPatternCallback <> invalid
-        matchPattern = m.nrGroupingPatternCallback.callFunc("callback", ev)
-    else
-        matchPattern = nrParseVideoStreamUrl(ev)
-    end if
-
-    ev["actionName"] = actionName
-    
-    if actionName = "HTTP_COMPLETE"
-        m.nrEventGroupsComplete = nrGroupMergeEvent(matchPattern, m.nrEventGroupsComplete, ev)
-    else if actionName = "HTTP_CONNECT"
-        m.nrEventGroupsConnect = nrGroupMergeEvent(matchPattern, m.nrEventGroupsConnect, ev)
-    end if
-end function
-
-function nrGroupMergeEvent(matchPattern as String, group as Object, ev as Object) as Object
-    evGroup = group[matchPattern]
-    if evGroup = invalid
-        'Create new group from event
-        ev["counter"] = 1
-        ev["initialTimestamp"] = nrTimestamp()
-        ev["finalTimestamp"] = ev["initialTimestamp"]
-        group[matchPattern] = ev
-    else
-        'Add new event to existing group
-        evGroup["counter"] = evGroup["counter"] + 1
-        evGroup["finalTimestamp"] = nrTimestamp()
-        
-        'Add all numeric values
-        if ev["actionName"] = "HTTP_COMPLETE"
-            'Summations
-            evGroup["bytesDownloaded"] = evGroup["bytesDownloaded"] + ev["bytesDownloaded"]
-            evGroup["bytesUploaded"] = evGroup["bytesUploaded"] + ev["bytesUploaded"]
-            'Averages, we will divide it by count right before sending the event
-            evGroup["transferTime"] = evGroup["transferTime"] + ev["transferTime"]
-            evGroup["connectTime"] = evGroup["connectTime"] + ev["connectTime"]
-            evGroup["dnsLookupTime"] = evGroup["dnsLookupTime"] + ev["dnsLookupTime"]
-            evGroup["downloadSpeed"] = evGroup["downloadSpeed"] + ev["downloadSpeed"]
-            evGroup["uploadSpeed"] = evGroup["uploadSpeed"] + ev["uploadSpeed"]
-            evGroup["firstByteTime"] = evGroup["firstByteTime"] + ev["firstByteTime"]
-        end if 
-        
-        group[matchPattern] = evGroup
-    end if
-    return group
-end function
+'TODO: enable/disable HTTP_CONNECT/HTTP_COMPLETE events and metrics
 
 function nrSendHTTPError(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)
@@ -782,7 +688,7 @@ end function
 
 function nrSendHTTPConnect(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)
-    nrGroupNewEvent(attr, "HTTP_CONNECT")
+    nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -799,7 +705,12 @@ function nrSendHTTPComplete(info as Object) as Void
     }
     commonAttr = nrAddCommonHTTPAttr(info)
     attr.Append(commonAttr)
-    nrGroupNewEvent(attr, "HTTP_COMPLETE")
+    nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
+    nrSendMetric("roku.http.complete.connetTime", attr["connectTime"], {"origUrl": attr["origUrl"]})
+    nrSendMetric("roku.http.complete.downSpeed", attr["downloadSpeed"], {"origUrl": attr["origUrl"]})
+    nrSendMetric("roku.http.complete.upSpeed", attr["uploadSpeed"], {"origUrl": attr["origUrl"]})
+    nrSendMetric("roku.http.complete.firstByteTime", attr["transferTime"], {"origUrl": attr["origUrl"]})
+    nrSendMetric("roku.http.complete.dnsTime", attr["dnsLookupTime"], {"origUrl": attr["origUrl"]})
 end function
 
 function nrSendBandwidth(info as Object) as Void
@@ -1472,6 +1383,8 @@ function nrCalculateCountMetrics() as Void
         end if
     end for
 
+    'TODO: do metric stuff with HTTP_CONNECT/HTTP_COMPLETE/HTTP_ERROR
+
     nrGetBackEvents(events)
 
     nrSendCountMetric("roku.http.request.count", num_http_request, http_request_max_ts - http_request_min_ts)
@@ -1514,27 +1427,9 @@ function nrHarvestTimerHandlerMetrics() as Void
     m.bgTaskMetrics.control = "RUN"
 end function
 
-function nrGroupingHandler() as Void
-    nrLog("--- nrGroupingHandler ---")
-    
-    nrProcessGroupedEvents()
-end function
-
 '=================='
 ' Test and Logging '
 '=================='
-
-function nrLogEvGroups() as Void
-    nrLog("============ Event Groups HTTP_CONNECT ===========")
-    for each item in m.nrEventGroupsConnect.Items()
-        nrLog([item.key, item.value])
-    end for
-    nrLog("=========== Event Groups HTTP_COMPLETE ===========")
-    for each item in m.nrEventGroupsComplete.Items()
-        nrLog([item.key, item.value])
-    end for
-    nrLog("==================================================")
-end function
 
 function nrLogVideoInfo() as Void
     nrLog("====================================")
