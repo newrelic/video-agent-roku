@@ -479,6 +479,44 @@ Example:
 	end if
 ```
 
+**nrEnableHttpEvents**
+
+```
+function nrEnableHttpEvents(nr as Object) as Void
+
+Description:
+	Enable HTTP_CONNECT/HTTP_COMPLETE events.
+
+Arguments:
+	nr: New Relic Agent object.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrEnableHttpEvents(nr)
+```
+
+**nrDisableHttpEvents**
+
+```
+function nrDisableHttpEvents(nr as Object) as Void
+
+Description:
+	Disable HTTP_CONNECT/HTTP_COMPLETE events.
+
+Arguments:
+	nr: New Relic Agent object.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrDisableHttpEvents(nr)
+```
+
 **nrSetHarvestTime**
 
 ```

@@ -27,6 +27,8 @@
         <function name="nrSendVideoEvent"/>
         <function name="nrSendHttpRequest"/>
         <function name="nrSendHttpResponse"/>
+        <function name="nrEnableHttpEvents"/>
+        <function name="nrDisableHttpEvents"/>
         <function name="nrSetCustomAttribute"/>
         <function name="nrSetCustomAttributeList"/>
         <function name="nrSetHarvestTime"/>

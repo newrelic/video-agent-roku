@@ -66,6 +66,9 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
     m.nrCustomAttributes = CreateObject("roAssociativeArray")
 
+    'HTTP_CONNECT/HTTP_COMPLETE state
+    m.http_events_enabled = false
+
     'HTTP_REQUEST counters
     m.num_http_request = 0
     m.http_request_min_ts = 0
@@ -298,6 +301,14 @@ function nrSendHttpResponse(attr as Object) as Void
     end if
     
     nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
+end function
+
+function nrEnableHttpEvents() as Void
+    m.http_events_enabled = true
+end function
+
+function nrDisableHttpEvents() as Void
+    m.http_events_enabled = false
 end function
 
 function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String) as Void
@@ -727,8 +738,6 @@ function nrAddCommonHTTPAttr(info as Object) as Object
     return attr
 end function
 
-'TODO: enable/disable HTTP_CONNECT/HTTP_COMPLETE events and metrics
-
 function nrSendHTTPError(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)
 
@@ -760,7 +769,7 @@ function nrSendHTTPConnect(info as Object) as Void
         if m.http_connect_max_ts < timestamp then m.http_connect_max_ts = timestamp
     end if
 
-    nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
+    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -789,7 +798,7 @@ function nrSendHTTPComplete(info as Object) as Void
         if m.http_complete_max_ts < timestamp then m.http_complete_max_ts = timestamp
     end if
 
-    nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
+    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
 
     nrSendMetric("roku.http.complete.connetTime", attr["connectTime"], {"origUrl": attr["origUrl"]})
     nrSendMetric("roku.http.complete.downSpeed", attr["downloadSpeed"], {"origUrl": attr["origUrl"]})

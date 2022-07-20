@@ -94,7 +94,7 @@ function nrTaskMain() as Void
         m.metricApiUrl = m.top.metricApiUrl
         m.sampleType = m.top.sampleType
     end if
-    'print "---- Running NRTask ----", m.sampleType
+    m.nr.callFunc("nrLog", "---- Running NRTask ---- " + m.sampleType)
     if m.sampleType = "event"
         nrEventProcessor()
     else if m.sampleType = "log"
@@ -102,5 +102,5 @@ function nrTaskMain() as Void
     else if m.sampleType = "metric"
         nrMetricProcessor()
     end if
-    'print "---- Ended running NRTask ----"
+    m.nr.callFunc("nrLog", "---- Ended running NRTask ---- " + m.sampleType)
 end function

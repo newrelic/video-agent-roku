@@ -184,6 +184,20 @@ function nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
     end if
 end function
 
+' Enable HTTP_CONNECT/HTTP_COMPLETE events.
+'
+' @param nr New Relic Agent object.
+function nrEnableHttpEvents(nr as Object) as Void
+    nr.callFunc("nrEnableHttpEvents")
+end function
+
+' Disable HTTP_CONNECT/HTTP_COMPLETE events.
+'
+' @param nr New Relic Agent object.
+function nrDisableHttpEvents(nr as Object) as Void
+    nr.callFunc("nrDisableHttpEvents")
+end function
+
 ' Set harvest time, the time the events are buffered before being sent.
 '
 ' @param nr New Relic Agent object.
