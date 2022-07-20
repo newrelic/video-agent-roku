@@ -1355,6 +1355,18 @@ function nrCalculateCountMetrics() as Void
     http_response_max_ts = 0
     num_http_response_errors = 0
 
+    num_http_connect = 0
+    http_connect_min_ts = 0
+    http_connect_max_ts = 0
+
+    num_http_complete = 0
+    http_complete_min_ts = 0
+    http_complete_max_ts = 0
+
+    num_http_error = 0
+    http_error_min_ts = 0
+    http_error_max_ts = 0
+
     events = nrExtractAllEvents()
 
     for each ev in events
@@ -1380,16 +1392,44 @@ function nrCalculateCountMetrics() as Void
             if ev["httpCode"] >= 400 or ev["httpCode"] < 0
                 num_http_response_errors = num_http_response_errors + 1
             end if
+        else if ev["actionName"] = "HTTP_CONNECT"
+            num_http_connect = num_http_connect + 1
+            if http_connect_min_ts = 0
+                http_connect_min_ts = timestamp
+                http_connect_max_ts = timestamp
+            else
+                if http_connect_min_ts > timestamp then http_connect_min_ts = timestamp
+                if http_connect_max_ts < timestamp then http_connect_max_ts = timestamp
+            end if
+        else if ev["actionName"] = "HTTP_COMPLETE"
+            num_http_complete = num_http_complete + 1
+            if http_complete_min_ts = 0
+                http_complete_min_ts = timestamp
+                http_complete_max_ts = timestamp
+            else
+                if http_complete_min_ts > timestamp then http_complete_min_ts = timestamp
+                if http_complete_max_ts < timestamp then http_complete_max_ts = timestamp
+            end if
+        else if ev["actionName"] = "HTTP_ERROR"
+            num_http_error = num_http_error + 1
+            if http_error_min_ts = 0
+                http_error_min_ts = timestamp
+                http_error_max_ts = timestamp
+            else
+                if http_error_min_ts > timestamp then http_error_min_ts = timestamp
+                if http_error_max_ts < timestamp then http_error_max_ts = timestamp
+            end if
         end if
     end for
-
-    'TODO: do metric stuff with HTTP_CONNECT/HTTP_COMPLETE/HTTP_ERROR
 
     nrGetBackEvents(events)
 
     nrSendCountMetric("roku.http.request.count", num_http_request, http_request_max_ts - http_request_min_ts)
     nrSendCountMetric("roku.http.response.count", num_http_response, http_response_max_ts - http_response_min_ts)
     nrSendCountMetric("roku.http.response.error.count", num_http_response_errors, http_response_max_ts - http_response_min_ts)
+    nrSendCountMetric("roku.http.connect.count", num_http_connect, http_connect_max_ts - http_connect_min_ts)
+    nrSendCountMetric("roku.http.complete.count", num_http_complete, http_complete_max_ts - http_complete_min_ts)
+    nrSendCountMetric("roku.http.error.count", num_http_error, http_error_max_ts - http_error_min_ts)
 end function
 
 function nrHarvestTimerHandlerEvents() as Void
