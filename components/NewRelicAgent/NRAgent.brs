@@ -66,6 +66,28 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
     m.nrCustomAttributes = CreateObject("roAssociativeArray")
 
+    'HTTP_REQUEST counters
+    m.num_http_request = 0
+    m.http_request_min_ts = 0
+    m.http_request_max_ts = 0
+    'HTTP_RESPONSE counters
+    m.num_http_response = 0
+    m.http_response_min_ts = 0
+    m.http_response_max_ts = 0
+    m.num_http_response_errors = 0
+    'HTTP_CONNECT counters
+    m.num_http_connect = 0
+    m.http_connect_min_ts = 0
+    m.http_connect_max_ts = 0
+    'HTTP_COMPLETE counters
+    m.num_http_complete = 0
+    m.http_complete_min_ts = 0
+    m.http_complete_max_ts = 0
+    'HTTP_ERROR counters
+    m.num_http_error = 0
+    m.http_error_min_ts = 0
+    m.http_error_max_ts = 0
+
     'HTTP Request/Response IDs
     m.nrRequestIdentifiers = CreateObject("roAssociativeArray")
     
@@ -236,6 +258,18 @@ function nrSendHttpRequest(attr as Object) as Void
     for each key in toDeleteKeys
         m.nrRequestIdentifiers.Delete(key)
     end for
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_request = m.num_http_request + 1
+    if m.http_request_min_ts = 0
+        m.http_request_min_ts = timestamp
+        m.http_request_max_ts = timestamp
+    else
+        if m.http_request_min_ts > timestamp then m.http_request_min_ts = timestamp
+        if m.http_request_max_ts < timestamp then m.http_request_max_ts = timestamp
+    end if
+
     nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
 end function
 
@@ -248,6 +282,21 @@ function nrSendHttpResponse(attr as Object) as Void
         'Generate metrics
         nrSendMetric("roku.http.response.time", deltaMs, {"origUrl": attr["origUrl"]})
     end if
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_response = m.num_http_response + 1
+    if m.http_response_min_ts = 0
+        m.http_response_min_ts = timestamp
+        m.http_response_max_ts = timestamp
+    else
+        if m.http_response_min_ts > timestamp then m.http_response_min_ts = timestamp
+        if m.http_response_max_ts < timestamp then m.http_response_max_ts = timestamp
+    end if
+    if attr["httpCode"] >= 400 or attr["httpCode"] < 0
+        m.num_http_response_errors = m.num_http_response_errors + 1
+    end if
+    
     nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
 end function
 
@@ -682,12 +731,35 @@ end function
 
 function nrSendHTTPError(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)
-    attr["counter"] = 1
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_error = m.num_http_error + 1
+    if m.http_error_min_ts = 0
+        m.http_error_min_ts = timestamp
+        m.http_error_max_ts = timestamp
+    else
+        if m.http_error_min_ts > timestamp then m.http_error_min_ts = timestamp
+        if m.http_error_max_ts < timestamp then m.http_error_max_ts = timestamp
+    end if
+
     nrSendCustomEvent("RokuSystem", "HTTP_ERROR", attr)
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_connect = m.num_http_connect + 1
+    if m.http_connect_min_ts = 0
+        m.http_connect_min_ts = timestamp
+        m.http_connect_max_ts = timestamp
+    else
+        if m.http_connect_min_ts > timestamp then m.http_connect_min_ts = timestamp
+        if m.http_connect_max_ts < timestamp then m.http_connect_max_ts = timestamp
+    end if
+
     nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
 end function
 
@@ -705,7 +777,20 @@ function nrSendHTTPComplete(info as Object) as Void
     }
     commonAttr = nrAddCommonHTTPAttr(info)
     attr.Append(commonAttr)
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_complete = m.num_http_complete + 1
+    if m.http_complete_min_ts = 0
+        m.http_complete_min_ts = timestamp
+        m.http_complete_max_ts = timestamp
+    else
+        if m.http_complete_min_ts > timestamp then m.http_complete_min_ts = timestamp
+        if m.http_complete_max_ts < timestamp then m.http_complete_max_ts = timestamp
+    end if
+
     nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
+
     nrSendMetric("roku.http.complete.connetTime", attr["connectTime"], {"origUrl": attr["origUrl"]})
     nrSendMetric("roku.http.complete.downSpeed", attr["downloadSpeed"], {"origUrl": attr["origUrl"]})
     nrSendMetric("roku.http.complete.upSpeed", attr["uploadSpeed"], {"origUrl": attr["origUrl"]})
@@ -1345,97 +1430,41 @@ function nrHeartbeatHandler() as Void
     end if
 end function
 
-function nrCalculateCountMetrics() as Void
-    num_http_request = 0
-    http_request_min_ts = 0
-    http_request_max_ts = 0
+function nrSendHttpCountMetrics() as Void
+    nrSendCountMetric("roku.http.request.count", m.num_http_request, m.http_request_max_ts - m.http_request_min_ts)
+    nrSendCountMetric("roku.http.response.count", m.num_http_response, m.http_response_max_ts - m.http_response_min_ts)
+    nrSendCountMetric("roku.http.response.error.count", m.num_http_response_errors, m.http_response_max_ts - m.http_response_min_ts)
+    nrSendCountMetric("roku.http.connect.count", m.num_http_connect, m.http_connect_max_ts - m.http_connect_min_ts)
+    nrSendCountMetric("roku.http.complete.count", m.num_http_complete, m.http_complete_max_ts - m.http_complete_min_ts)
+    nrSendCountMetric("roku.http.error.count", m.num_http_error, m.http_error_max_ts - m.http_error_min_ts)
 
-    num_http_response = 0
-    http_response_min_ts = 0
-    http_response_max_ts = 0
-    num_http_response_errors = 0
-
-    num_http_connect = 0
-    http_connect_min_ts = 0
-    http_connect_max_ts = 0
-
-    num_http_complete = 0
-    http_complete_min_ts = 0
-    http_complete_max_ts = 0
-
-    num_http_error = 0
-    http_error_min_ts = 0
-    http_error_max_ts = 0
-
-    events = nrExtractAllEvents()
-
-    for each ev in events
-        timestamp = parseJson(ev["timestamp"])
-        if ev["actionName"] = "HTTP_REQUEST"
-            num_http_request = num_http_request + 1
-            if http_request_min_ts = 0
-                http_request_min_ts = timestamp
-                http_request_max_ts = timestamp
-            else
-                if http_request_min_ts > timestamp then http_request_min_ts = timestamp
-                if http_request_max_ts < timestamp then http_request_max_ts = timestamp
-            end if
-        else if ev["actionName"] = "HTTP_RESPONSE"
-            num_http_response = num_http_response + 1
-            if http_response_min_ts = 0
-                http_response_min_ts = timestamp
-                http_response_max_ts = timestamp
-            else
-                if http_response_min_ts > timestamp then http_response_min_ts = timestamp
-                if http_response_max_ts < timestamp then http_response_max_ts = timestamp
-            end if
-            if ev["httpCode"] >= 400 or ev["httpCode"] < 0
-                num_http_response_errors = num_http_response_errors + 1
-            end if
-        else if ev["actionName"] = "HTTP_CONNECT"
-            num_http_connect = num_http_connect + 1
-            if http_connect_min_ts = 0
-                http_connect_min_ts = timestamp
-                http_connect_max_ts = timestamp
-            else
-                if http_connect_min_ts > timestamp then http_connect_min_ts = timestamp
-                if http_connect_max_ts < timestamp then http_connect_max_ts = timestamp
-            end if
-        else if ev["actionName"] = "HTTP_COMPLETE"
-            num_http_complete = num_http_complete + 1
-            if http_complete_min_ts = 0
-                http_complete_min_ts = timestamp
-                http_complete_max_ts = timestamp
-            else
-                if http_complete_min_ts > timestamp then http_complete_min_ts = timestamp
-                if http_complete_max_ts < timestamp then http_complete_max_ts = timestamp
-            end if
-        else if ev["actionName"] = "HTTP_ERROR"
-            num_http_error = num_http_error + 1
-            if http_error_min_ts = 0
-                http_error_min_ts = timestamp
-                http_error_max_ts = timestamp
-            else
-                if http_error_min_ts > timestamp then http_error_min_ts = timestamp
-                if http_error_max_ts < timestamp then http_error_max_ts = timestamp
-            end if
-        end if
-    end for
-
-    nrGetBackEvents(events)
-
-    nrSendCountMetric("roku.http.request.count", num_http_request, http_request_max_ts - http_request_min_ts)
-    nrSendCountMetric("roku.http.response.count", num_http_response, http_response_max_ts - http_response_min_ts)
-    nrSendCountMetric("roku.http.response.error.count", num_http_response_errors, http_response_max_ts - http_response_min_ts)
-    nrSendCountMetric("roku.http.connect.count", num_http_connect, http_connect_max_ts - http_connect_min_ts)
-    nrSendCountMetric("roku.http.complete.count", num_http_complete, http_complete_max_ts - http_complete_min_ts)
-    nrSendCountMetric("roku.http.error.count", num_http_error, http_error_max_ts - http_error_min_ts)
+    'HTTP_REQUEST counters
+    m.num_http_request = 0
+    m.http_request_min_ts = 0
+    m.http_request_max_ts = 0
+    'HTTP_RESPONSE counters
+    m.num_http_response = 0
+    m.http_response_min_ts = 0
+    m.http_response_max_ts = 0
+    m.num_http_response_errors = 0
+    'HTTP_CONNECT counters
+    m.num_http_connect = 0
+    m.http_connect_min_ts = 0
+    m.http_connect_max_ts = 0
+    'HTTP_COMPLETE counters
+    m.num_http_complete = 0
+    m.http_complete_min_ts = 0
+    m.http_complete_max_ts = 0
+    'HTTP_ERROR counters
+    m.num_http_error = 0
+    m.http_error_min_ts = 0
+    m.http_error_max_ts = 0
 end function
 
 function nrHarvestTimerHandlerEvents() as Void
     nrLog("--- nrHarvestTimerHandlerEvents ---")
 
-    nrCalculateCountMetrics()
+    nrSendHttpCountMetrics()
     
     if LCase(m.bgTaskEvents.state) = "run"
         nrLog("NRTaskEvents still running, abort")
