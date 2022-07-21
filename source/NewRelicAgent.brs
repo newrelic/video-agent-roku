@@ -295,8 +295,11 @@ end function
 '
 ' @param nr New Relic Agent object.
 ' @param name Metric name
-' @param value Metric value. Number.
 ' @param interval Metric time interval in milliseconds.
+' @param count Metric count.
+' @param m_sum Metric value summation.
+' @param m_min Metric minimum value.
+' @param m_max Metric maximum value.
 ' @param attr (optional) Metric attributes.
 function nrSendSummaryMetric(nr as Object, name as String, interval as Integer, counter as dynamic, m_sum as dynamic, m_min as dynamic, m_max as dynamic, attr = invalid as Object) as Void
     value = {
