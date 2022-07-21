@@ -800,7 +800,7 @@ function nrSendHTTPComplete(info as Object) as Void
 
     if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
 
-    nrSendMetric("roku.http.complete.connetTime", attr["connectTime"], {"origUrl": attr["origUrl"]})
+    nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"origUrl": attr["origUrl"]})
     nrSendMetric("roku.http.complete.downSpeed", attr["downloadSpeed"], {"origUrl": attr["origUrl"]})
     nrSendMetric("roku.http.complete.upSpeed", attr["uploadSpeed"], {"origUrl": attr["origUrl"]})
     nrSendMetric("roku.http.complete.firstByteTime", attr["transferTime"], {"origUrl": attr["origUrl"]})
