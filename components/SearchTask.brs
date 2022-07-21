@@ -20,6 +20,10 @@ function searchTaskMain()
 
     while true
         _url = box("https://www.google.com/search?source=hp&q=" + m.top.searchString)
+        if Rnd(5) = 4
+            ' Generates an error
+            _url = box("https://www.google.com/shitrequest")
+        end if
         urlReq = CreateObject("roUrlTransfer")
         urlReq.SetUrl(_url)
         urlReq.RetainBodyOnError(true)
@@ -31,14 +35,15 @@ function searchTaskMain()
         requestTimer = CreateObject("roTimespan")
 
         'Send HTTP_REQUEST action
+        print "URL REQ OBJECT = ", urlReq
         nrSendHttpRequest(m.nr, urlReq)
         requestTimer.Mark()
         
         msg = wait(5000, m.port)
         if type(msg) = "roUrlEvent" then
             'Send HTTP_RESPONSE action
-            'nrSendHttpResponse(m.nr, _url, msg)
-            'nrSendLog(m.nr, "Google Search", "URL Request", { "url": _url, "counter": counter, "bodysize": Len(msg) })
+            nrSendHttpResponse(m.nr, _url, msg)
+            nrSendLog(m.nr, "Google Search", "URL Request", { "url": _url, "counter": counter, "bodysize": Len(msg) })
             nrSendMetric(m.nr, "roku.http.response", requestTimer.TotalMilliseconds())
 
             ' Update max, min and sum
