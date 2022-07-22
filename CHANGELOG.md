@@ -1,6 +1,15 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2022/07/22
+### Add
+- Metrics API.
+- OOTB HTTP metrics.
+### Remove
+- Grouped events for `HTTP_CONNECT`/`HTTP_COMPLETE`.
+### Fix
+- Broken tests.
+
 ## [2.1.3] - 2022/05/16
 ### Fix
 - Timing issue.
