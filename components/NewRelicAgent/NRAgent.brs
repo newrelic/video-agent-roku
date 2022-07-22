@@ -283,7 +283,7 @@ function nrSendHttpResponse(attr as Object) as Void
         attr["timeSinceHttpRequest"] = deltaMs
         m.nrRequestIdentifiers.Delete(transId)
         'Generate metrics
-        nrSendMetric("roku.http.response.time", deltaMs, {"origUrl": attr["origUrl"]})
+        nrSendMetric("roku.http.response.time", deltaMs, {"host": nrExtractHostFromUrl(attr["origUrl"])})
     end if
 
     'Calculate counts for metrics
@@ -800,11 +800,12 @@ function nrSendHTTPComplete(info as Object) as Void
 
     if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
 
-    nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"origUrl": attr["origUrl"]})
-    nrSendMetric("roku.http.complete.downSpeed", attr["downloadSpeed"], {"origUrl": attr["origUrl"]})
-    nrSendMetric("roku.http.complete.upSpeed", attr["uploadSpeed"], {"origUrl": attr["origUrl"]})
-    nrSendMetric("roku.http.complete.firstByteTime", attr["transferTime"], {"origUrl": attr["origUrl"]})
-    nrSendMetric("roku.http.complete.dnsTime", attr["dnsLookupTime"], {"origUrl": attr["origUrl"]})
+    host = nrExtractHostFromUrl(attr["origUrl"])
+    nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"host": host})
+    nrSendMetric("roku.http.complete.downSpeed", attr["downloadSpeed"], {"host": host})
+    nrSendMetric("roku.http.complete.upSpeed", attr["uploadSpeed"], {"host": host})
+    nrSendMetric("roku.http.complete.firstByteTime", attr["transferTime"], {"host": host})
+    nrSendMetric("roku.http.complete.dnsTime", attr["dnsLookupTime"], {"host": host})
 end function
 
 function nrSendBandwidth(info as Object) as Void
@@ -1147,9 +1148,7 @@ function isAction(name as String, action as String) as Boolean
     return r.isMatch(action)
 end function
 
-function nrParseVideoStreamUrl(ev as Object) as String
-    if ev["Url"] = invalid then return ""
-    url = ev["Url"]
+function nrExtractHostFromUrl(url as String) as String
     r = CreateObject("roRegex", "\/\/|\/", "")
     arr = r.Split(url)
     
