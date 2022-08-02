@@ -9,7 +9,15 @@ sub init()
     m.top.functionName = "nrTaskMain"
 end sub
 
-function nrPushSamples(samples as Object, endpoint as String) as Object
+function nrPushSamples(samples as Object, endpoint as String, sampleType as String) as Object
+    'Metric API requires a specific format
+    if sampleType = "metric"
+        metricsModel = [{
+            "metrics": samples
+        }]
+        samples = metricsModel
+    end if
+
     jsonString = FormatJson(samples)
 
     rport = CreateObject("roMessagePort")
@@ -45,6 +53,11 @@ function nrLogProcessor() as Void
     nrSampleProcessor("log", m.logApiUrl)
 end function
 
+function nrMetricProcessor() as Void
+    m.nr.callFunc("nrLog", "-- nrMetricProcessor --")
+    nrSampleProcessor("metric", m.metricApiUrl)
+end function
+
 function isStatusErr(res) as boolean
     return res >= 400
 end function
@@ -53,7 +66,7 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
     if m.nr <> invalid
         samples = m.nr.callFunc("nrExtractAllSamples", sampleType)
         if samples.Count() > 0
-            res = nrPushSamples(samples, endpoint)
+            res = nrPushSamples(samples, endpoint, sampleType)
             if isStatusErr(res)
                 m.nr.callFunc("nrLog", "-- nrSampleProcessor (" + sampleType + "): FAILED with code " + Str(res) + ", retry later --")
                 if res = 429
@@ -72,19 +85,22 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
 end function
 
 function nrTaskMain() as Void
-    'Assuming that parent node is com.newrelic.NRAgent
-    'print "---- Running NRTask ----"
     if m.nr = invalid
+        'Assuming that parent node is com.newrelic.NRAgent
         m.nr = m.top.getParent()
         m.apiKey = m.top.apiKey
         m.eventApiUrl = m.top.eventApiUrl
         m.logApiUrl = m.top.logApiUrl
+        m.metricApiUrl = m.top.metricApiUrl
         m.sampleType = m.top.sampleType
     end if
+    m.nr.callFunc("nrLog", "---- Running NRTask ---- " + m.sampleType)
     if m.sampleType = "event"
         nrEventProcessor()
     else if m.sampleType = "log"
         nrLogProcessor()
+    else if m.sampleType = "metric"
+        nrMetricProcessor()
     end if
-    'print "---- Ended running NRTask ----"
+    m.nr.callFunc("nrLog", "---- Ended running NRTask ---- " + m.sampleType)
 end function

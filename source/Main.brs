@@ -7,6 +7,8 @@ sub RunUserInterface(args)
 
         Runner.SetFunctions([
             TestSuite__Main
+            TestSuite__Logs
+            TestSuite__Metrics
         ])
 
         Runner.Logger.SetVerbosity(3)
@@ -33,9 +35,6 @@ sub Main(aa as Object)
     nrAppStarted(m.nr, aa)
     'Send a custom system
     nrSendSystemEvent(m.nr, "TEST_ACTION")
-    'generate a custom pattern for HTTP_ system event grouping
-    patgen = createObject("roSGNode", "PatternGen")
-    nrSetGroupingPatternGenerator(m.nr, patgen)
     
     'Pass NewRelicAgent object to scene
     scene.setField("nr", m.nr)

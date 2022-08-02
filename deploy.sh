@@ -18,6 +18,6 @@ zip -FS -9 -r out/bundle * -x run extras
 
 # deploy
 curl -f -sS --user rokudev:$2 --anyauth -F "mysubmit=Install" -F "archive=@out/bundle.zip" -F "passwd=" http://$ROKU_DEV_TARGET/plugin_install  \
-| python -c 'import sys, re; print "\n".join(re.findall("<font color=\"red\">(.*?)</font>", sys.stdin.read(), re.DOTALL))'
+| python3 -c 'import sys, re; print("\n".join(re.findall("<font color=\"red\">(.*?)</font>", sys.stdin.read(), re.DOTALL)))'
 
 rm timestamp

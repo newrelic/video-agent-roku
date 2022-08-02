@@ -10,6 +10,7 @@ sub init()
     m.nrAgentVersion = m.top.version
     m.eventApiUrl = ""
     m.logApiUrl = ""
+    m.metricApiUrl = ""
     m.nrRegion = "US"
     print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
@@ -35,7 +36,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrEventArrayDeltaK = 40
     m.nrEventArrayK = m.nrEventArrayNormalK
     'Harvest cycles for events
-    m.nrEventHarvestTimeNormal = 60
+    m.nrEventHarvestTimeNormal = 10 'TODO: 60
     m.nrEventHarvestTimeMax = 600
     m.nrEventHarvestTimeDelta = 60
     'Reservoir sampling for logs
@@ -49,12 +50,46 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrLogHarvestTimeNormal = 60
     m.nrLogHarvestTimeMax = 600
     m.nrLogHarvestTimeDelta = 60
-    'Groups and attributes
-    m.nrEventGroupsConnect = CreateObject("roAssociativeArray")
-    m.nrEventGroupsComplete = CreateObject("roAssociativeArray")
-    m.nrGroupingPatternCallback = invalid
+    'Reservoir sampling for metrics
+    m.nrMetricArray = []
+    m.nrMetricArrayIndex = 0
+    m.nrMetricArrayNormalK = 400
+    m.nrMetricArrayMinK = 40
+    m.nrMetricArrayDeltaK = 40
+    m.nrMetricArrayK = m.nrMetricArrayNormalK
+    'Harvest cycles for metrics
+    m.nrMetricHarvestTimeNormal = 10 'TODO: 60
+    m.nrMetricHarvestTimeMax = 600
+    m.nrMetricHarvestTimeDelta = 60
+
+    'Attributes
     m.nrBackupAttributes = CreateObject("roAssociativeArray")
     m.nrCustomAttributes = CreateObject("roAssociativeArray")
+
+    'HTTP_CONNECT/HTTP_COMPLETE state
+    m.http_events_enabled = false
+
+    'HTTP_REQUEST counters
+    m.num_http_request = 0
+    m.http_request_min_ts = 0
+    m.http_request_max_ts = 0
+    'HTTP_RESPONSE counters
+    m.num_http_response = 0
+    m.http_response_min_ts = 0
+    m.http_response_max_ts = 0
+    m.num_http_response_errors = 0
+    'HTTP_CONNECT counters
+    m.num_http_connect = 0
+    m.http_connect_min_ts = 0
+    m.http_connect_max_ts = 0
+    'HTTP_COMPLETE counters
+    m.num_http_complete = 0
+    m.http_complete_min_ts = 0
+    m.http_complete_max_ts = 0
+    'HTTP_ERROR counters
+    m.num_http_error = 0
+    m.http_error_min_ts = 0
+    m.http_error_max_ts = 0
 
     'HTTP Request/Response IDs
     m.nrRequestIdentifiers = CreateObject("roAssociativeArray")
@@ -78,21 +113,28 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.logApiUrl = box(nrLogApiUrl())
     m.bgTaskLogs.setField("logApiUrl", m.logApiUrl)
     m.bgTaskLogs.sampleType = "log"
+    'Create and configure tasks (metrics)
+    m.bgTaskMetrics = m.top.findNode("NRTaskMetrics")
+    m.bgTaskMetrics.setField("apiKey", m.nrInsightsApiKey)
+    m.metricApiUrl = box(nrMetricsApiUrl())
+    m.bgTaskMetrics.setField("metricApiUrl", m.metricApiUrl)
+    m.bgTaskMetrics.sampleType = "metric"
 
-    'Init harvest timer
+    'Init harvest timer (events)
     m.nrHarvestTimerEvents = m.top.findNode("nrHarvestTimerEvents")
     m.nrHarvestTimerEvents.ObserveField("fire", "nrHarvestTimerHandlerEvents")
     m.nrHarvestTimerEvents.duration = m.nrEventHarvestTimeNormal
     m.nrHarvestTimerEvents.control = "start"
+    'Init harvest timer (logs)
     m.nrHarvestTimerLogs = m.top.findNode("nrHarvestTimerLogs")
     m.nrHarvestTimerLogs.ObserveField("fire", "nrHarvestTimerHandlerLogs")
     m.nrHarvestTimerLogs.duration = m.nrLogHarvestTimeNormal
     m.nrHarvestTimerLogs.control = "start"
-
-    'Init grouping timer
-    m.nrGroupingTimer = m.top.findNode("nrGroupingTimer")
-    m.nrGroupingTimer.observeFieldScoped("fire", "nrGroupingHandler")
-    m.nrGroupingTimer.control = "start"
+    'Init harvest timer (metrics)
+    m.nrHarvestTimerMetrics = m.top.findNode("nrHarvestTimerMetrics")
+    m.nrHarvestTimerMetrics.ObserveField("fire", "nrHarvestTimerHandlerMetrics")
+    m.nrHarvestTimerMetrics.duration = m.nrMetricHarvestTimeNormal
+    m.nrHarvestTimerMetrics.control = "start"
     
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
@@ -211,14 +253,26 @@ function nrSendHttpRequest(attr as Object) as Void
     'Clean up old transfers
     toDeleteKeys = []
     for each item in m.nrRequestIdentifiers.Items()
-        'More than 2 minutes without a response
-        if nrTimestamp() - item.value > 120000
+        'More than 10 minutes without a response, delete the request ID
+        if nrTimestamp() - item.value > 10*60*1000
             toDeleteKeys.Push(item.key)
         end if
     end for
     for each key in toDeleteKeys
         m.nrRequestIdentifiers.Delete(key)
     end for
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_request = m.num_http_request + 1
+    if m.http_request_min_ts = 0
+        m.http_request_min_ts = timestamp
+        m.http_request_max_ts = timestamp
+    else
+        if m.http_request_min_ts > timestamp then m.http_request_min_ts = timestamp
+        if m.http_request_max_ts < timestamp then m.http_request_max_ts = timestamp
+    end if
+
     nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
 end function
 
@@ -228,8 +282,33 @@ function nrSendHttpResponse(attr as Object) as Void
         deltaMs = nrTimestamp() - m.nrRequestIdentifiers[transId]
         attr["timeSinceHttpRequest"] = deltaMs
         m.nrRequestIdentifiers.Delete(transId)
+        'Generate metrics
+        nrSendMetric("roku.http.response.time", deltaMs, {"host": nrExtractHostFromUrl(attr["origUrl"])})
     end if
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_response = m.num_http_response + 1
+    if m.http_response_min_ts = 0
+        m.http_response_min_ts = timestamp
+        m.http_response_max_ts = timestamp
+    else
+        if m.http_response_min_ts > timestamp then m.http_response_min_ts = timestamp
+        if m.http_response_max_ts < timestamp then m.http_response_max_ts = timestamp
+    end if
+    if attr["httpCode"] >= 400 or attr["httpCode"] < 0
+        m.num_http_response_errors = m.num_http_response_errors + 1
+    end if
+    
     nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
+end function
+
+function nrEnableHttpEvents() as Void
+    m.http_events_enabled = true
+end function
+
+function nrDisableHttpEvents() as Void
+    m.http_events_enabled = false
 end function
 
 function nrSetCustomAttribute(key as String, value as Object, actionName = "" as String) as Void
@@ -257,6 +336,7 @@ end function
 function nrSetHarvestTime(seconds as Integer) as Void
     nrSetHarvestTimeEvents(seconds)
     nrSetHarvestTimeLogs(seconds)
+    nrSetHarvestTimeMetrics(seconds)
 end function
 
 function nrSetHarvestTimeEvents(seconds as Integer) as Void
@@ -273,9 +353,17 @@ function nrSetHarvestTimeLogs(seconds as Integer) as Void
     nrLog(["Harvest time logs = ", seconds])
 end function
 
+function nrSetHarvestTimeMetrics(seconds as Integer) as Void
+    if seconds < 60 then seconds = 60
+    m.nrMetricHarvestTimeNormal = seconds
+    m.nrHarvestTimerMetrics.duration = seconds
+    nrLog(["Harvest time metrics = ", seconds])
+end function
+
 function nrForceHarvest() as Void
     nrHarvestTimerHandlerEvents()
     nrHarvestTimerHandlerLogs()
+    nrHarvestTimerHandlerMetrics()
 end function
 
 function nrForceHarvestEvents() as Void
@@ -286,8 +374,8 @@ function nrForceHarvestLogs() as Void
     nrHarvestTimerHandlerLogs()
 end function
 
-function nrSetGroupingPatternGenerator() as Void
-    m.nrGroupingPatternCallback = m.top.patternGen
+function nrForceHarvestMetrics() as Void
+    nrHarvestTimerHandlerMetrics()
 end function
 
 'Roku Advertising Framework tracking
@@ -370,6 +458,70 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
     m.nrLogArrayIndex = nrAddSample(lg, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
 end function
 
+'Send a Gauge metric
+function nrSendMetric(name as String, value as dynamic, attr = invalid as Object) as Void
+    metric = CreateObject("roAssociativeArray")
+    metric["type"] = "gauge"
+    metric["name"] = name
+    metric["timestamp"] = nrTimestamp()
+    if GetInterface(value, "ifInt") <> invalid
+        metric["value"] = value.GetInt()
+    else if GetInterface(value, "ifLongInt") <> invalid
+        metric["value"] = value.GetLongInt()
+    else if GetInterface(value, "ifFloat") <> invalid
+        metric["value"] = value.GetFloat()
+    else if GetInterface(value, "ifDouble") <> invalid
+        metric["value"] = value.GetDouble()
+    else
+        metric["value"] = 0
+    end if
+    if attr <> invalid then metric["attributes"] = attr
+
+    nrLog(["RECORD NEW METRIC = ", metric])
+
+    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+end function
+
+'Send Count metric
+function nrSendCountMetric(name as String, value as dynamic, interval as Integer, attr = invalid as Object) as Void
+    metric = CreateObject("roAssociativeArray")
+    metric["type"] = "count"
+    metric["name"] = name
+    metric["interval.ms"] = interval
+    metric["timestamp"] = nrTimestamp()
+    if GetInterface(value, "ifInt") <> invalid
+        metric["value"] = value.GetInt()
+    else if GetInterface(value, "ifLongInt") <> invalid
+        metric["value"] = value.GetLongInt()
+    else if GetInterface(value, "ifFloat") <> invalid
+        metric["value"] = value.GetFloat()
+    else if GetInterface(value, "ifDouble") <> invalid
+        metric["value"] = value.GetDouble()
+    else
+        metric["value"] = 0
+    end if
+    if attr <> invalid then metric["attributes"] = attr
+
+    nrLog(["RECORD NEW COUNT METRIC = ", metric])
+
+    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+end function
+
+'Send Summary metric
+function nrSendSummaryMetric(name as String, interval as Integer, value as Object, attr = invalid as Object) as Void
+    metric = CreateObject("roAssociativeArray")
+    metric["type"] = "summary"
+    metric["name"] = name
+    metric["interval.ms"] = interval
+    metric["timestamp"] = nrTimestamp()
+    metric["value"] = value
+    if attr <> invalid then metric["attributes"] = attr
+
+    nrLog(["RECORD NEW SUMMARY METRIC = ", metric])
+
+    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+end function
+
 '=========================='
 ' Public Internal Functions '
 '=========================='
@@ -396,6 +548,8 @@ function nrExtractAllSamples(sampleType as String) as Object
         return nrExtractAllEvents()
     else if sampleType = "log"
         return nrExtractAllLogs()
+    else if sampleType = "metric"
+        return nrExtractAllMetrics()
     end if
 end function
 
@@ -404,6 +558,8 @@ function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
         nrGetBackEvents(samples)
     else if sampleType = "log"
         nrGetBackLogs(samples)
+    else if sampleType = "metric"
+        nrGetBackMetrics(samples)
     end if
 end function
 
@@ -445,6 +601,11 @@ function nrReqErrorTooManyReq(sampleType as String) as Void
         if m.nrHarvestTimerLogs.duration < m.nrLogHarvestTimeMax
             m.nrHarvestTimerLogs.duration = m.nrHarvestTimerLogs.duration + m.nrLogHarvestTimeDelta
         end if
+    else if sampleType = "metric"
+        nrLog("NR API ERROR, TOO MANY REQUESTS, current metric harvest time = " + str(m.nrHarvestTimerMetrics.duration))
+        if m.nrHarvestTimerMetrics.duration < m.nrMetricHarvestTimeMax
+            m.nrHarvestTimerMetrics.duration = m.nrHarvestTimerMetrics.duration + m.nrMetricHarvestTimeDelta
+        end if
     end if
 end function
 
@@ -458,6 +619,10 @@ function nrReqErrorTooLarge(sampleType as String) as Void
     else if sampleType = "log"
         if m.nrLogArrayK > m.nrLogArrayMinK
             m.nrLogArrayK = m.nrLogArrayK - m.nrLogArrayDeltaK
+        end if
+    else if sampleType = "metric"
+        if m.nrMetricArrayK > m.nrMetricArrayMinK
+            m.nrMetricArrayK = m.nrMetricArrayK - m.nrMetricArrayDeltaK
         end if
     end if
 end function
@@ -479,6 +644,14 @@ function nrReqOk(sampleType as String) as Void
             m.nrLogArrayK = m.nrLogArrayK + m.nrLogArrayDeltaK
         end if
         nrLog("NR API OK logs, post K = " + str(m.nrLogArrayK) + " harvest time = " + str(m.nrHarvestTimerLogs.duration))
+    else if sampleType = "metric"
+        if m.nrHarvestTimerMetrics.duration > m.nrMetricHarvestTimeNormal
+            m.nrHarvestTimerMetrics.duration = m.nrHarvestTimerMetrics.duration - m.nrMetricHarvestTimeDelta
+        end if
+        if m.nrMetricArrayK < m.nrMetricArrayNormalK
+            m.nrMetricArrayK = m.nrMetricArrayK + m.nrMetricArrayDeltaK
+        end if
+        nrLog("NR API OK metrics, post K = " + str(m.nrMetricArrayK) + " harvest time = " + str(m.nrHarvestTimerMetrics.duration))
     end if
 end function
 
@@ -553,42 +726,6 @@ function nrAddAttributes(ev as Object) as Object
     return ev
 end function
 
-function nrProcessGroupedEvents() as Void
-    'Convert groups into custom events and flush the groups dictionaries
-    
-    nrLog("-- Process Grouped Events --")
-    nrLogEvGroups()
-    
-    if m.nrEventGroupsConnect.Count() > 0
-        nrConvertGroupsToEvents(m.nrEventGroupsConnect)
-        m.nrEventGroupsConnect = {}
-    end if
-    
-    if m.nrEventGroupsComplete.Count() > 0
-        nrConvertGroupsToEvents(m.nrEventGroupsComplete)
-        m.nrEventGroupsComplete = {}
-    end if
-end function
-
-function nrConvertGroupsToEvents(group as Object) as Void
-    for each item in group.Items()
-        item.value["matchPattern"] = item.key
-
-        'Calculate averages
-        if item.value["actionName"] = "HTTP_COMPLETE"
-            counter = Cdbl(item.value["counter"])
-            item.value["transferTime"] = item.value["transferTime"] / counter
-            item.value["connectTime"] = item.value["connectTime"] / counter
-            item.value["dnsLookupTime"] = item.value["dnsLookupTime"] / counter
-            item.value["downloadSpeed"] = item.value["downloadSpeed"] / counter
-            item.value["uploadSpeed"] = item.value["uploadSpeed"] / counter
-            item.value["firstByteTime"] = item.value["firstByteTime"] / counter
-        end if
-        
-        nrSendCustomEvent("RokuSystem", item.value["actionName"], item.value)
-    end for
-end function
-
 function nrAddCommonHTTPAttr(info as Object) as Object
     attr = {
         "httpCode": info["HttpCode"],
@@ -601,63 +738,38 @@ function nrAddCommonHTTPAttr(info as Object) as Object
     return attr
 end function
 
-function nrGroupNewEvent(ev as Object, actionName as String) as Void
-    if m.nrGroupingPatternCallback <> invalid
-        matchPattern = m.nrGroupingPatternCallback.callFunc("callback", ev)
-    else
-        matchPattern = nrParseVideoStreamUrl(ev)
-    end if
-
-    ev["actionName"] = actionName
-    
-    if actionName = "HTTP_COMPLETE"
-        m.nrEventGroupsComplete = nrGroupMergeEvent(matchPattern, m.nrEventGroupsComplete, ev)
-    else if actionName = "HTTP_CONNECT"
-        m.nrEventGroupsConnect = nrGroupMergeEvent(matchPattern, m.nrEventGroupsConnect, ev)
-    end if
-end function
-
-function nrGroupMergeEvent(matchPattern as String, group as Object, ev as Object) as Object
-    evGroup = group[matchPattern]
-    if evGroup = invalid
-        'Create new group from event
-        ev["counter"] = 1
-        ev["initialTimestamp"] = nrTimestamp()
-        ev["finalTimestamp"] = ev["initialTimestamp"]
-        group[matchPattern] = ev
-    else
-        'Add new event to existing group
-        evGroup["counter"] = evGroup["counter"] + 1
-        evGroup["finalTimestamp"] = nrTimestamp()
-        
-        'Add all numeric values
-        if ev["actionName"] = "HTTP_COMPLETE"
-            'Summations
-            evGroup["bytesDownloaded"] = evGroup["bytesDownloaded"] + ev["bytesDownloaded"]
-            evGroup["bytesUploaded"] = evGroup["bytesUploaded"] + ev["bytesUploaded"]
-            'Averages, we will divide it by count right before sending the event
-            evGroup["transferTime"] = evGroup["transferTime"] + ev["transferTime"]
-            evGroup["connectTime"] = evGroup["connectTime"] + ev["connectTime"]
-            evGroup["dnsLookupTime"] = evGroup["dnsLookupTime"] + ev["dnsLookupTime"]
-            evGroup["downloadSpeed"] = evGroup["downloadSpeed"] + ev["downloadSpeed"]
-            evGroup["uploadSpeed"] = evGroup["uploadSpeed"] + ev["uploadSpeed"]
-            evGroup["firstByteTime"] = evGroup["firstByteTime"] + ev["firstByteTime"]
-        end if 
-        
-        group[matchPattern] = evGroup
-    end if
-    return group
-end function
-
 function nrSendHTTPError(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)
-    attr["counter"] = 1
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_error = m.num_http_error + 1
+    if m.http_error_min_ts = 0
+        m.http_error_min_ts = timestamp
+        m.http_error_max_ts = timestamp
+    else
+        if m.http_error_min_ts > timestamp then m.http_error_min_ts = timestamp
+        if m.http_error_max_ts < timestamp then m.http_error_max_ts = timestamp
+    end if
+
     nrSendCustomEvent("RokuSystem", "HTTP_ERROR", attr)
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)
-    nrGroupNewEvent(attr, "HTTP_CONNECT")
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_connect = m.num_http_connect + 1
+    if m.http_connect_min_ts = 0
+        m.http_connect_min_ts = timestamp
+        m.http_connect_max_ts = timestamp
+    else
+        if m.http_connect_min_ts > timestamp then m.http_connect_min_ts = timestamp
+        if m.http_connect_max_ts < timestamp then m.http_connect_max_ts = timestamp
+    end if
+
+    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -674,7 +786,26 @@ function nrSendHTTPComplete(info as Object) as Void
     }
     commonAttr = nrAddCommonHTTPAttr(info)
     attr.Append(commonAttr)
-    nrGroupNewEvent(attr, "HTTP_COMPLETE")
+
+    'Calculate counts for metrics
+    timestamp = nrTimestamp()
+    m.num_http_complete = m.num_http_complete + 1
+    if m.http_complete_min_ts = 0
+        m.http_complete_min_ts = timestamp
+        m.http_complete_max_ts = timestamp
+    else
+        if m.http_complete_min_ts > timestamp then m.http_complete_min_ts = timestamp
+        if m.http_complete_max_ts < timestamp then m.http_complete_max_ts = timestamp
+    end if
+
+    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
+
+    host = nrExtractHostFromUrl(attr["origUrl"])
+    nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"host": host})
+    nrSendMetric("roku.http.complete.downSpeed", attr["downloadSpeed"], {"host": host})
+    nrSendMetric("roku.http.complete.upSpeed", attr["uploadSpeed"], {"host": host})
+    nrSendMetric("roku.http.complete.firstByteTime", attr["transferTime"], {"host": host})
+    nrSendMetric("roku.http.complete.dnsTime", attr["dnsLookupTime"], {"host": host})
 end function
 
 function nrSendBandwidth(info as Object) as Void
@@ -703,6 +834,17 @@ function nrLogApiUrl() as String
     else if m.nrRegion = "TEST"
         'NOTE: set address hosting the test server
         return "http://x.x.x.x:5000/log"
+    end if
+end function
+
+function nrMetricsApiUrl() as String
+    if m.nrRegion = "US"
+        return "https://metric-api.newrelic.com/metric/v1"
+    else if m.nrRegion = "EU"
+        return "https://metric-api.eu.newrelic.com/metric/v1"
+    else if m.nrRegion = "TEST"
+        'NOTE: set address hosting the test server
+        return "http://x.x.x.x:5000/metric"
     end if
 end function
 
@@ -1006,9 +1148,7 @@ function isAction(name as String, action as String) as Boolean
     return r.isMatch(action)
 end function
 
-function nrParseVideoStreamUrl(ev as Object) as String
-    if ev["Url"] = invalid then return ""
-    url = ev["Url"]
+function nrExtractHostFromUrl(url as String) as String
     r = CreateObject("roRegex", "\/\/|\/", "")
     arr = r.Split(url)
     
@@ -1163,6 +1303,18 @@ function nrGetBackLogs(logs as Object) as Void
     m.nrLogArrayIndex = nrGetBackSamples(logs, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
 end function
 
+function nrExtractAllMetrics() as Object
+    metrics = m.nrMetricArray
+    m.nrMetricArray = []
+    m.nrMetricArrayIndex = 0
+    return metrics
+end function
+
+function nrGetBackMetrics(metrics as Object) as Void
+    nrLog("------> nrGetBackMetrics, current K = " + str(m.nrMetricArrayK) + ", metric size = " + str(metrics.Count()))
+    m.nrMetricArrayIndex = nrGetBackSamples(metrics, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+end function
+
 '================================'
 ' Observers, States and Handlers '
 '================================'
@@ -1286,8 +1438,41 @@ function nrHeartbeatHandler() as Void
     end if
 end function
 
+function nrSendHttpCountMetrics() as Void
+    nrSendCountMetric("roku.http.request.count", m.num_http_request, m.http_request_max_ts - m.http_request_min_ts)
+    nrSendCountMetric("roku.http.response.count", m.num_http_response, m.http_response_max_ts - m.http_response_min_ts)
+    nrSendCountMetric("roku.http.response.error.count", m.num_http_response_errors, m.http_response_max_ts - m.http_response_min_ts)
+    nrSendCountMetric("roku.http.connect.count", m.num_http_connect, m.http_connect_max_ts - m.http_connect_min_ts)
+    nrSendCountMetric("roku.http.complete.count", m.num_http_complete, m.http_complete_max_ts - m.http_complete_min_ts)
+    nrSendCountMetric("roku.http.error.count", m.num_http_error, m.http_error_max_ts - m.http_error_min_ts)
+
+    'HTTP_REQUEST counters
+    m.num_http_request = 0
+    m.http_request_min_ts = 0
+    m.http_request_max_ts = 0
+    'HTTP_RESPONSE counters
+    m.num_http_response = 0
+    m.http_response_min_ts = 0
+    m.http_response_max_ts = 0
+    m.num_http_response_errors = 0
+    'HTTP_CONNECT counters
+    m.num_http_connect = 0
+    m.http_connect_min_ts = 0
+    m.http_connect_max_ts = 0
+    'HTTP_COMPLETE counters
+    m.num_http_complete = 0
+    m.http_complete_min_ts = 0
+    m.http_complete_max_ts = 0
+    'HTTP_ERROR counters
+    m.num_http_error = 0
+    m.http_error_min_ts = 0
+    m.http_error_max_ts = 0
+end function
+
 function nrHarvestTimerHandlerEvents() as Void
     nrLog("--- nrHarvestTimerHandlerEvents ---")
+
+    nrSendHttpCountMetrics()
     
     if LCase(m.bgTaskEvents.state) = "run"
         nrLog("NRTaskEvents still running, abort")
@@ -1308,27 +1493,20 @@ function nrHarvestTimerHandlerLogs() as Void
     m.bgTaskLogs.control = "RUN"
 end function
 
-function nrGroupingHandler() as Void
-    nrLog("--- nrGroupingHandler ---")
+function nrHarvestTimerHandlerMetrics() as Void
+    nrLog("--- nrHarvestTimerHandlerMetrics ---")
     
-    nrProcessGroupedEvents()
+    if LCase(m.bgTaskMetrics.state) = "run"
+        nrLog("NRTaskMetrics still running, abort")
+        return
+    end if
+    
+    m.bgTaskMetrics.control = "RUN"
 end function
 
 '=================='
 ' Test and Logging '
 '=================='
-
-function nrLogEvGroups() as Void
-    nrLog("============ Event Groups HTTP_CONNECT ===========")
-    for each item in m.nrEventGroupsConnect.Items()
-        nrLog([item.key, item.value])
-    end for
-    nrLog("=========== Event Groups HTTP_COMPLETE ===========")
-    for each item in m.nrEventGroupsComplete.Items()
-        nrLog([item.key, item.value])
-    end for
-    nrLog("==================================================")
-end function
 
 function nrLogVideoInfo() as Void
     nrLog("====================================")

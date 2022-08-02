@@ -184,7 +184,21 @@ function nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
     end if
 end function
 
-' Set harvest time, the time the events are buffered before being sent to Insights.
+' Enable HTTP_CONNECT/HTTP_COMPLETE events.
+'
+' @param nr New Relic Agent object.
+function nrEnableHttpEvents(nr as Object) as Void
+    nr.callFunc("nrEnableHttpEvents")
+end function
+
+' Disable HTTP_CONNECT/HTTP_COMPLETE events.
+'
+' @param nr New Relic Agent object.
+function nrDisableHttpEvents(nr as Object) as Void
+    nr.callFunc("nrDisableHttpEvents")
+end function
+
+' Set harvest time, the time the events are buffered before being sent.
 '
 ' @param nr New Relic Agent object.
 ' @param time Time in seconds (min 60).
@@ -192,7 +206,7 @@ function nrSetHarvestTime(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTime", time)
 end function
 
-' Set harvest time for events, the time the events are buffered before being sent to Insights.
+' Set harvest time for events, the time the events are buffered before being sent.
 '
 ' @param nr New Relic Agent object.
 ' @param time Time in seconds (min 60).
@@ -200,12 +214,20 @@ function nrSetHarvestTimeEvents(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTimeEvents", time)
 end function
 
-' Set harvest time for logs, the time the events are buffered before being sent to Insights.
+' Set harvest time for logs, the time the events are buffered before being sent.
 '
 ' @param nr New Relic Agent object.
 ' @param time Time in seconds (min 60).
 function nrSetHarvestTimeLogs(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTimeLogs", time)
+end function
+
+' Set harvest time for metrics, the time the events are buffered before being sent.
+'
+' @param nr New Relic Agent object.
+' @param time Time in seconds (min 60).
+function nrSetHarvestTimeMetrics(nr as Object, time as Integer) as Void
+    nr.callFunc("nrSetHarvestTimeMetrics", time)
 end function
 
 ' Do harvest immediately. It doesn't reset the harvest timer.
@@ -229,15 +251,6 @@ function nrForceHarvestLogs(nr as Object) as Void
     nr.callFunc("nrForceHarvestLogs")
 end function
 
-' Set pattern generator. This method accepts a Node that must contain a public function called "callback". This callback must return a string, that is used as a pattern to group HTTP_CONNECT and HTTP_COMPLETE events. The pattern generator callback is called every time a HTTP_CONNECT or HTTP_COMPLETE event happens and the raw event is passed as argument to the function.
-'
-' @param nr New Relic Agent object.
-' @param callbackNode Pattern generator node.
-function nrSetGroupingPatternGenerator(nr as Object, callbackNode as Object) as Void
-    nr.setField("patternGen", callbackNode)
-    nr.callFunc("nrSetGroupingPatternGenerator")
-end function
-
 ' Track an event from Roku Advertising Framework
 '
 ' @param nr New Relic Agent object.
@@ -255,4 +268,45 @@ end function
 ' @param fields Additonal fields to be included in the log.
 function nrSendLog(nr as Object, message as String, logtype as String, fields = invalid as Object) as Void
     nr.callFunc("nrSendLog", message, logtype, fields)
+end function
+
+' Record a gauge metric. Represents a value that can increase or decrease with time.
+'
+' @param nr New Relic Agent object.
+' @param name Metric name
+' @param value Metric value. Number.
+' @param attr (optional) Metric attributes.
+function nrSendMetric(nr as Object, name as String, value as dynamic, attr = invalid as Object) as Void
+    nr.callFunc("nrSendMetric", name, value, attr)
+end function
+
+' Record a count metric. Measures the number of occurences of an event during a time interval.
+'
+' @param nr New Relic Agent object.
+' @param name Metric name
+' @param value Metric value. Number.
+' @param interval Metric time interval in milliseconds.
+' @param attr (optional) Metric attributes.
+function nrSendCountMetric(nr as Object, name as String, value as dynamic, interval as Integer, attr = invalid as Object) as Void
+    nr.callFunc("nrSendCountMetric", name, value, interval, attr)
+end function
+
+' Record a summary metric. Used to report pre-aggregated data, or information on aggregated discrete events.
+'
+' @param nr New Relic Agent object.
+' @param name Metric name
+' @param interval Metric time interval in milliseconds.
+' @param count Metric count.
+' @param m_sum Metric value summation.
+' @param m_min Metric minimum value.
+' @param m_max Metric maximum value.
+' @param attr (optional) Metric attributes.
+function nrSendSummaryMetric(nr as Object, name as String, interval as Integer, counter as dynamic, m_sum as dynamic, m_min as dynamic, m_max as dynamic, attr = invalid as Object) as Void
+    value = {
+        "count": counter,
+        "sum": m_sum,
+        "max": m_max,
+        "min": m_min
+    }
+    nr.callFunc("nrSendSummaryMetric", name, interval, value, attr)
 end function

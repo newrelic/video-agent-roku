@@ -13,7 +13,7 @@
 
 	<interface>
 		<!-- Properties -->
-		<field id="version" type="string" value="2.1.2"/>
+		<field id="version" type="string" value="3.0.0"/>
         <field id="patternGen" type="node"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
@@ -27,17 +27,22 @@
         <function name="nrSendVideoEvent"/>
         <function name="nrSendHttpRequest"/>
         <function name="nrSendHttpResponse"/>
+        <function name="nrEnableHttpEvents"/>
+        <function name="nrDisableHttpEvents"/>
         <function name="nrSetCustomAttribute"/>
         <function name="nrSetCustomAttributeList"/>
         <function name="nrSetHarvestTime"/>
         <function name="nrSetHarvestTimeEvents"/>
         <function name="nrSetHarvestTimeLogs"/>
+        <function name="nrSetHarvestTimeMetrics"/>
         <function name="nrForceHarvest"/>
         <function name="nrForceHarvestEvents"/>
         <function name="nrForceHarvestLogs"/>
-        <function name="nrSetGroupingPatternGenerator"/>
         <function name="nrTrackRAF"/>
         <function name="nrSendLog"/>
+        <function name="nrSendMetric"/>
+        <function name="nrSendCountMetric"/>
+        <function name="nrSendSummaryMetric"/>
         <!-- Internal Methods (not wrapped, but used from the outside by some internal components) -->
         <function name="nrActivateLogging"/>
         <function name="nrLog"/>
@@ -55,10 +60,11 @@
 
 	<children>
         <Timer id="nrHeartbeatTimer" repeat="true" duration="30"/>
-        <Timer id="nrGroupingTimer" repeat="true" duration="10"/>
 		<com.newrelic.NRTask id="NRTaskEvents"/>
 		<Timer id="nrHarvestTimerEvents" repeat="true"/>
         <com.newrelic.NRTask id="NRTaskLogs"/>
         <Timer id="nrHarvestTimerLogs" repeat="true"/>
+        <com.newrelic.NRTask id="NRTaskMetrics"/>
+        <Timer id="nrHarvestTimerMetrics" repeat="true"/>
 	</children>
 </component>
