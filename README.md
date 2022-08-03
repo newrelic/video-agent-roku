@@ -79,7 +79,7 @@ sub Main(aa as Object)
 	scene = screen.CreateScene("VideoScene")
 	screen.show()
 	    
-	'Init New Relic Agent (3rd argument is optional, True to show console logs)
+	'Init New Relic Agent
 	m.nr = NewRelic(“ACCOUNT ID“, “API KEY“)
 	    
 	'Send APP_STARTED event
