@@ -32,6 +32,7 @@ sub Main(aa as Object)
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
     m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "US", true)
+    nrEnableHttpEvents(m.nr) ' version 3.0.0 (or above) disables HttpEvents by default
     nrAppStarted(m.nr, aa)
     'Send a custom system
     nrSendSystemEvent(m.nr, "TEST_ACTION")
