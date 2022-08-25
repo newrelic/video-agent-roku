@@ -1,6 +1,12 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.0.1] - 2022/08/25
+### Add
+ - Added package json file
+### Fix
+ - Updated Main.brs with note about HttpEvents
+
 ## [3.0.0] - 2022/07/22
 ### Add
 - Metrics API.

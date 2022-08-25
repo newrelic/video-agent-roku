@@ -1,6 +1,6 @@
 {
     "name": "video-agent-roku",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "description": "[![Community Project header](https://github.com/newrelic/open-source-office/raw/master/examples/categories/images/Community_Project.png)](https://github.com/newrelic/open-source-office/blob/master/examples/categories/index.md#community-project)",
     "main": "index.js",
     "scripts": {
