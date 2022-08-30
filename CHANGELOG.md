@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.0.2] - 2022/08/30
+### Fix
+ - Harvest initial time, from 10 to 60 seconds.
+
 ## [3.0.1] - 2022/08/25
 ### Add
  - Added package json file

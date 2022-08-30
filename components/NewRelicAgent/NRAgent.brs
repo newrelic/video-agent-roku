@@ -36,7 +36,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrEventArrayDeltaK = 40
     m.nrEventArrayK = m.nrEventArrayNormalK
     'Harvest cycles for events
-    m.nrEventHarvestTimeNormal = 10 'TODO: 60
+    m.nrEventHarvestTimeNormal = 60
     m.nrEventHarvestTimeMax = 600
     m.nrEventHarvestTimeDelta = 60
     'Reservoir sampling for logs
@@ -58,7 +58,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrMetricArrayDeltaK = 40
     m.nrMetricArrayK = m.nrMetricArrayNormalK
     'Harvest cycles for metrics
-    m.nrMetricHarvestTimeNormal = 10 'TODO: 60
+    m.nrMetricHarvestTimeNormal = 60
     m.nrMetricHarvestTimeMax = 600
     m.nrMetricHarvestTimeDelta = 60
 
