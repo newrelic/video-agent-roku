@@ -22,7 +22,7 @@ function nrRefUpdated()
     'setupSingleVideo()
     
     'Setup the video player with a playlist
-    setupVideoPlaylist()
+    setupVideoPlaylist(true)
     
     'Setup the video player with a single video and ads
     'setupVideoWithAds()
@@ -61,10 +61,10 @@ function setupSingleVideo() as void
     m.video.control = "play"
 end function
 
-function setupVideoPlaylist() as void
+function setupVideoPlaylist(loop as boolean) as void
     print "Prepare video player with Playlist"
 
-    httprange = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
+    'httprange = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
     hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
     dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
 
@@ -84,6 +84,7 @@ function setupVideoPlaylist() as void
     m.video.content = playlistContent
     m.video.contentIsPlaylist = True
     m.video.control = "play"
+    m.video.loop = loop
 end function
 
 function setupVideoWithAds() as void

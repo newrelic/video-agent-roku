@@ -248,6 +248,7 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
 end function
 
 function nrSendHttpRequest(attr as Object) as Void
+    attr["domain"] = nrExtractDomainFromUrl(attr["origUrl"])
     transId = stri(attr["transferIdentity"])
     m.nrRequestIdentifiers[transId] = nrTimestamp()
     'Clean up old transfers
@@ -277,13 +278,14 @@ function nrSendHttpRequest(attr as Object) as Void
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
+    attr["domain"] = nrExtractDomainFromUrl(attr["origUrl"])
     transId = stri(attr["transferIdentity"])
     if m.nrRequestIdentifiers[transId] <> invalid
         deltaMs = nrTimestamp() - m.nrRequestIdentifiers[transId]
         attr["timeSinceHttpRequest"] = deltaMs
         m.nrRequestIdentifiers.Delete(transId)
         'Generate metrics
-        nrSendMetric("roku.http.response.time", deltaMs, {"host": nrExtractHostFromUrl(attr["origUrl"])})
+        nrSendMetric("roku.http.response.time", deltaMs, {"domain": attr["domain"]})
     end if
 
     'Calculate counts for metrics
@@ -731,6 +733,7 @@ function nrAddCommonHTTPAttr(info as Object) as Object
         "httpCode": info["HttpCode"],
         "method": info["Method"],
         "origUrl": info["OrigUrl"],
+        "domain": nrExtractDomainFromUrl(info["OrigUrl"]),
         "status": info["Status"],
         "targetIp": info["TargetIp"],
         "url": info["Url"]
@@ -800,12 +803,12 @@ function nrSendHTTPComplete(info as Object) as Void
 
     if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
 
-    host = nrExtractHostFromUrl(attr["origUrl"])
-    nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"host": host})
-    nrSendMetric("roku.http.complete.downSpeed", attr["downloadSpeed"], {"host": host})
-    nrSendMetric("roku.http.complete.upSpeed", attr["uploadSpeed"], {"host": host})
-    nrSendMetric("roku.http.complete.firstByteTime", attr["transferTime"], {"host": host})
-    nrSendMetric("roku.http.complete.dnsTime", attr["dnsLookupTime"], {"host": host})
+    domain = nrExtractDomainFromUrl(attr["origUrl"])
+    nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"domain": domain})
+    nrSendMetric("roku.http.complete.downSpeed", attr["downloadSpeed"], {"domain": domain})
+    nrSendMetric("roku.http.complete.upSpeed", attr["uploadSpeed"], {"domain": domain})
+    nrSendMetric("roku.http.complete.firstByteTime", attr["transferTime"], {"domain": domain})
+    nrSendMetric("roku.http.complete.dnsTime", attr["dnsLookupTime"], {"domain": domain})
 end function
 
 function nrSendBandwidth(info as Object) as Void
@@ -1148,7 +1151,7 @@ function isAction(name as String, action as String) as Boolean
     return r.isMatch(action)
 end function
 
-function nrExtractHostFromUrl(url as String) as String
+function nrExtractDomainFromUrl(url as String) as String
     r = CreateObject("roRegex", "\/\/|\/", "")
     arr = r.Split(url)
     

@@ -44,7 +44,6 @@ function searchTaskMain()
             'Send HTTP_RESPONSE action
             nrSendHttpResponse(m.nr, _url, msg)
             nrSendLog(m.nr, "Google Search", "URL Request", { "url": _url, "counter": counter, "bodysize": Len(msg) })
-            nrSendMetric(m.nr, "roku.http.response", requestTimer.TotalMilliseconds())
 
             ' Update max, min and sum
             if requestTimer.TotalMilliseconds() > m_max then m_max = requestTimer.TotalMilliseconds()
@@ -56,7 +55,6 @@ function searchTaskMain()
         counter = counter + 1
 
         if countTimer.TotalMilliseconds() > 7500
-            nrSendCountMetric(m.nr, "roku.http.request.count", counter, countTimer.TotalMilliseconds())
             nrSendSummaryMetric(m.nr, "roku.http.response.summary", countTimer.TotalMilliseconds(), counter, m_sum, m_min, m_max)
             m_min = 999999
             m_max = 0

@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.1.0] - 2022/09/01
+### Add
+ - Attribute `domain` to all HTTP events and metrics.
+
 ## [3.0.2] - 2022/08/30
 ### Fix
  - Harvest initial time, from 10 to 60 seconds.
