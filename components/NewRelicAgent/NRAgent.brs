@@ -242,9 +242,12 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
        ev.Append(attr)
     end if
     nrRecordEvent(ev)
-    'Backup attributes (cloning it)
-    m.nrBackupAttributes = {}
-    m.nrBackupAttributes.Append(ev)
+    'Backup attributes
+    'Exclude *_BUFFER_* actions due to a problem with these events when skipping in a playlist: attributes are not reliable, can be mixed with next video attributes or just wrong.
+    if actionName <> "CONTENT_BUFFER_START" and actionName <> "CONTENT_BUFFER_END"
+        m.nrBackupAttributes = {}
+        m.nrBackupAttributes.Append(ev)
+    end if
 end function
 
 function nrSendHttpRequest(attr as Object) as Void
@@ -949,22 +952,21 @@ end function
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     'Use attributes in the backup (m.nrBackupAttributes) and recalculate some of them.
     ev = m.nrBackupAttributes
+
+    nrLog(["nrSendBackupVideoEvent: Using this event as a backup for attributes: ", ev])
     
     '- Set correct actionName
-    backupActionName = ev["actionName"]
     ev["actionName"] = actionName
     '- Set current timestamp
     backupTimestamp = ev["timestamp"]
     ev["timestamp"] = FormatJson(nrTimestamp())
-    '- Recalculate playhead, adding timestamp offset, except if last action is PAUSE
-    if not isAction("PAUSE", backupActionName) 
-        lint& = ParseJson(ev["timestamp"]) - ParseJson(backupTimestamp)
-        offsetTime = lint&
-        nrLog(["Offset time = ", offsetTime])
-        if ev["contentPlayhead"] <> invalid then ev["contentPlayhead"] = ev["contentPlayhead"] + offsetTime
-        if ev["adPlayhead"] <> invalid then ev["adPlayhead"] = ev["adPlayhead"] + offsetTime
-    end if
-    '- Regen memory level
+    '- Recalculate playhead, adding timestamp offset
+    lint& = ParseJson(ev["timestamp"]) - ParseJson(backupTimestamp)
+    offsetTime = lint&
+    nrLog(["Offset time = ", offsetTime])
+    if ev["contentPlayhead"] <> invalid then ev["contentPlayhead"] = ev["contentPlayhead"] + offsetTime
+    if ev["adPlayhead"] <> invalid then ev["adPlayhead"] = ev["adPlayhead"] + offsetTime
+    '- Regenerate memory level
     dev = CreateObject("roDeviceInfo")
     ev["memoryLevel"] = dev.GetGeneralMemoryLevel()
     '- Regen is muted
@@ -972,7 +974,7 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
         if ev["contentIsMuted"] <> invalid then ev["contentIsMuted"] = m.nrVideoObject.mute
         if ev["adIsMuted"] <> invalid then ev["adIsMuted"] = m.nrVideoObject.mute
     end if
-    '- Regen HDMI connected
+    '- Regenerate HDMI connected
     hdmi = CreateObject("roHdmiStatus")
     ev["hdmiIsConnected"] = hdmi.IsConnected()
     '- Recalculate all timeSinceXXX, adding timestamp offset
@@ -991,8 +993,7 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     
     'PROBLEMS:
     '- Custom attributes remains the same, could be problematic depending on the app
-    
-    nrLog(["nrSendBackupVideoEvent => ", ev])
+    '- Playhead calculation is estimative.
     
     nrRecordEvent(ev)
     
@@ -1123,9 +1124,6 @@ function nrSendRAFEvent(actionName as String, ctx as Dynamic, attr = invalid) as
        ev.Append(attr)
     end if
     nrRecordEvent(ev)
-    'Backup attributes (cloning it)
-    m.nrBackupAttributes = {}
-    m.nrBackupAttributes.Append(ev)
 end function
 
 function nrResetRAFState() as Void
@@ -1407,7 +1405,10 @@ function nrIndexObserver() as Void
         return
     end if
     
-    '- Use nrSendBackupVideoEvent to send the END using previous video attributes
+    '- Use nrSendBackupVideoEvent to send the END using previous video attributes.
+    '  We do this because of how Roku handles playlists: when the next video starts, no "finished" event is sent for the previous,
+    '  instead a buffering cycle happens, followed by an index change. The video attributes are mixed during this process, some belong
+    '  to the next video, some to the previous. In order to send an END that belongs to the ending video, we have to make this trick.
     nrSendBackupVideoEnd()
     '- Send REQUEST and START using normal send, with current video attributes
     m.nrVideoCounter = m.nrVideoCounter + 1

@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.1.1] - 2022/10/04
+### Fix
+ - Crash happening when using a playlist.
+
 ## [3.1.0] - 2022/09/01
 ### Add
  - Attribute `domain` to all HTTP events and metrics.
