@@ -1405,7 +1405,10 @@ function nrIndexObserver() as Void
         return
     end if
     
-    '- Use nrSendBackupVideoEvent to send the END using previous video attributes
+    '- Use nrSendBackupVideoEvent to send the END using previous video attributes.
+    '  We do this because of how Roku handles playlists: when the next video starts, no "finished" event is sent for the previous,
+    '  instead a buffering cycle happens, followed by an index change. The video attributes are mixed during this process, some belong
+    '  to the next video, some to the previous. In order to send an END that belongs to the ending video, we have to make this trick.
     nrSendBackupVideoEnd()
     '- Send REQUEST and START using normal send, with current video attributes
     m.nrVideoCounter = m.nrVideoCounter + 1

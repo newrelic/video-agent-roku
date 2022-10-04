@@ -13,7 +13,7 @@
 
 	<interface>
 		<!-- Properties -->
-		<field id="version" type="string" value="3.1.0"/>
+		<field id="version" type="string" value="3.1.1"/>
         <field id="patternGen" type="node"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
