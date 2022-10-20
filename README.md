@@ -38,7 +38,7 @@ To initialize the agent you need an [ACCOUNT ID](https://docs.newrelic.com/docs/
 
 ### Installation
 
-1. Download the Roku Video Agent and unzip it. Inside the package you will find the following file structure:
+1. Download the [Roku Video Agent](https://github.com/newrelic/video-agent-roku/releases/latest) and unzip it. Inside the package you will find the following file structure:
 
 ```
 components/NewRelicAgent/
