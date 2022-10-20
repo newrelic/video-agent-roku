@@ -32,7 +32,7 @@ Will result in something like the following:
 
 ### Requirements
 
-To initialize the agent you need an [ACCOUNT ID](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/) and an [INSERT API KEY](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#insights-insert-key). 
+To initialize the agent you need an [ACCOUNT ID](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/) and a [LICENSE KEY](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key). 
 
 <a name="installation"></a>
 
