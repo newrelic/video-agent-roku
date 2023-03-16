@@ -22,7 +22,7 @@ function searchTaskMain()
         _url = box("https://www.google.com/search?source=hp&q=" + m.top.searchString)
         if Rnd(5) = 4
             ' Generates an error
-            _url = box("https://www.google.com/shitrequest")
+            _url = box("https://www.google.com/wrongrequest")
         end if
         urlReq = CreateObject("roUrlTransfer")
         urlReq.SetUrl(_url)

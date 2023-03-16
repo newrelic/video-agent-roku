@@ -12,6 +12,7 @@ sub init()
     m.logApiUrl = ""
     m.metricApiUrl = ""
     m.nrRegion = "US"
+    m.testServer = "http://my.test.server:8888"
     print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2022 New Relic Inc. All Rights Reserved."
@@ -116,7 +117,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     'Create and configure tasks (metrics)
     m.bgTaskMetrics = m.top.findNode("NRTaskMetrics")
     m.bgTaskMetrics.setField("apiKey", m.nrInsightsApiKey)
-    m.metricApiUrl = box(nrMetricsApiUrl())
+    m.metricApiUrl = box(nrMetricApiUrl())
     m.bgTaskMetrics.setField("metricApiUrl", m.metricApiUrl)
     m.bgTaskMetrics.sampleType = "metric"
 
@@ -201,10 +202,13 @@ end function
 function nrUpdateConfig(config as object) as void
     if config = invalid then return
     if config.proxyUrl <> invalid
+        nrLog("------------> Set Proxy Url " + config.proxyUrl)
         m.eventApiUrl = box(nrEventApiUrl())
         m.logApiUrl = box(nrLogApiUrl())
-        m.bgTask.setField("eventApiUrl", config.proxyUrl + m.eventApiUrl)
-        m.bgTask.setField("logApiUrl", config.proxyUrl + m.logApiUrl)
+        m.metricApiUrl = box(nrMetricApiUrl())
+        m.bgTaskEvents.setField("eventApiUrl", config.proxyUrl + m.eventApiUrl)
+        m.bgTaskLogs.setField("logApiUrl", config.proxyUrl + m.logApiUrl)
+        m.bgTaskMetrics.setField("metricApiUrl", config.proxyUrl + m.logApiUrl)
     end if
 end function
 
@@ -828,7 +832,7 @@ function nrEventApiUrl() as String
         return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "TEST"
         'NOTE: set address hosting the test server
-        return "http://x.x.x.x:5000/event"
+        return m.testServer + "/event"
     end if
 end function
 
@@ -839,18 +843,18 @@ function nrLogApiUrl() as String
         return "https://log-api.eu.newrelic.com/log/v1"
     else if m.nrRegion = "TEST"
         'NOTE: set address hosting the test server
-        return "http://x.x.x.x:5000/log"
+        return m.testServer + "/log"
     end if
 end function
 
-function nrMetricsApiUrl() as String
+function nrMetricApiUrl() as String
     if m.nrRegion = "US"
         return "https://metric-api.newrelic.com/metric/v1"
     else if m.nrRegion = "EU"
         return "https://metric-api.eu.newrelic.com/metric/v1"
     else if m.nrRegion = "TEST"
         'NOTE: set address hosting the test server
-        return "http://x.x.x.x:5000/metric"
+        return m.testServer + "/metric"
     end if
 end function
 

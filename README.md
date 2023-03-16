@@ -651,8 +651,8 @@ Return:
 	Nothing
 
 Example:
-	config = { networkProxy: "http://example.com:8888/;" }
-	nrUpdateConig(m.nr, config)
+	config = { proxyUrl: "http://example.com:8888/;" }
+	nrUpdateConfig(m.nr, config)
 ```
 
 **nrSendLog**

@@ -44,17 +44,17 @@ function nrPushSamples(samples as Object, endpoint as String, sampleType as Stri
 end function
 
 function nrEventProcessor() as Void
-    m.nr.callFunc("nrLog", "-- nrEventProcessor --")
+    m.nr.callFunc("nrLog", "-- nrEventProcessor at URL " + m.eventApiUrl)
     nrSampleProcessor("event", m.eventApiUrl)
 end function
 
 function nrLogProcessor() as Void
-    m.nr.callFunc("nrLog", "-- nrLogProcessor --")
+    m.nr.callFunc("nrLog", "-- nrLogProcessor at URL " + m.logApiUrl)
     nrSampleProcessor("log", m.logApiUrl)
 end function
 
 function nrMetricProcessor() as Void
-    m.nr.callFunc("nrLog", "-- nrMetricProcessor --")
+    m.nr.callFunc("nrLog", "-- nrMetricProcessor at URL " + m.metricApiUrl)
     nrSampleProcessor("metric", m.metricApiUrl)
 end function
 
@@ -89,10 +89,10 @@ function nrTaskMain() as Void
         'Assuming that parent node is com.newrelic.NRAgent
         m.nr = m.top.getParent()
         m.apiKey = m.top.apiKey
-        m.eventApiUrl = m.top.eventApiUrl
-        m.logApiUrl = m.top.logApiUrl
-        m.metricApiUrl = m.top.metricApiUrl
         m.sampleType = m.top.sampleType
+        if m.eventApiUrl = "" then m.eventApiUrl = m.top.eventApiUrl
+        if m.logApiUrl = "" then m.logApiUrl = m.top.logApiUrl
+        if m.metricApiUrl = "" then m.metricApiUrl = m.top.metricApiUrl
     end if
     m.nr.callFunc("nrLog", "---- Running NRTask ---- " + m.sampleType)
     if m.sampleType = "event"
@@ -103,4 +103,10 @@ function nrTaskMain() as Void
         nrMetricProcessor()
     end if
     m.nr.callFunc("nrLog", "---- Ended running NRTask ---- " + m.sampleType)
+end function
+
+function onConfigUpdate() as Void
+    m.eventApiUrl = m.top.eventApiUrl
+    m.logApiUrl = m.top.logApiUrl
+    m.metricApiUrl = m.top.metricApiUrl
 end function

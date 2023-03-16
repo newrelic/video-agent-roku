@@ -1,6 +1,13 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.1.2] - 2023/03/16
+### Fix
+ - `nrUpdateConfig` bug.
+ - Documentation errata.
+### Update
+ - Remove unused field in NRAgent.
+
 ## [3.1.1] - 2022/10/04
 ### Fix
  - Crash happening when using a playlist.

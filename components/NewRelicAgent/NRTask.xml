@@ -12,9 +12,9 @@
 <component name="com.newrelic.NRTask" extends="Task">
 	<interface>
 		<!-- Properties -->
-		<field id="eventApiUrl" type="string" value=""/>
-		<field id="logApiUrl" type="string" value=""/>
-		<field id="metricApiUrl" type="string" value=""/>
+		<field id="eventApiUrl" type="string" onChange="onConfigUpdate" value=""/>
+		<field id="logApiUrl" type="string" onChange="onConfigUpdate" value=""/>
+		<field id="metricApiUrl" type="string" onChange="onConfigUpdate" value=""/>
 		<field id="apiKey" type="string" value=""/>
 		<field id="sampleType" type="string" value=""/>
     </interface>
