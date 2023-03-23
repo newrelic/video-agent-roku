@@ -86,8 +86,25 @@ end function
 '
 ' @param nr New Relic Agent object
 ' @param obj { proxyUrl: string, delimited network proxy URL }
-function nrUpdateConfig(nr as object, config as object) as void
+function nrUpdateConfig(nr as Object, config as Object) as Void
     nr.callFunc("nrUpdateConfig", config)
+end function
+
+' Add a matching pattern for the domain attribute and substitute it by another string.
+'
+' @param nr New Relic Agent object
+' @param pattern: Regex pattern.
+' @param subs: Substitution string.
+function nrAddDomainSubstitution(nr as object, pattern as String, subs as String) as Void
+    nr.callFunc("nrAddDomainSubstitution", pattern, subs)
+end function
+
+' Delete a substitution pattern created with nrAddDomainSubstitution.
+'
+' @param nr New Relic Agent object
+' @param pattern: Regex pattern.
+function nrDelDomainSubstitution(nr as object, pattern as String) as Void
+    nr.callFunc("nrDelDomainSubstitution", pattern)
 end function
 
 ' Send an APP_STARTED event of type RokuSystem.

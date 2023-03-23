@@ -19,10 +19,15 @@ function searchTaskMain()
     m_sum = 0
 
     while true
-        _url = box("https://www.google.com/search?source=hp&q=" + m.top.searchString)
-        if Rnd(5) = 4
-            ' Generates an error
-            _url = box("https://www.google.com/wrongrequest")
+        dice = Rnd(4)
+        if dice = 1
+            _url = box("https://www.google.com/search?source=hp&q=" + m.top.searchString)
+        else if dice = 2
+            _url = box("https://www.google.cat/search?source=hp&q=" + m.top.searchString)
+        else if dice = 3
+            _url = box("https://www.google.us/search?source=hp&q=" + m.top.searchString)
+        else if dice = 4
+            _url = box("https://google.com/wrongrequest")
         end if
         urlReq = CreateObject("roUrlTransfer")
         urlReq.SetUrl(_url)

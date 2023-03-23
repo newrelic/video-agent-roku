@@ -20,6 +20,8 @@
         <function name="NewRelicVideoStop"/>
         <function name="nrUpdateConfig"/>
         <function name="nrSceneLoaded"/>
+        <function name="nrAddDomainSubstitution"/>
+        <function name="nrDelDomainSubstitution"/>
         <function name="nrAppStarted"/>
         <function name="nrSendCustomEvent"/>
         <function name="nrSendSystemEvent"/>

@@ -136,6 +136,9 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrHarvestTimerMetrics.ObserveField("fire", "nrHarvestTimerHandlerMetrics")
     m.nrHarvestTimerMetrics.duration = m.nrMetricHarvestTimeNormal
     m.nrHarvestTimerMetrics.control = "start"
+
+    'Domain attribute matching patterns
+    m.domainPatterns = CreateObject("roAssociativeArray")
     
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
@@ -199,10 +202,10 @@ function NewRelicVideoStop() as Void
 end function
 
 ' modifies current configuration
-function nrUpdateConfig(config as object) as void
+function nrUpdateConfig(config as Object) as Void
     if config = invalid then return
     if config.proxyUrl <> invalid
-        nrLog("------------> Set Proxy Url " + config.proxyUrl)
+        nrLog("Set Proxy URL: " + config.proxyUrl)
         m.eventApiUrl = box(nrEventApiUrl())
         m.logApiUrl = box(nrLogApiUrl())
         m.metricApiUrl = box(nrMetricApiUrl())
@@ -210,6 +213,16 @@ function nrUpdateConfig(config as object) as void
         m.bgTaskLogs.setField("logApiUrl", config.proxyUrl + m.logApiUrl)
         m.bgTaskMetrics.setField("metricApiUrl", config.proxyUrl + m.logApiUrl)
     end if
+end function
+
+' Add a matching pattern for the domain attribute and substitute it by another string.
+function nrAddDomainSubstitution(pattern as String, subs as String) as Void
+    m.domainPatterns.AddReplace(pattern, subs)
+end function
+
+' Delete a matching pattern created with nrAddDomainSubstitution
+function nrDelDomainSubstitution(pattern as String) as Void
+    m.domainPatterns.Delete(pattern)
 end function
 
 function nrAppStarted(aa as Object) as Void
@@ -1154,14 +1167,24 @@ function isAction(name as String, action as String) as Boolean
 end function
 
 function nrExtractDomainFromUrl(url as String) as String
+    'Extract domain from the URL
     r = CreateObject("roRegex", "\/\/|\/", "")
     arr = r.Split(url)
-    
     if arr.Count() < 2 then return ""
     if arr[0] <> "http:" and arr[0] <> "https:" then return ""
     if arr[1] = "" then return ""
-    'Return host name part of the URL
-    return arr[1]
+    domain = arr[1]
+
+    ' Check all patterns in m.domainPatterns
+    for each item in m.domainPatterns.Items()
+        r = CreateObject("roRegex", item.key, "")
+        if r.isMatch(domain)
+            return r.Replace(domain, item.value)
+        end if
+    end for
+
+    ' If nothing matches, it just returns the whole domain
+    return domain
 end function
 
 function nrGenerateId() as String
