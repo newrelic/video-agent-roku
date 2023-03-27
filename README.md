@@ -662,7 +662,7 @@ nrAddDomainSubstitution(nr as object, pattern as String, subs as String) as Void
 
 Description:
 	Add a matching pattern for the domain attribute and substitute it by another string.
-	Every time an event is generated with the domain attribute, it will apply check if if matches the regex and will apply the substitution. If the pattern is not set, it will use the whole domain.
+	Every time an event or metric is generated with a domain attribute, tha agent will check if it matches a regex and will apply the specified substitution. If no pattern is set, it will use the URL domain unchanged.
 	It applies to all events and metrics containing the "domain" attribute.
 
 Arguments:
