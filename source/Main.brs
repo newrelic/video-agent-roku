@@ -32,10 +32,23 @@ sub Main(aa as Object)
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
     m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "US", true)
-    nrEnableHttpEvents(m.nr) ' version 3.0.0 (or above) disables HttpEvents by default
+
+    'Set custom harvest time
+    nrSetHarvestTime(m.nr, 60)
+    'Version 3.0.0 (or above) disables HttpEvents by default
+    nrEnableHttpEvents(m.nr)
+    'Send APP_STARTED event
     nrAppStarted(m.nr, aa)
     'Send a custom system
     nrSendSystemEvent(m.nr, "TEST_ACTION")
+    
+    'Define multiple domain substitutions
+    nrAddDomainSubstitution(m.nr, "^www\.google\.com$", "Google COM")
+    nrAddDomainSubstitution(m.nr, "^www\.google\.cat$", "Google CAT")
+    nrAddDomainSubstitution(m.nr, "^www\.google\.us$", "Google US")
+    nrAddDomainSubstitution(m.nr, "^google\.com$", "Google ERROR")
+    nrAddDomainSubstitution(m.nr, "^.+\.googleapis\.com$", "Google APIs")
+    nrAddDomainSubstitution(m.nr, "^.+\.akamaihd\.net$", "Akamai")
     
     'Pass NewRelicAgent object to scene
     scene.setField("nr", m.nr)
@@ -44,7 +57,7 @@ sub Main(aa as Object)
     
     'Activate system tracking
     m.syslog = NewRelicSystemStart(m.port)
-    
+
     runSearchTask("hello")
     
     while(true)

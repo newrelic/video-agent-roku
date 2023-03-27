@@ -1,6 +1,12 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.2.0] - 2023/03/23
+### Add
+ - Domain substitution patterns.
+### Update
+ - OOTB count metrics aggregated by domain.
+
 ## [3.1.2] - 2023/03/16
 ### Fix
  - `nrUpdateConfig` bug.
