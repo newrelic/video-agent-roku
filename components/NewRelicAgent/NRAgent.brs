@@ -15,7 +15,7 @@ sub init()
     m.testServer = "http://my.test.server:8888"
     print "************************************************************"
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
-    print "   Copyright 2019-2022 New Relic Inc. All Rights Reserved."
+    print "   Copyright 2019-2023 New Relic Inc. All Rights Reserved."
     print "************************************************************"
 end sub
 
@@ -70,27 +70,21 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     'HTTP_CONNECT/HTTP_COMPLETE state
     m.http_events_enabled = false
 
+    'HTTP metric counters
+    m.http_counters_min_ts = CreateObject("roDateTime")
+    m.http_counters_max_ts = CreateObject("roDateTime")
+
     'HTTP_REQUEST counters
-    m.num_http_request = 0
-    m.http_request_min_ts = 0
-    m.http_request_max_ts = 0
+    m.num_http_request_counters = CreateObject("roAssociativeArray")
     'HTTP_RESPONSE counters
-    m.num_http_response = 0
-    m.http_response_min_ts = 0
-    m.http_response_max_ts = 0
-    m.num_http_response_errors = 0
+    m.num_http_response_counters = CreateObject("roAssociativeArray")
+    m.num_http_response_errors = CreateObject("roAssociativeArray")
     'HTTP_CONNECT counters
-    m.num_http_connect = 0
-    m.http_connect_min_ts = 0
-    m.http_connect_max_ts = 0
+    m.num_http_connect_counters = CreateObject("roAssociativeArray")
     'HTTP_COMPLETE counters
-    m.num_http_complete = 0
-    m.http_complete_min_ts = 0
-    m.http_complete_max_ts = 0
+    m.num_http_complete_counters = CreateObject("roAssociativeArray")
     'HTTP_ERROR counters
-    m.num_http_error = 0
-    m.http_error_min_ts = 0
-    m.http_error_max_ts = 0
+    m.num_http_error_counters = CreateObject("roAssociativeArray")
 
     'HTTP Request/Response IDs
     m.nrRequestIdentifiers = CreateObject("roAssociativeArray")
@@ -268,7 +262,8 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
 end function
 
 function nrSendHttpRequest(attr as Object) as Void
-    attr["domain"] = nrExtractDomainFromUrl(attr["origUrl"])
+    domain = nrExtractDomainFromUrl(attr["origUrl"])
+    attr["domain"] = domain
     transId = stri(attr["transferIdentity"])
     m.nrRequestIdentifiers[transId] = nrTimestamp()
     'Clean up old transfers
@@ -284,42 +279,43 @@ function nrSendHttpRequest(attr as Object) as Void
     end for
 
     'Calculate counts for metrics
-    timestamp = nrTimestamp()
-    m.num_http_request = m.num_http_request + 1
-    if m.http_request_min_ts = 0
-        m.http_request_min_ts = timestamp
-        m.http_request_max_ts = timestamp
+    if m.num_http_request_counters.DoesExist(domain)
+        new_count = m.num_http_request_counters[domain] + 1
+        m.num_http_request_counters.AddReplace(domain, new_count)
     else
-        if m.http_request_min_ts > timestamp then m.http_request_min_ts = timestamp
-        if m.http_request_max_ts < timestamp then m.http_request_max_ts = timestamp
+        m.num_http_request_counters.AddReplace(domain, 1)
     end if
 
     nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
-    attr["domain"] = nrExtractDomainFromUrl(attr["origUrl"])
+    domain = nrExtractDomainFromUrl(attr["origUrl"])
+    attr["domain"] = domain
     transId = stri(attr["transferIdentity"])
     if m.nrRequestIdentifiers[transId] <> invalid
         deltaMs = nrTimestamp() - m.nrRequestIdentifiers[transId]
         attr["timeSinceHttpRequest"] = deltaMs
         m.nrRequestIdentifiers.Delete(transId)
         'Generate metrics
-        nrSendMetric("roku.http.response.time", deltaMs, {"domain": attr["domain"]})
+        nrSendMetric("roku.http.response.time", deltaMs, {"domain": domain})
     end if
 
     'Calculate counts for metrics
-    timestamp = nrTimestamp()
-    m.num_http_response = m.num_http_response + 1
-    if m.http_response_min_ts = 0
-        m.http_response_min_ts = timestamp
-        m.http_response_max_ts = timestamp
+    if m.num_http_response_counters.DoesExist(domain)
+        new_count = m.num_http_response_counters[domain] + 1
+        m.num_http_response_counters.AddReplace(domain, new_count)
     else
-        if m.http_response_min_ts > timestamp then m.http_response_min_ts = timestamp
-        if m.http_response_max_ts < timestamp then m.http_response_max_ts = timestamp
+        m.num_http_response_counters.AddReplace(domain, 1)
     end if
+
     if attr["httpCode"] >= 400 or attr["httpCode"] < 0
-        m.num_http_response_errors = m.num_http_response_errors + 1
+        if m.num_http_response_errors.DoesExist(domain)
+            new_count = m.num_http_response_errors[domain] + 1
+            m.num_http_response_errors.AddReplace(domain, new_count)
+        else
+            m.num_http_response_errors.AddReplace(domain, 1)
+        end if
     end if
     
     nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
@@ -763,16 +759,14 @@ end function
 
 function nrSendHTTPError(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)
+    domain = attr["domain"]
 
     'Calculate counts for metrics
-    timestamp = nrTimestamp()
-    m.num_http_error = m.num_http_error + 1
-    if m.http_error_min_ts = 0
-        m.http_error_min_ts = timestamp
-        m.http_error_max_ts = timestamp
+    if m.num_http_error_counters.DoesExist(domain)
+        new_count = m.num_http_error_counters[domain] + 1
+        m.num_http_error_counters.AddReplace(domain, new_count)
     else
-        if m.http_error_min_ts > timestamp then m.http_error_min_ts = timestamp
-        if m.http_error_max_ts < timestamp then m.http_error_max_ts = timestamp
+        m.num_http_error_counters.AddReplace(domain, 1)
     end if
 
     nrSendCustomEvent("RokuSystem", "HTTP_ERROR", attr)
@@ -780,16 +774,14 @@ end function
 
 function nrSendHTTPConnect(info as Object) as Void
     attr = nrAddCommonHTTPAttr(info)
+    domain = attr["domain"]
 
     'Calculate counts for metrics
-    timestamp = nrTimestamp()
-    m.num_http_connect = m.num_http_connect + 1
-    if m.http_connect_min_ts = 0
-        m.http_connect_min_ts = timestamp
-        m.http_connect_max_ts = timestamp
+    if m.num_http_connect_counters.DoesExist(domain)
+        new_count = m.num_http_connect_counters[domain] + 1
+        m.num_http_connect_counters.AddReplace(domain, new_count)
     else
-        if m.http_connect_min_ts > timestamp then m.http_connect_min_ts = timestamp
-        if m.http_connect_max_ts < timestamp then m.http_connect_max_ts = timestamp
+        m.num_http_connect_counters.AddReplace(domain, 1)
     end if
 
     if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
@@ -809,16 +801,14 @@ function nrSendHTTPComplete(info as Object) as Void
     }
     commonAttr = nrAddCommonHTTPAttr(info)
     attr.Append(commonAttr)
+    domain = attr["domain"]
 
     'Calculate counts for metrics
-    timestamp = nrTimestamp()
-    m.num_http_complete = m.num_http_complete + 1
-    if m.http_complete_min_ts = 0
-        m.http_complete_min_ts = timestamp
-        m.http_complete_max_ts = timestamp
+    if m.num_http_complete_counters.DoesExist(domain)
+        new_count = m.num_http_complete_counters[domain] + 1
+        m.num_http_complete_counters.AddReplace(domain, new_count)
     else
-        if m.http_complete_min_ts > timestamp then m.http_complete_min_ts = timestamp
-        if m.http_complete_max_ts < timestamp then m.http_complete_max_ts = timestamp
+        m.num_http_complete_counters.AddReplace(domain, 1)
     end if
 
     if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
@@ -1214,7 +1204,10 @@ function nrGenerateStreamUrl() as String
 end function
 
 function nrTimestamp() as LongInteger
-    timestampObj = CreateObject("roDateTime")
+    return nrTimestampFromDateTime(CreateObject("roDateTime"))
+end function
+
+function nrTimestampFromDateTime(timestampObj as object) as LongInteger
     timestamp = timestampObj.asSeconds()
     nowMilliseconds = timestampObj.GetMilliseconds()
 
@@ -1470,40 +1463,46 @@ function nrHeartbeatHandler() as Void
 end function
 
 function nrSendHttpCountMetrics() as Void
-    nrSendCountMetric("roku.http.request.count", m.num_http_request, m.http_request_max_ts - m.http_request_min_ts)
-    nrSendCountMetric("roku.http.response.count", m.num_http_response, m.http_response_max_ts - m.http_response_min_ts)
-    nrSendCountMetric("roku.http.response.error.count", m.num_http_response_errors, m.http_response_max_ts - m.http_response_min_ts)
-    nrSendCountMetric("roku.http.connect.count", m.num_http_connect, m.http_connect_max_ts - m.http_connect_min_ts)
-    nrSendCountMetric("roku.http.complete.count", m.num_http_complete, m.http_complete_max_ts - m.http_complete_min_ts)
-    nrSendCountMetric("roku.http.error.count", m.num_http_error, m.http_error_max_ts - m.http_error_min_ts)
+    'Set final time interval
+    m.http_counters_max_ts.Mark()
 
-    'HTTP_REQUEST counters
-    m.num_http_request = 0
-    m.http_request_min_ts = 0
-    m.http_request_max_ts = 0
-    'HTTP_RESPONSE counters
-    m.num_http_response = 0
-    m.http_response_min_ts = 0
-    m.http_response_max_ts = 0
-    m.num_http_response_errors = 0
-    'HTTP_CONNECT counters
-    m.num_http_connect = 0
-    m.http_connect_min_ts = 0
-    m.http_connect_max_ts = 0
-    'HTTP_COMPLETE counters
-    m.num_http_complete = 0
-    m.http_complete_min_ts = 0
-    m.http_complete_max_ts = 0
-    'HTTP_ERROR counters
-    m.num_http_error = 0
-    m.http_error_min_ts = 0
-    m.http_error_max_ts = 0
+    'Total counter interval (since last harvest)
+    interval = nrTimestampFromDateTime(m.http_counters_max_ts) - nrTimestampFromDateTime(m.http_counters_min_ts)
+
+    'Generate a counter metrics for each domain
+    for each item in m.num_http_request_counters.Items()
+        nrSendCountMetric("roku.http.request.count", item.value, interval, {"domain": item.key})
+    end for
+    for each item in m.num_http_response_counters.Items()
+        nrSendCountMetric("roku.http.response.count", item.value, interval, {"domain": item.key})
+    end for
+    for each item in m.num_http_response_errors.Items()
+        nrSendCountMetric("roku.http.response.error.count", item.value, interval, {"domain": item.key})
+    end for
+    for each item in m.num_http_connect_counters.Items()
+        nrSendCountMetric("roku.http.connect.count", item.value, interval, {"domain": item.key})
+    end for
+    for each item in m.num_http_complete_counters.Items()
+        nrSendCountMetric("roku.http.complete.count", item.value, interval, {"domain": item.key})
+    end for
+    for each item in m.num_http_error_counters.Items()
+        nrSendCountMetric("roku.http.error.count", item.value, interval, {"domain": item.key})
+    end for
+
+    'Set initial time interval
+    m.http_counters_min_ts.Mark()
+
+    'Reset counters
+    m.num_http_request_counters.Clear()
+    m.num_http_response_counters.Clear()
+    m.num_http_response_errors.Clear()
+    m.num_http_connect_counters.Clear()
+    m.num_http_complete_counters.Clear()
+    m.num_http_error_counters.Clear()
 end function
 
 function nrHarvestTimerHandlerEvents() as Void
     nrLog("--- nrHarvestTimerHandlerEvents ---")
-
-    nrSendHttpCountMetrics()
     
     if LCase(m.bgTaskEvents.state) = "run"
         nrLog("NRTaskEvents still running, abort")
@@ -1526,6 +1525,8 @@ end function
 
 function nrHarvestTimerHandlerMetrics() as Void
     nrLog("--- nrHarvestTimerHandlerMetrics ---")
+
+    nrSendHttpCountMetrics()
     
     if LCase(m.bgTaskMetrics.state) = "run"
         nrLog("NRTaskMetrics still running, abort")
