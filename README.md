@@ -814,6 +814,9 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 
 | Attribute Name | Description |
 |---|---|
+| `instrumentation.provider` | Always “media”. |
+| `instrumentation.name` | Always “roku”. |
+| `instrumentation.version` | Agent’s version. |
 | `newRelicAgent` | Always “RokuAgent”. |
 | `newRelicVersion` | Agent’s version. |
 | `sessionId` | Session ID, a hash that is generated every time the Roku app starts. |
