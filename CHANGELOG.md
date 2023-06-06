@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.2.1] - 2023/06/06
+### Add
+- Instrumentation specific tags
+
 ## [3.2.0] - 2023/03/27
 ### Add
  - Domain substitution patterns.

@@ -689,6 +689,11 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
 end function
 
 function nrAddAttributes(ev as Object) as Object
+
+    'Add default custom attributes for instrumentation'
+    ev.AddReplace("instrumentation.provider", "media")
+    ev.AddReplace("instrumentation.name", "roku")
+    ev.AddReplace("instrumentation.version", m.nrAgentVersion)
     ev.AddReplace("newRelicAgent", "RokuAgent")
     ev.AddReplace("newRelicVersion", m.nrAgentVersion)
     ev.AddReplace("sessionId", m.nrSessionId)
