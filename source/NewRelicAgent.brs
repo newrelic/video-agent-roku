@@ -155,12 +155,13 @@ end function
 '
 ' @param nr New Relic Agent object.
 ' @param urlReq URL request, roUrlTransfer object.
-function nrSendHttpRequest(nr as Object, urlReq as Object) as Void
+function nrSendHttpRequest(nr as Object, urlReq as Object, timestamp = invalid) as Void
     if type(urlReq) = "roUrlTransfer"
         attr = {
             "origUrl": urlReq.GetUrl(),
             "transferIdentity": urlReq.GetIdentity(),
             "method": urlReq.GetRequest()
+            "timestamp": timestamp
         }
         nr.callFunc("nrSendHttpRequest", attr)
     end if
@@ -171,7 +172,7 @@ end function
 ' @param nr New Relic Agent object.
 ' @param _url Request URL.
 ' @param msg A message of type roUrlEvent.
-function nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
+function nrSendHttpResponse(nr as Object, _url as String, msg as Object, timestamp = invalid) as Void
     if type(msg) = "roUrlEvent"
         attr = {
             "origUrl": _url
@@ -180,6 +181,7 @@ function nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
         attr.AddReplace("httpCode", msg.GetResponseCode())
         attr.AddReplace("httpResult", msg.GetFailureReason())
         attr.AddReplace("transferIdentity", msg.GetSourceIdentity())
+        attr.AddReplace("timestamp", timestamp)
         
         header = msg.GetResponseHeaders()
         

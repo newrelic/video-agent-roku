@@ -265,12 +265,19 @@ function nrSendHttpRequest(attr as Object) as Void
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     attr["domain"] = domain
     transId = stri(attr["transferIdentity"])
-    m.nrRequestIdentifiers[transId] = nrTimestamp()
+    timestamp = 0
+    'Use custom timestamp if included within the attr
+    if attr.timestamp <> invalid AND type(attr["timestamp"]) = "LongInteger"
+        timestamp = attr["timestamp"]
+    else
+        timestamp = nrTimestamp()
+    end if
+    m.nrRequestIdentifiers[transId] = timestamp
     'Clean up old transfers
     toDeleteKeys = []
     for each item in m.nrRequestIdentifiers.Items()
         'More than 10 minutes without a response, delete the request ID
-        if nrTimestamp() - item.value > 10*60*1000
+        if timestamp - item.value > 10*60*1000
             toDeleteKeys.Push(item.key)
         end if
     end for
@@ -293,8 +300,15 @@ function nrSendHttpResponse(attr as Object) as Void
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     attr["domain"] = domain
     transId = stri(attr["transferIdentity"])
+    timestamp = 0
+    'Use custom timestamp if included within the attr
+    if attr.timestamp <> invalid AND type(attr["timestamp"]) = "LongInteger"
+        timestamp = attr["timestamp"]
+    else
+        timestamp = nrTimestamp()
+    end if
     if m.nrRequestIdentifiers[transId] <> invalid
-        deltaMs = nrTimestamp() - m.nrRequestIdentifiers[transId]
+        deltaMs = timestamp - m.nrRequestIdentifiers[transId]
         attr["timeSinceHttpRequest"] = deltaMs
         m.nrRequestIdentifiers.Delete(transId)
         'Generate metrics
