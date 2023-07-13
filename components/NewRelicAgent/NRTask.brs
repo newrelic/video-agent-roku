@@ -59,7 +59,7 @@ function nrMetricProcessor() as Void
 end function
 
 function isStatusErr(res) as boolean
-    return res >= 400
+    return res >= 400 or res = 0
 end function
 
 function nrSampleProcessor(sampleType as String, endpoint as String) as Void
