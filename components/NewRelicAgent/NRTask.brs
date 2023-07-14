@@ -69,10 +69,17 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
             res = nrPushSamples(samples, endpoint, sampleType)
             if isStatusErr(res)
                 m.nr.callFunc("nrLog", "-- nrSampleProcessor (" + sampleType + "): FAILED with code " + Str(res) + ", retry later --")
-                if res = 429
+                if res = 429 or res = 408 or res = 503
+                    'Increasing harvest cycle duration in case of error 408 or 503
+                    'Refer: https://docs.newrelic.com/docs/data-apis/ingest-apis/event-api/introduction-event-api/#errors-submission
                     m.nr.callFunc("nrReqErrorTooManyReq", sampleType)
                 else if res = 413
                     m.nr.callFunc("nrReqErrorTooLarge", sampleType)
+                else if res = 403
+                    'Handle 403 error in scenario of missing invalid key error from NR collector, printing the log and clearing the buffer
+                    m.nr.callFunc("nrLog", "-- missingInvalidLicenseKey (" + sampleType + "): FAILED with code " + Str(res))
+                    m.nr.callFunc("nrReqOk", sampleType)
+                    return
                 end if
                 m.nr.callFunc("nrGetBackAllSamples", sampleType, samples)
             else
