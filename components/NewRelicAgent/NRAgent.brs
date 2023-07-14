@@ -1227,8 +1227,8 @@ function nrGetOSVersion(dev as Object) as Object
         verDict = dev.GetOsVersion()
         return {version: verDict.major + "." + verDict.minor + "." + verDict.revision, build: verDict.build}
     else
-        verStr = dev.GetVersion()
-        return {version: verStr.Mid(2, 3) + "." + verStr.Mid(5, 1), build: verStr.Mid(8, 4)}
+        'As roDeviceInfo.GetVersion() has been deprecated in version 9.2, return last supported version or lower as version
+        return {version: "<=9.1", build: "0"}
     end if
 end function
 
