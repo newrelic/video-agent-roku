@@ -10,13 +10,8 @@ end function
 function searchTaskMain()
     print "SearchTaskMain function"
     m.port = CreateObject("roMessagePort")
-    counter = 0
-    countTimer = CreateObject("roTimespan")
-    countTimer.Mark()
 
-    m_min = 999999
-    m_max = 0
-    m_sum = 0
+    nrPluginHttpSenderStart()
 
     while true
         dice = Rnd(4)
@@ -36,36 +31,14 @@ function searchTaskMain()
         urlReq.EnableHostVerification(false)
         urlReq.SetMessagePort(m.port)
         urlReq.AsyncGetToString()
-        
-        requestTimer = CreateObject("roTimespan")
 
-        'Send HTTP_REQUEST action
-        print "URL REQ OBJECT = ", urlReq
-        nrSendHttpRequest(m.nr, urlReq)
-        requestTimer.Mark()
+        'Send HTTP_REQUEST event
+        nrPluginHttpSenderRequest(urlReq)
         
         msg = wait(5000, m.port)
         if type(msg) = "roUrlEvent" then
-            'Send HTTP_RESPONSE action
-            nrSendHttpResponse(m.nr, _url, msg)
-            nrSendLog(m.nr, "Google Search", "URL Request", { "url": _url, "counter": counter, "bodysize": Len(msg) })
-
-            ' Update max, min and sum
-            if requestTimer.TotalMilliseconds() > m_max then m_max = requestTimer.TotalMilliseconds()
-            if requestTimer.TotalMilliseconds() < m_min then m_min = requestTimer.TotalMilliseconds()
-            m_sum = m_sum + requestTimer.TotalMilliseconds()
-        end if
-        
-        sleep(2500)
-        counter = counter + 1
-
-        if countTimer.TotalMilliseconds() > 7500
-            nrSendSummaryMetric(m.nr, "roku.http.response.summary", countTimer.TotalMilliseconds(), counter, m_sum, m_min, m_max)
-            m_min = 999999
-            m_max = 0
-            m_sum = 0
-            counter = 0
-            countTimer.Mark()
+            'Send HTTP_RESPONSE event
+            nrPluginHttpSenderResponse(_url, msg)
         end if
     end while
 end function

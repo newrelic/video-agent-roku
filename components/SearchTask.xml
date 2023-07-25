@@ -4,10 +4,10 @@
 		<field id="searchString" type="string" />
 		<field id="nr" type="node" onChange="nrRefUpdated" />
 	</interface>
-
-	<!-- New Relic Agent Interface -->
-	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
 	
 	<!-- Init -->
 	<script type="text/brightscript" uri="pkg:/components/SearchTask.brs"/>
+
+	<!-- HTTP Sender Plugin experiment -->
+	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/plugin/HttpSender.brs"/>
 </component>
