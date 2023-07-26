@@ -7,7 +7,7 @@
 '**********************************************************
 
 ' Initialize plugin state.
-function nrPluginHttpSenderInit()
+function nrPluginHttpSenderInit() as Void
     print "nrPluginHttpSenderInit"
 
     'Buffer of events
@@ -26,11 +26,20 @@ function nrPluginHttpSenderAddDomainSubstitution(pattern as String, subs as Stri
 end function
 
 ' Delete a matching pattern created with nrAddDomainSubstitution
-function nrPluginHttpSendeDelDomainSubstitution(pattern as String) as Void
+function nrPluginHttpSenderDelDomainSubstitution(pattern as String) as Void
     m._nrDomainPatterns.Delete(pattern)
 end function
 
-'TODO: sync function: send all data to NRAgent
+' Send list of events to NRAgent.
+'
+' @param nr New Relic Agent object.
+function nrPluginHttpSenderSync(nr as Object) as Void
+    print "Sync events, num events = ", m._nrPluginHttpSenderEventArray.Count()
+
+    m.nr.callFunc("nrGetBackAllSamples", "event", m._nrPluginHttpSenderEventArray)
+    
+    m._nrPluginHttpSenderEventArray.Clear()
+end function
 
 ' Send an HTTP_REQUEST event of type RokuSystem.
 '
@@ -103,9 +112,7 @@ function _nr_plugin_SendHttpRequest(attr as Object) as Void
         m._nrRequestIdentifiers.Delete(key)
     end for
 
-    'TODO: send custom event
-    'nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
-    print "TODO: SEND HTTP_REQUEST", attr
+    _nr_plugin_SendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
 end function
 
 function _nr_plugin_SendHttpResponse(attr as Object) as Void
@@ -118,9 +125,7 @@ function _nr_plugin_SendHttpResponse(attr as Object) as Void
         m._nrRequestIdentifiers.Delete(transId)
     end if
     
-    'TODO: send custom event
-    'nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
-    print "TODO: SEND HTTP_RESPONSE", attr
+    _nr_plugin_SendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
 end function
 
 function _nr_plugin_ExtractDomainFromUrl(url as String) as String
@@ -153,4 +158,103 @@ function _nr_plugin_Timestamp() as LongInteger
     timestampMS& = timestampLong& * 1000 + nowMilliseconds
 
     return timestampMS&
+end function
+
+function _nr_plugin_SendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
+    ev = _nr_plugin_CreateEvent(eventType, actionName)
+    if attr <> invalid
+        ev.Append(attr)
+    end if
+    m._nrPluginHttpSenderEventArray.Push(ev)
+
+    print "PLUGIN EVENT "  + eventType + " , " + actionName +  " = ", ev
+end function
+
+function _nr_plugin_CreateEvent(eventType as String, actionName as String) as Object
+    ev = CreateObject("roAssociativeArray")
+    if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
+    if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
+    
+    ev["timestamp"] = FormatJson(_nr_plugin_Timestamp())
+    ev = _nr_plugin_AddAttributes(ev)
+    
+    return ev
+end function
+
+function _nr_plugin_AddAttributes(ev as Object) as Object
+    'TODO: get actual agent version
+    agentVersion = "0.0.0"
+    'TODO: get actual session ID
+    sessionId = "xxxxxx"
+
+    'Add default custom attributes for instrumentation'
+    ev.AddReplace("instrumentation.provider", "media")
+    ev.AddReplace("instrumentation.name", "roku")
+    ev.AddReplace("instrumentation.version", agentVersion)
+    ev.AddReplace("newRelicAgent", "RokuAgent")
+    ev.AddReplace("newRelicVersion", agentVersion)
+    ev.AddReplace("sessionId", sessionId)
+    hdmi = CreateObject("roHdmiStatus")
+    ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
+    ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
+    dev = CreateObject("roDeviceInfo")
+    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
+    ev.AddReplace("device", dev.GetModelDisplayName())
+    ev.AddReplace("deviceGroup", "Roku")
+    ev.AddReplace("deviceManufacturer", "Roku")
+    ev.AddReplace("deviceModel", dev.GetModel())
+    ev.AddReplace("deviceType", dev.GetModelType())
+    ev.AddReplace("osName", "RokuOS")
+    ver = _nr_plugin_GetOSVersion(dev)
+    ev.AddReplace("osVersion", ver["version"])
+    ev.AddReplace("osBuild", ver["build"])
+    ev.AddReplace("countryCode", dev.GetUserCountryCode())
+    ev.AddReplace("timeZone", dev.GetTimeZone())
+    ev.AddReplace("locale", dev.GetCurrentLocale())
+    ev.AddReplace("memoryLevel", dev.GetGeneralMemoryLevel())
+    ev.AddReplace("connectionType", dev.GetConnectionType())
+    'ev.AddReplace("ipAddress", dev.GetExternalIp())
+    ev.AddReplace("displayType", dev.GetDisplayType())
+    ev.AddReplace("displayMode", dev.GetDisplayMode())
+    ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
+    ev.AddReplace("videoMode", dev.GetVideoMode())
+    ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
+    ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)    
+    app = CreateObject("roAppInfo")
+    appid = app.GetID().ToInt()
+    if appid = 0 then appid = 1
+    ev.AddReplace("appId", appid)
+    ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
+    ev.AddReplace("appName", app.GetTitle())
+    ev.AddReplace("appDevId", app.GetDevID())
+    ev.AddReplace("appIsDev", app.IsDev())
+    appbuild = app.GetValue("build_version").ToInt()
+    ev.AddReplace("appBuild", appbuild)
+    'Uptime
+    ev.AddReplace("uptime", Uptime(0))
+    
+    'TODO: get custom atributes
+
+    'Add custom attributes
+    'genCustomAttr = m.nrCustomAttributes["GENERAL_ATTR"]
+    'if genCustomAttr <> invalid then ev.Append(genCustomAttr)
+    actionName = ev["actionName"]
+    'actionCustomAttr = m.nrCustomAttributes[actionName]
+    'if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
+    
+    'Time Since Load
+    'date = CreateObject("roDateTime")
+    'ev.AddReplace("timeSinceLoad", date.AsSeconds() - m.nrInitTimestamp)
+    
+    return ev
+end function
+
+function _nr_plugin_GetOSVersion(dev as Object) as Object
+    if FindMemberFunction(dev, "GetOSVersion") <> Invalid
+        verDict = dev.GetOsVersion()
+        return {version: verDict.major + "." + verDict.minor + "." + verDict.revision, build: verDict.build}
+    else
+        'As roDeviceInfo.GetVersion() has been deprecated in version 9.2, return last supported version or lower as version
+        return {version: "<=9.1", build: "0"}
+    end if
 end function

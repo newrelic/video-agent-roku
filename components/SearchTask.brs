@@ -1,6 +1,6 @@
 sub init()
     m.top.functionName = "searchTaskMain"
-    
+
     ' Init HTTP Sender plugin
     nrPluginHttpSenderInit()
 
@@ -21,6 +21,8 @@ end function
 function searchTaskMain()
     print "SearchTaskMain function"
     m.port = CreateObject("roMessagePort")
+
+    cnt = 0
 
     while true
         dice = Rnd(4)
@@ -44,10 +46,20 @@ function searchTaskMain()
         'Send HTTP_REQUEST event
         nrPluginHttpSenderRequest(urlReq)
         
-        msg = wait(5000, m.port)
+        msg = wait(10000, m.port)
         if type(msg) = "roUrlEvent" then
             'Send HTTP_RESPONSE event
             nrPluginHttpSenderResponse(_url, msg)
         end if
+
+        if cnt >= 5
+            'Sync
+            nrPluginHttpSenderSync(m.nr)
+            cnt = 0
+        end if
+
+        cnt += 1
+
+        Sleep(3000)
     end while
 end function
