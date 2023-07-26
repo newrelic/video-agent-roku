@@ -1,7 +1,7 @@
 '**********************************************************
 ' HTTP Sender Plugin
-' Record HTTP_REQUEST and HTTP_RESPONSE events,
-' allowing to manually set time references.
+' Record HTTP_REQUEST and HTTP_RESPONSE events in a local
+' thread and sync with NRAgent at any point.
 '
 ' Copyright 2023 New Relic Inc. All Rights Reserved. 
 '**********************************************************
