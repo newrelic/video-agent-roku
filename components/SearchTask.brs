@@ -1,5 +1,16 @@
 sub init()
     m.top.functionName = "searchTaskMain"
+    
+    ' Init HTTP Sender plugin
+    nrPluginHttpSenderInit()
+
+    'Define multiple domain substitutions
+    nrPluginHttpSenderAddDomainSubstitution("^www\.google\.com$", "Google COM")
+    nrPluginHttpSenderAddDomainSubstitution("^www\.google\.cat$", "Google CAT")
+    nrPluginHttpSenderAddDomainSubstitution("^www\.google\.us$", "Google US")
+    nrPluginHttpSenderAddDomainSubstitution("^google\.com$", "Google ERROR")
+    nrPluginHttpSenderAddDomainSubstitution("^.+\.googleapis\.com$", "Google APIs")
+    nrPluginHttpSenderAddDomainSubstitution("^.+\.akamaihd\.net$", "Akamai")
 end sub
 
 function nrRefUpdated()
@@ -10,8 +21,6 @@ end function
 function searchTaskMain()
     print "SearchTaskMain function"
     m.port = CreateObject("roMessagePort")
-
-    nrPluginHttpSenderStart()
 
     while true
         dice = Rnd(4)
