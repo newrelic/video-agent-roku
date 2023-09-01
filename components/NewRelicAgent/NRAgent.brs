@@ -548,6 +548,10 @@ function nrActivateLogging(state as Boolean) as Void
     m.nrLogsState = state
 end function
 
+function nrCheckLoggingState() as Boolean
+    return m.nrLogsState
+end function
+
 function nrLog(msg as Dynamic) as Void
     if m.nrLogsState = true
         if type(msg) = "roArray"         

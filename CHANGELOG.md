@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.2.2] - 2023/09/01
+### Update
+- Improve NRTask console logging, reducing task rendezvous.
+
 ## [3.2.1] - 2023/06/06
 ### Add
 - Instrumentation specific tags
