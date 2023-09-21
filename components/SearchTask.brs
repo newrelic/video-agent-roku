@@ -1,16 +1,17 @@
 sub init()
     m.top.functionName = "searchTaskMain"
 
+
     ' Init HTTP Sender plugin
-    nrPluginHttpSenderInit()
+    m.plugin = nrPluginHttpSenderInit()
 
     'Define multiple domain substitutions
-    nrPluginHttpSenderAddDomainSubstitution("^www\.google\.com$", "Google COM")
-    nrPluginHttpSenderAddDomainSubstitution("^www\.google\.cat$", "Google CAT")
-    nrPluginHttpSenderAddDomainSubstitution("^www\.google\.us$", "Google US")
-    nrPluginHttpSenderAddDomainSubstitution("^google\.com$", "Google ERROR")
-    nrPluginHttpSenderAddDomainSubstitution("^.+\.googleapis\.com$", "Google APIs")
-    nrPluginHttpSenderAddDomainSubstitution("^.+\.akamaihd\.net$", "Akamai")
+    nrPluginHttpSenderAddDomainSubstitution(m.plugin, "^www\.google\.com$", "Google COM")
+    nrPluginHttpSenderAddDomainSubstitution(m.plugin, "^www\.google\.cat$", "Google CAT")
+    nrPluginHttpSenderAddDomainSubstitution(m.plugin, "^www\.google\.us$", "Google US")
+    nrPluginHttpSenderAddDomainSubstitution(m.plugin, "^google\.com$", "Google ERROR")
+    nrPluginHttpSenderAddDomainSubstitution(m.plugin, "^.+\.googleapis\.com$", "Google APIs")
+    nrPluginHttpSenderAddDomainSubstitution(m.plugin, "^.+\.akamaihd\.net$", "Akamai")
 end sub
 
 function nrRefUpdated()
@@ -44,17 +45,17 @@ function searchTaskMain()
         urlReq.AsyncGetToString()
 
         'Send HTTP_REQUEST event
-        nrPluginHttpSenderRequest(urlReq)
+        nrPluginHttpSenderRequest(m.plugin, urlReq)
         
         msg = wait(10000, m.port)
         if type(msg) = "roUrlEvent" then
             'Send HTTP_RESPONSE event
-            nrPluginHttpSenderResponse(_url, msg)
+            nrPluginHttpSenderResponse(m.plugin, _url, msg)
         end if
 
         if cnt >= 5
             'Sync
-            nrPluginHttpSenderSync(m.nr)
+            nrPluginHttpSenderSync(m.plugin, m.nr)
             cnt = 0
         end if
 

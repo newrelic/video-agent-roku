@@ -7,8 +7,8 @@
 '**********************************************************
 
 ' Initialize plugin state.
-function nrPluginHttpSenderInit() as Void
-    print "nrPluginHttpSenderInit"
+sub init()
+    print "New Relic HTTP Sender Plugin"
 
     'Buffer of events
     m._nrPluginHttpSenderEventArray = []
@@ -18,7 +18,7 @@ function nrPluginHttpSenderInit() as Void
 
     'Domain attribute matching patterns
     m._nrDomainPatterns = CreateObject("roAssociativeArray")
-end function
+end sub
 
 ' Add a matching pattern for the domain attribute and substitute it by another string.
 function nrPluginHttpSenderAddDomainSubstitution(pattern as String, subs as String) as Void
@@ -36,61 +36,9 @@ end function
 function nrPluginHttpSenderSync(nr as Object) as Void
     print "Sync events, num events = ", m._nrPluginHttpSenderEventArray.Count()
 
-    m.nr.callFunc("nrGetBackAllSamples", "event", m._nrPluginHttpSenderEventArray)
+    nr.callFunc("nrGetBackAllSamples", "event", m._nrPluginHttpSenderEventArray)
     
     m._nrPluginHttpSenderEventArray.Clear()
-end function
-
-' Send an HTTP_REQUEST event of type RokuSystem.
-'
-' @param urlReq URL request, roUrlTransfer object.
-function nrPluginHttpSenderRequest(urlReq as Object) as Void
-    print "nrPluginHttpSenderRequest", urlReq.GetUrl()
-
-    if type(urlReq) = "roUrlTransfer"
-        attr = {
-            "origUrl": urlReq.GetUrl(),
-            "transferIdentity": urlReq.GetIdentity(),
-            "method": urlReq.GetRequest()
-        }
-        _nr_plugin_SendHttpRequest(attr)
-    end if
-end function
-
-' Send an HTTP_RESPONSE event of type RokuSystem.
-'
-' @param _url Request URL.
-' @param msg A message of type roUrlEvent.
-function nrPluginHttpSenderResponse(_url as String, msg as Object) as Void
-    print "nrPluginHttpSenderResponse", _url
-
-    if type(msg) = "roUrlEvent"
-        attr = {
-            "origUrl": _url
-        }
-        
-        attr.AddReplace("httpCode", msg.GetResponseCode())
-        attr.AddReplace("httpResult", msg.GetFailureReason())
-        attr.AddReplace("transferIdentity", msg.GetSourceIdentity())
-        
-        header = msg.GetResponseHeaders()
-        
-        for each key in header
-            parts = key.Tokenize("-")
-            finalKey = "http"
-            finalValue = header[key]
-            for each part in parts
-                firstChar = Left(part, 1)
-                firstChar = UCase(firstChar)
-                restStr = Right(part, Len(part) - 1)
-                restStr = LCase(restStr)
-                finalKey = finalKey + firstChar + restStr
-            end for
-            attr.AddReplace(finalKey, finalValue)
-        end for
-        
-        _nr_plugin_SendHttpResponse(attr)
-    end if
 end function
 
 '----- Private Functions -----

@@ -9,5 +9,5 @@
 	<script type="text/brightscript" uri="pkg:/components/SearchTask.brs"/>
 
 	<!-- HTTP Sender Plugin experiment -->
-	<script type="text/brightscript" uri="pkg:/components/NewRelicAgent/plugin/HttpSender.brs"/>
+	<script type="text/brightscript" uri="pkg:/source/HttpSenderWrapper.brs"/>
 </component>
