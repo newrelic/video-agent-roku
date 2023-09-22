@@ -6,6 +6,12 @@
 ' Copyright 2023 New Relic Inc. All Rights Reserved. 
 '**********************************************************
 
+'TODO: PENDING FEATURES
+' - Get actual agent version
+' - Get actual session ID
+' - Custom attributes
+' - Remove events from the buffer, indexed by `transferIdentity` (or `origUrl`)
+
 ' Initialize plugin state.
 sub init()
     print "New Relic HTTP Sender Plugin"
@@ -130,9 +136,7 @@ function _nr_plugin_CreateEvent(eventType as String, actionName as String) as Ob
 end function
 
 function _nr_plugin_AddAttributes(ev as Object) as Object
-    'TODO: get actual agent version
     agentVersion = "0.0.0"
-    'TODO: get actual session ID
     sessionId = "xxxxxx"
 
     'Add default custom attributes for instrumentation'
@@ -180,8 +184,6 @@ function _nr_plugin_AddAttributes(ev as Object) as Object
     ev.AddReplace("appBuild", appbuild)
     'Uptime
     ev.AddReplace("uptime", Uptime(0))
-    
-    'TODO: get custom atributes
 
     'Add custom attributes
     'genCustomAttr = m.nrCustomAttributes["GENERAL_ATTR"]
