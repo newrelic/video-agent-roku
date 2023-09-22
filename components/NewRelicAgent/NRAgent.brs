@@ -726,7 +726,16 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
     ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
-    ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)    
+    ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)
+    deviceInfo = CreateObject("roAppMemoryMonitor")
+    'Available for RokuOS v12.0+
+    if deviceInfo <> invalid
+        ev.AddReplace("memLimitPercent", deviceInfo.GetMemoryLimitPercent())
+        'Available for RokuOS v12.5+
+        if FindMemberFunction(deviceInfo, "GetChannelAvailableMemory") <> Invalid
+            ev.AddReplace("channelAvailMem", deviceInfo.GetChannelAvailableMemory())
+        end if
+    end if
     app = CreateObject("roAppInfo")
     appid = app.GetID().ToInt()
     if appid = 0 then appid = 1
