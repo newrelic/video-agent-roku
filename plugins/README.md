@@ -55,3 +55,12 @@ nrPluginHttpSenderSync(m.plugin, m.nr)
 ```
 
 The file `components/SearchTask.brs` contains a complete usage example.
+
+## Pending features
+
+This plugin is a PoC and lacks some features:
+
+- Get actual agent version
+- Get actual session ID
+- Custom attributes
+- Remove events from the buffer, indexed by `transferIdentity` (or `origUrl`)
