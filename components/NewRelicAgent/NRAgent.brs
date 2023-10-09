@@ -711,6 +711,7 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("deviceManufacturer", "Roku")
     ev.AddReplace("deviceModel", dev.GetModel())
     ev.AddReplace("deviceType", dev.GetModelType())
+    ev.AddReplace("vendorName", dev.GetModelDetails().VendorName)
     ev.AddReplace("osName", "RokuOS")
     ver = nrGetOSVersion(dev)
     ev.AddReplace("osVersion", ver["version"])
@@ -727,13 +728,13 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
     ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)
-    deviceInfo = CreateObject("roAppMemoryMonitor")
+    memMonitor = CreateObject("roAppMemoryMonitor")
     'Available for RokuOS v12.0+
-    if deviceInfo <> invalid
-        ev.AddReplace("memLimitPercent", deviceInfo.GetMemoryLimitPercent())
+    if memMonitor <> invalid
+        ev.AddReplace("memLimitPercent", memMonitor.GetMemoryLimitPercent())
         'Available for RokuOS v12.5+
-        if FindMemberFunction(deviceInfo, "GetChannelAvailableMemory") <> Invalid
-            ev.AddReplace("channelAvailMem", deviceInfo.GetChannelAvailableMemory())
+        if FindMemberFunction(memMonitor, "GetChannelAvailableMemory") <> Invalid
+            ev.AddReplace("channelAvailMem", memMonitor.GetChannelAvailableMemory())
         end if
     end if
     app = CreateObject("roAppInfo")
