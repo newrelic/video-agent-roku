@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.2.3] - 2023/10/24
+### Add
+- Device model attributes.
+
 ## [3.2.2] - 2023/09/01
 ### Update
 - Improve NRTask console logging, reducing task rendezvous.

@@ -828,6 +828,10 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `deviceManufacturer` | Always “Roku”. |
 | `deviceModel` | Roku model. |
 | `deviceType` | Roku model type. |
+| `vendorName` | Roku model vendor. |
+| `modelNumber` | Roku model number. |
+| `vendorUsbName` | USB vendor. |
+| `screenSize` | Size of the Roku TV. |
 | `osName` | Always “RokuOS”. |
 | `osVersion` | Firmware version. |
 | `countryCode` | Country from where the current user is connected. |
