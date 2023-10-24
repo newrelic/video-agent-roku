@@ -838,6 +838,8 @@ There is a set of attributes common to all actions sent over a `RokuSystem` and 
 | `timeZone` | Current user’s timezone. |
 | `locale` | Current user’s locale. |
 | `memoryLevel` | Device memory level. |
+| `memLimitPercent` | Usage percentage of memory limit for the channel. |
+| `channelAvailMem` | Estimated kilobytes of memory available for the channel. |
 | `connectionType` | Network connection type (WiFi, etc). |
 | `displayType` | Type of display, screen, TV, etc. |
 | `displayMode` | Display mode. |
