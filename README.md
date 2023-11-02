@@ -578,6 +578,26 @@ Example:
 	nrSetHarvestTimeLogs(m.nr, 60)
 ```
 
+**nrSetHarvestTimeMetrics**
+
+```
+nrSetHarvestTimeMetrics(nr as Object, time as Integer) as Void
+
+Description:
+	Set harvest time for Metrics, the time the metrics are buffered before being sent to New Relic. Min value is 60.
+
+Arguments:
+	nr: New Relic Agent object.
+	time: Time in seconds.
+	
+Return:
+	Nothing.
+		
+Example:
+
+	nrSetHarvestTimeMetrics(m.nr, 60)
+```
+
 **nrForceHarvest**
 
 ```
