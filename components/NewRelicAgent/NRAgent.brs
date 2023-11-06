@@ -241,6 +241,7 @@ end function
 function nrSendExpressEvent(eventType as String, actionName as String, attr = invalid as Object) as boolean
     nrLog("nrSendExpressEvent")
     if m.eeTask.state = "run"
+        nrLog("Express Events Task still running")
         return false
     else
         ev = nrCreateEvent(eventType, actionName)
@@ -248,7 +249,7 @@ function nrSendExpressEvent(eventType as String, actionName as String, attr = in
             ev.Append(attr)
         end if
         
-        print "Express Event ev = ", ev
+        nrLog(["Express Event ev = ", ev])
 
         nodeAttr = createObject("RoSGNode","ContentNode")
         if nodeAttr.addFields(ev) = false
@@ -259,6 +260,7 @@ function nrSendExpressEvent(eventType as String, actionName as String, attr = in
 
         'Try to avoid a race condition: check again just in case another thread sent an EE between the first check and now.
         if m.eeTask.state = "run"
+            nrLog("Express Events Task still running (last chance)")
             return false
         else
             m.eeTask.control = "RUN"
