@@ -115,6 +115,11 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.bgTaskMetrics.setField("metricApiUrl", m.metricApiUrl)
     m.bgTaskMetrics.sampleType = "metric"
 
+    'Create and configure Express Events task
+    m.eeTask = m.top.findNode("EETask")
+    m.eeTask.setField("apiKey", m.nrInsightsApiKey)
+    m.eeTask.setField("eventApiUrl", m.eventApiUrl)
+
     'Init harvest timer (events)
     m.nrHarvestTimerEvents = m.top.findNode("nrHarvestTimerEvents")
     m.nrHarvestTimerEvents.ObserveField("fire", "nrHarvestTimerHandlerEvents")
@@ -231,6 +236,35 @@ end function
 
 function nrSceneLoaded(sceneName as String) as Void
     nrSendCustomEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
+end function
+
+function nrSendExpressEvent(eventType as String, actionName as String, attr = invalid as Object) as boolean
+    nrLog("nrSendExpressEvent")
+    if m.eeTask.state = "run"
+        return false
+    else
+        ev = nrCreateEvent(eventType, actionName)
+        if attr <> invalid
+            ev.Append(attr)
+        end if
+        
+        print "Express Event ev = ", ev
+
+        nodeAttr = createObject("RoSGNode","ContentNode")
+        if nodeAttr.addFields(ev) = false
+            nrLog("Error adding fields to EE attributes")
+            return false
+        end if
+        m.eeTask.setField("attributes", nodeAttr)
+
+        'Try to avoid a race condition: check again just in case another thread sent an EE between the first check and now.
+        if m.eeTask.state = "run"
+            return false
+        else
+            m.eeTask.control = "RUN"
+            return true
+        end if
+    end if
 end function
 
 function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
@@ -1518,7 +1552,7 @@ end function
 function nrHarvestTimerHandlerEvents() as Void
     nrLog("--- nrHarvestTimerHandlerEvents ---")
     
-    if LCase(m.bgTaskEvents.state) = "run"
+    if m.bgTaskEvents.state = "run"
         nrLog("NRTaskEvents still running, abort")
         return
     end if
@@ -1529,7 +1563,7 @@ end function
 function nrHarvestTimerHandlerLogs() as Void
     nrLog("--- nrHarvestTimerHandlerLogs ---")
     
-    if LCase(m.bgTaskLogs.state) = "run"
+    if m.bgTaskLogs.state = "run"
         nrLog("NRTaskLogs still running, abort")
         return
     end if
@@ -1542,7 +1576,7 @@ function nrHarvestTimerHandlerMetrics() as Void
 
     nrSendHttpCountMetrics()
     
-    if LCase(m.bgTaskMetrics.state) = "run"
+    if m.bgTaskMetrics.state = "run"
         nrLog("NRTaskMetrics still running, abort")
         return
     end if
