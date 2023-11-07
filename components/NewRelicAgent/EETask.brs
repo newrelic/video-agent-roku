@@ -25,19 +25,20 @@ function nrPushEvent(event as Object) as Object
     urlReq.SetMessagePort(rport)
     urlReq.AsyncPostFromString(jsonString)
     
+    'Use a short connection timeout (5 seconds) to unlock the task asap
     msg = wait(5000, rport)
     if type(msg) = "roUrlEvent" then
         return msg.GetResponseCode()
     else
-        'Timeout, cancel transfer and return error code
-        nrLog("-- Express Event Task nrPushSamples: timeout, cancel request and return --")
+        'Connection timeout, cancel transfer and return error code (0)
+        nrLog("-- Express Event Task nrPushSamples: timeout, cancel request --")
         urlReq.AsyncCancel()
         return 0
     end if
 end function
 
 function isStatusErr(res) as boolean
-    return res >= 400
+    return res >= 400 or res = 0
 end function
 
 function nrTaskMain() as Void
@@ -58,17 +59,17 @@ function nrTaskMain() as Void
     res = nrPushEvent(attributes)
     if isStatusErr(res)
         nrLog("-- Express Event Push FAILED with code " + Str(res) + " --")
-        if res = 429 or res = 408 or res = 503
-            'Increasing harvest cycle duration in case of error 408 or 503
-            'Refer: https://docs.newrelic.com/docs/data-apis/ingest-apis/event-api/introduction-event-api/#errors-submission
+        if res = 429 or res = 408 or res = 503 or res = 0
+            'Too many requests, request timeout, service temporary unavailable, or connection timeout
+            nrLog("-- Express Event ERROR: unable to complete request or send data --")
 
-            'TODO: too many requests
+            'TODO: Disable EE for T seconds.
         else if res = 413
-            'TODO: request too large (that would be strange, because we are sending only one event)
+            'Request too large
+            nrLog("-- Express Event ERROR: request too large --")
         else if res = 403
-            'Handle 403 error in scenario of missing invalid key error from NR collector, printing the log and clearing the buffer
-            nrLog("-- Express Event missingInvalidLicenseKey: FAILED with code " + Str(res))
-            return
+            'Invalid key
+            nrLog("-- Express Event ERROR: invalid key --")
         end if
     else
         nrLog("Express Event successfully sent")
