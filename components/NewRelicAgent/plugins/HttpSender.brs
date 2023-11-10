@@ -12,8 +12,8 @@
 ' - Custom attributes
 ' - Remove events from the buffer, indexed by `transferIdentity` (or `origUrl`)
 
-' Initialize plugin state.
-sub init()
+' Init HTTP Sender plugin.
+function nrPluginHttpSenderInit()
     print "New Relic HTTP Sender Plugin"
 
     'Buffer of events
@@ -24,14 +24,19 @@ sub init()
 
     'Domain attribute matching patterns
     m._nrDomainPatterns = CreateObject("roAssociativeArray")
-end sub
+end function
 
 ' Add a matching pattern for the domain attribute and substitute it by another string.
+'
+' @param pattern: Regex pattern.
+' @param subs: Substitution string.
 function nrPluginHttpSenderAddDomainSubstitution(pattern as String, subs as String) as Void
     m._nrDomainPatterns.AddReplace(pattern, subs)
 end function
 
 ' Delete a matching pattern created with nrAddDomainSubstitution
+'
+' @param pattern: Regex pattern.
 function nrPluginHttpSenderDelDomainSubstitution(pattern as String) as Void
     m._nrDomainPatterns.Delete(pattern)
 end function
@@ -45,6 +50,60 @@ function nrPluginHttpSenderSync(nr as Object) as Void
     nr.callFunc("nrGetBackAllSamples", "event", m._nrPluginHttpSenderEventArray)
     
     m._nrPluginHttpSenderEventArray.Clear()
+end function
+
+' Send an HTTP_REQUEST event of type RokuSystem.
+'
+' @param plugin HTTP Sende plugin.
+' @param urlReq URL request, roUrlTransfer object.
+function nrPluginHttpSenderRequest(urlReq as Object) as Void
+    print "nrPluginHttpSenderRequest", urlReq.GetUrl()
+
+    if type(urlReq) = "roUrlTransfer"
+        attr = {
+            "origUrl": urlReq.GetUrl(),
+            "transferIdentity": urlReq.GetIdentity(),
+            "method": urlReq.GetRequest()
+        }
+        _nr_plugin_SendHttpRequest(attr)
+    end if
+end function
+
+' Send an HTTP_RESPONSE event of type RokuSystem.
+'
+' @param plugin HTTP Sende plugin.
+' @param _url Request URL.
+' @param msg A message of type roUrlEvent.
+function nrPluginHttpSenderResponse(_url as String, msg as Object) as Void
+    print "nrPluginHttpSenderResponse", _url
+
+    if type(msg) = "roUrlEvent"
+        attr = {
+            "origUrl": _url
+        }
+        
+        attr.AddReplace("httpCode", msg.GetResponseCode())
+        attr.AddReplace("httpResult", msg.GetFailureReason())
+        attr.AddReplace("transferIdentity", msg.GetSourceIdentity())
+        
+        header = msg.GetResponseHeaders()
+        
+        for each key in header
+            parts = key.Tokenize("-")
+            finalKey = "http"
+            finalValue = header[key]
+            for each part in parts
+                firstChar = Left(part, 1)
+                firstChar = UCase(firstChar)
+                restStr = Right(part, Len(part) - 1)
+                restStr = LCase(restStr)
+                finalKey = finalKey + firstChar + restStr
+            end for
+            attr.AddReplace(finalKey, finalValue)
+        end for
+        
+        _nr_plugin_SendHttpResponse(attr)
+    end if
 end function
 
 '----- Private Functions -----
