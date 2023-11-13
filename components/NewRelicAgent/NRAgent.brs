@@ -733,19 +733,22 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
     ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)
 
-    memMonitor = CreateObject("roAppMemoryMonitor")
-    enableMemWarningRet = memMonitor.EnableMemoryWarningEvent(true)
-    memMonitor.EnableMemoryWarningEvent(false)
-    nrLog(["roAppMemoryMonitor EnableMemoryWarningEvent ret = ", enableMemWarningRet])
-    'Available since v10.5
-    if memMonitor <> invalid
-        ev.AddReplace("memLimitPercent", memMonitor.GetMemoryLimitPercent())
-        'Available for RokuOS v12.5+
-        if FindMemberFunction(memMonitor, "GetChannelAvailableMemory") <> Invalid
-            'NOTE: If EnableMemoryWarningEvent returns false, a call to GetChannelAvailableMemory will freeze the device on v12.5
-            ' if `run_as_process=1` is set in the manifest, this call works.
-            if enableMemWarningRet = true
-                ev.AddReplace("channelAvailMem", memMonitor.GetChannelAvailableMemory())
+    if isMemoryMonitorAvailable(dev.GetModel())
+        memMonitor = CreateObject("roAppMemoryMonitor")
+
+        'UNDOCUMENTED TRICK:
+        '   If EnableMemoryWarningEvent(true) returns false, a call to GetChannelAvailableMemory will freeze the device on v12.5
+        enableMemWarningRet = memMonitor.EnableMemoryWarningEvent(true)
+        memMonitor.EnableMemoryWarningEvent(false)
+
+        'Available since v10.5
+        if memMonitor <> invalid
+            ev.AddReplace("memLimitPercent", memMonitor.GetMemoryLimitPercent())
+            'Available for RokuOS v12.5+
+            if FindMemberFunction(memMonitor, "GetChannelAvailableMemory") <> Invalid
+                if enableMemWarningRet = true
+                    ev.AddReplace("channelAvailMem", memMonitor.GetChannelAvailableMemory())
+                end if
             end if
         end if
     end if
@@ -1368,6 +1371,19 @@ function nrGetBackMetrics(metrics as Object) as Void
     m.nrMetricArrayIndex = nrGetBackSamples(metrics, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
 end function
 
+' Check if roAppMemoryMonitor is available for current device according to official docs:
+' https://developer.roku.com/docs/references/brightscript/interfaces/ifappmemorymonitor.md
+function isMemoryMonitorAvailable(deviceModel as String) as boolean
+    'Liberty 5000X
+    'Austin 4200X
+    'Mustang 4210X 4230X
+    'Littlefield 3700X 3710X
+    if deviceModel = "5000X" or deviceModel = "4200X" or deviceModel = "4210X" or deviceModel = "4230X" or deviceModel = "3700X" or deviceModel = "3710X"
+        return true
+    else
+        return false
+    end if
+end function
 '================================'
 ' Observers, States and Handlers '
 '================================'
