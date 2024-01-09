@@ -1379,9 +1379,9 @@ function isMemoryMonitorAvailable(deviceModel as String) as boolean
     'Mustang 4210X 4230X
     'Littlefield 3700X 3710X
     if deviceModel = "5000X" or deviceModel = "4200X" or deviceModel = "4210X" or deviceModel = "4230X" or deviceModel = "3700X" or deviceModel = "3710X"
-        return true
-    else
         return false
+    else
+        return true
     end if
 end function
 '================================'
