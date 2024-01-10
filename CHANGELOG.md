@@ -1,6 +1,10 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.2.4] - 2024/01/10
+### Add
+- Memory attributes.
+
 ## [3.2.3] - 2023/10/24
 ### Add
 - Device model attributes.
