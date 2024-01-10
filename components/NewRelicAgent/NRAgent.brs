@@ -139,6 +139,23 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.rafState.numberOfAds = 0
     nrResetRAFTimers()
     nrResetRAFState()
+
+    m.enableMemMonitor = false
+    if isMemoryMonitorAvailable(CreateObject("roDeviceInfo").GetModel())
+        'Available since v10.5
+        m.memMonitor = CreateObject("roAppMemoryMonitor")
+        if m.memMonitor <> invalid
+            'UNDOCUMENTED TRICK:
+            '   If EnableMemoryWarningEvent(true) returns false, a call to GetChannelAvailableMemory will freeze the device on v12.5
+            enableMemWarningRet = m.memMonitor.EnableMemoryWarningEvent(true)
+            m.memMonitor.EnableMemoryWarningEvent(false)
+
+            if enableMemWarningRet
+                'Available for RokuOS v12.5+
+                m.enableMemMonitor = FindMemberFunction(m.memMonitor, "GetChannelAvailableMemory") <> Invalid
+            end if
+        end if
+    end if
     
     nrLog(["NewRelicInit, m = ", m])
 end function
@@ -732,6 +749,15 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
     ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)
+
+    if m.enableMemMonitor
+        if m.memMonitor = invalid ' roAppMemoryMonitor might've been invalidated on thread ownership change
+            m.memMonitor = CreateObject("roAppMemoryMonitor")
+        end if
+        ev.AddReplace("channelAvailMem", m.memMonitor.GetChannelAvailableMemory())
+        ev.AddReplace("memLimitPercent", m.memMonitor.GetMemoryLimitPercent())
+    end if
+
     app = CreateObject("roAppInfo")
     appid = app.GetID().ToInt()
     if appid = 0 then appid = 1
@@ -1350,6 +1376,19 @@ function nrGetBackMetrics(metrics as Object) as Void
     m.nrMetricArrayIndex = nrGetBackSamples(metrics, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
 end function
 
+' Check if roAppMemoryMonitor is available for current device according to official docs:
+' https://developer.roku.com/docs/references/brightscript/interfaces/ifappmemorymonitor.md
+function isMemoryMonitorAvailable(deviceModel as String) as boolean
+    'Liberty 5000X
+    'Austin 4200X
+    'Mustang 4210X 4230X
+    'Littlefield 3700X 3710X
+    if deviceModel = "5000X" or deviceModel = "4200X" or deviceModel = "4210X" or deviceModel = "4230X" or deviceModel = "3700X" or deviceModel = "3710X"
+        return false
+    else
+        return true
+    end if
+end function
 '================================'
 ' Observers, States and Handlers '
 '================================'
