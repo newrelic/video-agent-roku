@@ -139,6 +139,23 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.rafState.numberOfAds = 0
     nrResetRAFTimers()
     nrResetRAFState()
+
+    m.enableMemMonitor = false
+    if isMemoryMonitorAvailable(CreateObject("roDeviceInfo").GetModel())
+        'Available since v10.5
+        m.memMonitor = CreateObject("roAppMemoryMonitor")
+        if m.memMonitor <> invalid
+            'UNDOCUMENTED TRICK:
+            '   If EnableMemoryWarningEvent(true) returns false, a call to GetChannelAvailableMemory will freeze the device on v12.5
+            enableMemWarningRet = m.memMonitor.EnableMemoryWarningEvent(true)
+            m.memMonitor.EnableMemoryWarningEvent(false)
+
+            if enableMemWarningRet
+                'Available for RokuOS v12.5+
+                m.enableMemMonitor = FindMemberFunction(m.memMonitor, "GetChannelAvailableMemory") <> Invalid
+            end if
+        end if
+    end if
     
     nrLog(["NewRelicInit, m = ", m])
 end function
@@ -733,24 +750,12 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
     ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)
 
-    if isMemoryMonitorAvailable(dev.GetModel())
-        memMonitor = CreateObject("roAppMemoryMonitor")
-
-        'UNDOCUMENTED TRICK:
-        '   If EnableMemoryWarningEvent(true) returns false, a call to GetChannelAvailableMemory will freeze the device on v12.5
-        enableMemWarningRet = memMonitor.EnableMemoryWarningEvent(true)
-        memMonitor.EnableMemoryWarningEvent(false)
-
-        'Available since v10.5
-        if memMonitor <> invalid
-            ev.AddReplace("memLimitPercent", memMonitor.GetMemoryLimitPercent())
-            'Available for RokuOS v12.5+
-            if FindMemberFunction(memMonitor, "GetChannelAvailableMemory") <> Invalid
-                if enableMemWarningRet = true
-                    ev.AddReplace("channelAvailMem", memMonitor.GetChannelAvailableMemory())
-                end if
-            end if
+    if m.enableMemMonitor
+        if m.memMonitor = invalid ' roAppMemoryMonitor might've been invalidated on thread ownership change
+            m.memMonitor = CreateObject("roAppMemoryMonitor")
         end if
+        ev.AddReplace("channelAvailMem", m.memMonitor.GetChannelAvailableMemory())
+        ev.AddReplace("memLimitPercent", m.memMonitor.GetMemoryLimitPercent())
     end if
 
     app = CreateObject("roAppInfo")
