@@ -327,3 +327,17 @@ function nrSendSummaryMetric(nr as Object, name as String, interval as Integer, 
     }
     nr.callFunc("nrSendSummaryMetric", name, interval, value, attr)
 end function
+
+' Enable shouldTrackResumeAsContentStart flag
+'
+' @param nr New Relic Agent object.
+function nrEnableTrackResumeAsContentStart(nr as Object) as Void
+    nr.callFunc("nrEnableTrackResumeAsContentStart")
+end function
+  
+' Disable shouldTrackResumeAsContentStart flag
+'
+' @param nr New Relic Agent object.
+function nrDisableTrackResumeAsContentStart(nr as Object) as Void
+    nr.callFunc("nrDisableTrackResumeAsContentStart")
+end function

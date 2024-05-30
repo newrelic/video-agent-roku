@@ -140,6 +140,9 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     nrResetRAFTimers()
     nrResetRAFState()
 
+    'Init flag to track CONTENT_START event for video resume
+    m.nrShouldTrackResumeAsContentStart = false
+
     m.enableMemMonitor = false
     if isMemoryMonitorAvailable(CreateObject("roDeviceInfo").GetModel())
         'Available since v10.5
@@ -556,6 +559,14 @@ function nrSendSummaryMetric(name as String, interval as Integer, value as Objec
 
     m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
 end function
+
+function nrEnableTrackResumeAsContentStart() as Void
+    m.nrShouldTrackResumeAsContentStart = true
+  end function
+  
+  function nrDisableTrackResumeAsContentStart() as Void
+    m.nrShouldTrackResumeAsContentStart = false
+  end function
 
 '=========================='
 ' Public Internal Functions '
@@ -1427,7 +1438,7 @@ function nrStateTransitionPlaying() as Void
         shouldSendStart = m.nrIsInitialBuffering
         nrSendBufferEnd()
         
-        if m.nrVideoObject.position = 0
+        if m.nrVideoObject.position = 0 or m.nrShouldTrackResumeAsContentStart
             if lastSrc = currentSrc OR m.nrVideoObject.contentIsPlaylist = false
                 'Send Start only if initial start not sent already
                 if shouldSendStart then nrSendStart()
