@@ -253,6 +253,7 @@ end function
 function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
     nrLog("nrSendCustomEvent")
     ev = nrCreateEvent(eventType, actionName)
+    ev = nrAddCustomAttributes(ev)
     if attr <> invalid
         ev.Append(attr)
     end if
@@ -266,6 +267,7 @@ end function
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     ev = nrCreateEvent("RokuVideo", actionName)
     ev = nrAddVideoAttributes(ev)
+    ev = nrAddCustomAttributes(ev)
     if type(attr) = "roAssociativeArray"
        ev.Append(attr)
     end if
@@ -704,13 +706,12 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
     
     ev["timestamp"] = FormatJson(nrTimestamp())
-    ev = nrAddAttributes(ev)
+    ev = nrAddBaseAttributes(ev)
     
     return ev
 end function
 
-function nrAddAttributes(ev as Object) as Object
-
+function nrAddBaseAttributes(ev as Object) as Object
     'Add default custom attributes for instrumentation'
     ev.AddReplace("instrumentation.provider", "media")
     ev.AddReplace("instrumentation.name", "roku")
@@ -770,17 +771,19 @@ function nrAddAttributes(ev as Object) as Object
     ev.AddReplace("appBuild", appbuild)
     'Uptime
     ev.AddReplace("uptime", Uptime(0))
-    'Add custom attributes
+    'Time Since Load
+    date = CreateObject("roDateTime")
+    ev.AddReplace("timeSinceLoad", date.AsSeconds() - m.nrInitTimestamp)
+    
+    return ev
+end function
+
+function nrAddCustomAttributes(ev as Object) as Object
     genCustomAttr = m.nrCustomAttributes["GENERAL_ATTR"]
     if genCustomAttr <> invalid then ev.Append(genCustomAttr)
     actionName = ev["actionName"]
     actionCustomAttr = m.nrCustomAttributes[actionName]
     if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
-    
-    'Time Since Load
-    date = CreateObject("roDateTime")
-    ev.AddReplace("timeSinceLoad", date.AsSeconds() - m.nrInitTimestamp)
-    
     return ev
 end function
 
@@ -867,6 +870,9 @@ function nrSendBandwidth(info as Object) as Void
     }
     nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
 end function
+
+'TODO:  Testing endpoint. If nrRegion is not US or EU, use it as endpoint. Deprecate the "TEST" region and "m.testServer".
+'       We could even pass an object containing different endpoints for events, metrics and logs.
 
 function nrEventApiUrl() as String
     if m.nrRegion = "US"
@@ -1167,6 +1173,7 @@ function nrSendRAFEvent(actionName as String, ctx as Dynamic, attr = invalid) as
     ev = nrCreateEvent("RokuVideo", actionName)
     ev = nrAddVideoAttributes(ev)
     ev = nrAddRAFAttributes(ev, ctx)
+    ev = nrAddCustomAttributes(ev)
     if type(attr) = "roAssociativeArray"
        ev.Append(attr)
     end if
