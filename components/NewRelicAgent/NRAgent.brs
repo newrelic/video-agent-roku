@@ -1434,11 +1434,9 @@ function nrStateTransitionPlaying() as Void
         shouldSendStart = m.nrIsInitialBuffering
         nrSendBufferEnd()
         
-        if m.nrVideoObject.position = 0
-            if lastSrc = currentSrc OR m.nrVideoObject.contentIsPlaylist = false
-                'Send Start only if initial start not sent already
-                if shouldSendStart then nrSendStart()
-            end if
+        if lastSrc = currentSrc OR m.nrVideoObject.contentIsPlaylist = false
+            'Send Start only if initial start not sent already
+            if shouldSendStart then nrSendStart()
         end if
     end if
 end function
