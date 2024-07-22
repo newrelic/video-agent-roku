@@ -11,12 +11,28 @@ sub init()
 end sub
 
 function nrPushSamples(samples as Object, endpoint as String, sampleType as String) as Object
-    'Metric API requires a specific format
+    'Common attributes, only used with Metric and Log API. Event API uses a different format, without a common object, and these
+    'properties are inserted in every event.
+    commonObject = {
+        "attributes": {
+            "instrumentation.provider": "media",
+            "instrumentation.name": "roku",
+            "instrumentation.version": m.top.getParent().version
+        }
+    }
+    'Use a different format for Metric API and Log API
     if sampleType = "metric"
         metricsModel = [{
-            "metrics": samples
+            "metrics": samples,
+            "common": commonObject,
         }]
         samples = metricsModel
+    else if sampleType = "log"
+        logsModel = [{
+            "logs": samples,
+            "common": commonObject,
+        }]
+        samples = logsModel
     end if
 
     jsonString = FormatJson(samples)

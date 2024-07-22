@@ -1,6 +1,13 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
+## [3.2.5] - 2024/07/16
+### Add
+- Instrument attributes for metrics and logs.
+### Fix
+- Allow overwriting custom attributes.
+- Send `CONTENT_START` when resuming a video.
+
 ## [3.2.4] - 2024/01/10
 ### Add
 - Memory attributes.
