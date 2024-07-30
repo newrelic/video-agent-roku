@@ -23,6 +23,7 @@
         <function name="nrAddDomainSubstitution"/>
         <function name="nrDelDomainSubstitution"/>
         <function name="nrAppStarted"/>
+        <function name="nrSendExpressEvent"/>
         <function name="nrSendCustomEvent"/>
         <function name="nrSendSystemEvent"/>
         <function name="nrSendVideoEvent"/>
@@ -68,5 +69,6 @@
         <Timer id="nrHarvestTimerLogs" repeat="true"/>
         <com.newrelic.NRTask id="NRTaskMetrics"/>
         <Timer id="nrHarvestTimerMetrics" repeat="true"/>
+        <com.newrelic.EETask id="EETask"/>
 	</children>
 </component>

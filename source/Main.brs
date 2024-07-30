@@ -59,6 +59,11 @@ sub Main(aa as Object)
     m.syslog = NewRelicSystemStart(m.port)
 
     runSearchTask("hello")
+
+    'TODO: use wrapper
+    m.nr.callFunc("nrSendExpressEvent", "ExpressEvent", "AppInit", {"a_int": 100, "a_str": "hello"})
+    m.nr.callFunc("nrSendExpressEvent", "ExpressEvent", "AppInit", {"a_int": 100, "a_str": "hello"})
+    m.nr.callFunc("nrSendExpressEvent", "ExpressEvent", "AppInit", {"a_int": 100, "a_str": "hello"})
     
     while(true)
         msg = wait(0, m.port)

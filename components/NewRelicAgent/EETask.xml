@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+**********************************************************
+ EETask.xml
+ New Relic Agent background task for Express Events.
+
+ Copyright 2023 New Relic Inc. All Rights Reserved. 
+**********************************************************
+-->
+
+<component name="com.newrelic.EETask" extends="Task">
+    <interface>
+        <!-- Properties -->
+        <field id="eventApiUrl" type="string" onChange="onConfigUpdate" value=""/>
+        <field id="apiKey" type="string" value=""/>
+        <field id="attributes" type="node" />
+    </interface>
+
+    <script type="text/brightscript" uri="EETask.brs"/>
+</component>
