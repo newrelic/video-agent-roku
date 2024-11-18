@@ -142,7 +142,7 @@ function nrSendSystemEvent(nr as Object, actionName as String, attr = invalid) a
     nr.callFunc("nrSendSystemEvent", actionName, attr)
 end function
 
-' Send a video event, type RokuVideo.
+' Send a video event, type VideoAction.
 '
 ' @param nr New Relic Agent object.
 ' @param actionName Action name.

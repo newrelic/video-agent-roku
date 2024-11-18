@@ -265,7 +265,7 @@ function nrSendSystemEvent(actionName as String, attr = invalid) as Void
 end function
 
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
-    ev = nrCreateEvent("RokuVideo", actionName)
+    ev = nrCreateEvent("VideoAction", actionName)
     ev = nrAddVideoAttributes(ev)
     ev = nrAddCustomAttributes(ev)
     if type(attr) = "roAssociativeArray"
@@ -1075,7 +1075,7 @@ function nrAddVideoAttributes(ev as Object) as Object
     if m.nrVideoObject.streamingSegment <> invalid
         ev.AddReplace("contentSegmentBitrate", m.nrVideoObject.streamingSegment["segBitrateBps"])
     end if
-    ev.AddReplace("playerName", "RokuVideoPlayer")
+    ev.AddReplace("playerName", "VideoActionPlayer")
     dev = CreateObject("roDeviceInfo")
     ver = nrGetOSVersion(dev)
     ev.AddReplace("playerVersion", ver["version"])
@@ -1170,7 +1170,7 @@ function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
 end function
 
 function nrSendRAFEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
-    ev = nrCreateEvent("RokuVideo", actionName)
+    ev = nrCreateEvent("VideoAction", actionName)
     ev = nrAddVideoAttributes(ev)
     ev = nrAddRAFAttributes(ev, ctx)
     ev = nrAddCustomAttributes(ev)
