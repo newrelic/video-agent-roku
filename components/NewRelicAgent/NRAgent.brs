@@ -723,8 +723,9 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
     ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
     dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
-    ev.AddReplace("device", dev.GetModelDisplayName())
+    ev.AddReplace("deviceSize","xLarge")
+    ev.AddReplace("deviceUuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
+    ev.AddReplace("deviceName", dev.GetModelDisplayName())
     ev.AddReplace("deviceGroup", "Roku")
     ev.AddReplace("deviceManufacturer", "Roku")
     ev.AddReplace("deviceModel", dev.GetModel())
@@ -745,7 +746,7 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("connectionType", dev.GetConnectionType())
     'ev.AddReplace("ipAddress", dev.GetExternalIp())
     ev.AddReplace("displayType", dev.GetDisplayType())
-    ev.AddReplace("displayMode", dev.GetDisplayMode())
+    ev.AddReplace("contentRenditionName", dev.GetDisplayMode())
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
     ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
@@ -876,9 +877,9 @@ end function
 
 function nrEventApiUrl() as String
     if m.nrRegion = "US"
-        return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
+        return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "EU"
-        return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
+        return "https://staging-insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "TEST"
         'NOTE: set address hosting the test server
         return m.testServer + "/event"
@@ -957,7 +958,7 @@ function nrSendBufferStart() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": "initial"})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
@@ -968,7 +969,7 @@ function nrSendBufferEnd() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": "initial"})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -1039,9 +1040,9 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["timeSinceLoad"] = ev["timeSinceLoad"] + offsetTime/1000 ' (s)
     ev["totalPlaytime"] = nrCalculateTotalPlaytime() * 1000
     if m.nrPlaytimeSinceLastEvent = invalid
-        ev["playtimeSinceLastEvent"] = 0
+        ev["elapsedTime"] = 0
     else
-        ev["playtimeSinceLastEvent"] = m.nrPlaytimeSinceLastEvent.TotalMilliseconds()
+        ev["elapsedTime"] = m.nrPlaytimeSinceLastEvent.TotalMilliseconds()
     end if
     
     'PROBLEMS:
@@ -1059,9 +1060,12 @@ function nrSendBackupVideoEnd() as Void
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
+    ev.AddReplace("contentIsFullscreen","true")
     ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
     ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
     ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
+    contentTitle = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
+    ev.AddReplace("contentTitle",contentTitle.title)
     streamUrl = nrGenerateStreamUrl()
     ev.AddReplace("contentSrc", streamUrl)
     'Generate Id from Src (hashing it)
@@ -1075,7 +1079,7 @@ function nrAddVideoAttributes(ev as Object) as Object
     if m.nrVideoObject.streamingSegment <> invalid
         ev.AddReplace("contentSegmentBitrate", m.nrVideoObject.streamingSegment["segBitrateBps"])
     end if
-    ev.AddReplace("playerName", "VideoActionPlayer")
+    ev.AddReplace("playerName", "RokuVideoPlayer")
     dev = CreateObject("roDeviceInfo")
     ver = nrGetOSVersion(dev)
     ev.AddReplace("playerVersion", ver["version"])
@@ -1113,9 +1117,9 @@ function nrAddVideoAttributes(ev as Object) as Object
     'Playtimes
     ev.AddReplace("totalPlaytime", nrCalculateTotalPlaytime() * 1000)
     if m.nrPlaytimeSinceLastEvent = invalid
-        ev.AddReplace("playtimeSinceLastEvent", 0)
+        ev.AddReplace("elapsedTime", 0)
     else
-        ev.AddReplace("playtimeSinceLastEvent", m.nrPlaytimeSinceLastEvent.TotalMilliseconds())
+        ev.AddReplace("elapsedTime", m.nrPlaytimeSinceLastEvent.TotalMilliseconds())
     end if
     if m.nrTotalAdPlaytime > 0
         ev.AddReplace("totalAdPlaytime", m.nrTotalAdPlaytime)
