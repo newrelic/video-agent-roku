@@ -280,6 +280,16 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     end if
 end function
 
+function nrSendErrorEvent(actionName as String, attr = invalid) as Void
+    ev = nrCreateEvent("VideoErrorAction", actionName)
+    ev = nrAddVideoAttributes(ev)
+    ev = nrAddCustomAttributes(ev)
+    if type(attr) = "roAssociativeArray"
+       ev.Append(attr)
+    end if
+    nrRecordEvent(ev)
+end function
+
 function nrSendHttpRequest(attr as Object) as Void
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     attr["domain"] = domain
@@ -1000,7 +1010,7 @@ function nrSendError(video as Object) as Void
         attr.append(getLicenseStatusAttributes(video.licenseStatus))
     end if
 
-    nrSendVideoEvent("CONTENT_ERROR", attr)
+    nrSendErrorEvent("CONTENT_ERROR", attr)
 end function
 
 function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
