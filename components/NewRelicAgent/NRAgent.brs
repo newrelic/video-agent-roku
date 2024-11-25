@@ -17,6 +17,7 @@ sub init()
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2023 New Relic Inc. All Rights Reserved."
     print "************************************************************"
+    InitializeLastEventTimestamps()
 end sub
 
 '=========================='
@@ -243,11 +244,11 @@ function nrAppStarted(aa as Object) as Void
         "instantOnRunMode": aa["instant_on_run_mode"],
         "launchSource": aa["source"]
     }
-    nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
+    nrSendCustomEvent("VideoCustomAction", "APP_STARTED", attr)
 end function
 
 function nrSceneLoaded(sceneName as String) as Void
-    nrSendCustomEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
+    nrSendCustomEvent("VideoCustomAction", "SCENE_LOADED", {"sceneName": sceneName})
 end function
 
 function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
@@ -261,7 +262,7 @@ function nrSendCustomEvent(eventType as String, actionName as String, attr = inv
 end function
 
 function nrSendSystemEvent(actionName as String, attr = invalid) as Void
-    nrSendCustomEvent("RokuSystem", actionName, attr)
+    nrSendCustomEvent("VideoCustomAction", actionName, attr)
 end function
 
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
@@ -315,7 +316,7 @@ function nrSendHttpRequest(attr as Object) as Void
         m.num_http_request_counters.AddReplace(domain, 1)
     end if
 
-    nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
+    nrSendCustomEvent("VideoCustomAction", "HTTP_REQUEST", attr)
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
@@ -347,7 +348,7 @@ function nrSendHttpResponse(attr as Object) as Void
         end if
     end if
     
-    nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
+    nrSendCustomEvent("VideoCustomAction", "HTTP_RESPONSE", attr)
 end function
 
 function nrEnableHttpEvents() as Void
@@ -823,7 +824,7 @@ function nrSendHTTPError(info as Object) as Void
         m.num_http_error_counters.AddReplace(domain, 1)
     end if
 
-    nrSendCustomEvent("RokuSystem", "HTTP_ERROR", attr)
+    nrSendCustomEvent("VideoCustomAction", "HTTP_ERROR", attr)
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
@@ -838,7 +839,7 @@ function nrSendHTTPConnect(info as Object) as Void
         m.num_http_connect_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
+    if m.http_events_enabled then nrSendCustomEvent("VideoCustomAction", "HTTP_CONNECT", attr)
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -865,7 +866,7 @@ function nrSendHTTPComplete(info as Object) as Void
         m.num_http_complete_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
+    if m.http_events_enabled then nrSendCustomEvent("VideoCustomAction", "HTTP_COMPLETE", attr)
 
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"domain": domain})
@@ -879,7 +880,7 @@ function nrSendBandwidth(info as Object) as Void
     attr = {
         "bandwidth": info["bandwidth"]
     }
-    nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
+    nrSendCustomEvent("VideoCustomAction", "BANDWIDTH_MINUTE", attr)
 end function
 
 'TODO:  Testing endpoint. If nrRegion is not US or EU, use it as endpoint. Deprecate the "TEST" region and "m.testServer".
@@ -928,39 +929,105 @@ function nrSendPlayerReady() as Void
 end function
 
 function nrSendRequest() as Void
+    currentTime = CreateObject("roDateTime")
+    currentTimestamp = currentTime.AsSeconds()
+    if m.lastEventTimestamps["CONTENT_REQUEST"] <> invalid
+        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps["CONTENT_REQUEST"]) * 1000
+        elapsedTime = timeSinceLastEvent
+    else
+        elapsedTime=0
+    end if
+    m.lastEventTimestamps["CONTENT_REQUEST"] = currentTimestamp
     m.nrTimeSinceRequested = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent("CONTENT_REQUEST")
+    nrSendVideoEvent("CONTENT_REQUEST", {"elapsedTime": elapsedTime})
 end function
 
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent("CONTENT_START")
+    currentTime = CreateObject("roDateTime")
+    currentTimestamp = currentTime.AsSeconds()
+    if m.lastEventTimestamps["CONTENT_START"] <> invalid
+        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps["CONTENT_START"]) * 1000
+        elapsedTime = timeSinceLastEvent
+    else
+        elapsedTime=0
+    end if
+    m.lastEventTimestamps["CONTENT_START"] = currentTimestamp
+    nrSendVideoEvent("CONTENT_START", {"elapsedTime": elapsedTime})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendEnd() as Void
-    nrSendVideoEvent("CONTENT_END")
+    currentTime = CreateObject("roDateTime")
+    currentTimestamp = currentTime.AsSeconds()
+    if m.lastEventTimestamps["CONTENT_END"] <> invalid
+        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps["CONTENT_END"]) * 1000
+        elapsedTime = timeSinceLastEvent
+    else
+        elapsedTime=0
+    end if
+    m.lastEventTimestamps["CONTENT_END"] = currentTimestamp
+    nrSendVideoEvent("CONTENT_END", {"elapsedTime": elapsedTime})
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
+sub InitializeLastEventTimestamps()
+    m.lastEventTimestamps = {
+        "CONTENT_REQUEST": invalid,
+        "CONTENT_START": invalid,
+        "CONTENT_END": invalid,
+        "CONTENT_PAUSE": invalid,
+        "CONTENT_RESUME": invalid,
+        "CONTENT_BUFFER_START": invalid,
+        "CONTENT_BUFFER_END": invalid
+    }
+end sub
+
 function nrSendPause() as Void
+    currentTime = CreateObject("roDateTime")
+    currentTimestamp = currentTime.AsSeconds()
+    if m.lastEventTimestamps["CONTENT_PAUSE"] <> invalid
+        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps["CONTENT_PAUSE"]) * 1000
+        elapsedTime = timeSinceLastEvent
+    else
+        elapsedTime=0
+    end if
+    m.lastEventTimestamps["CONTENT_PAUSE"] = currentTimestamp
     m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent("CONTENT_PAUSE")
+    nrSendVideoEvent("CONTENT_PAUSE", {"elapsedTime": elapsedTime})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendResume() as Void
-    nrSendVideoEvent("CONTENT_RESUME")
+    currentTime = CreateObject("roDateTime")
+    currentTimestamp = currentTime.AsSeconds()
+    if m.lastEventTimestamps["CONTENT_RESUME"] <> invalid
+        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps["CONTENT_RESUME"]) * 1000
+        elapsedTime = timeSinceLastEvent
+    else
+        elapsedTime=0
+    end if
+    m.lastEventTimestamps["CONTENT_RESUME"] = currentTimestamp
+    nrSendVideoEvent("CONTENT_RESUME", {"elapsedTime": elapsedTime})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendBufferStart() as Void
+    currentTime = CreateObject("roDateTime")
+    currentTimestamp = currentTime.AsSeconds()
+    if m.lastEventTimestamps["CONTENT_BUFFER_START"] <> invalid
+        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps["CONTENT_BUFFER_START"]) * 1000
+        elapsedTime = timeSinceLastEvent
+    else
+        elapsedTime=0
+    end if
+    m.lastEventTimestamps["CONTENT_BUFFER_START"] = currentTimestamp
     m.nrTimeSinceBufferBegin = m.nrTimer.TotalMilliseconds()
     
     if m.nrTimeSinceStarted = 0
@@ -968,18 +1035,27 @@ function nrSendBufferStart() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": "initial"})
+    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering, "elapsedTime": elapsedTime, "bufferType": "initial"})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendBufferEnd() as Void
+    currentTime = CreateObject("roDateTime")
+    currentTimestamp = currentTime.AsSeconds()
+    if m.lastEventTimestamps["CONTENT_BUFFER_END"] <> invalid
+        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps["CONTENT_BUFFER_END"]) * 1000
+        elapsedTime = timeSinceLastEvent
+    else
+        elapsedTime=0
+    end if
+    m.lastEventTimestamps["CONTENT_BUFFER_END"] = currentTimestamp
     if m.nrTimeSinceStarted = 0
         m.nrIsInitialBuffering = true
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": "initial"})
+    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "elapsedTime": elapsedTime, "bufferType": "initial"})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -1050,9 +1126,9 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["timeSinceLoad"] = ev["timeSinceLoad"] + offsetTime/1000 ' (s)
     ev["totalPlaytime"] = nrCalculateTotalPlaytime() * 1000
     if m.nrPlaytimeSinceLastEvent = invalid
-        ev["elapsedTime"] = 0
+        ev["playtimeSinceLastEvent"] = 0
     else
-        ev["elapsedTime"] = m.nrPlaytimeSinceLastEvent.TotalMilliseconds()
+        ev["playtimeSinceLastEvent"] = m.nrPlaytimeSinceLastEvent.TotalMilliseconds()
     end if
     
     'PROBLEMS:
@@ -1127,9 +1203,9 @@ function nrAddVideoAttributes(ev as Object) as Object
     'Playtimes
     ev.AddReplace("totalPlaytime", nrCalculateTotalPlaytime() * 1000)
     if m.nrPlaytimeSinceLastEvent = invalid
-        ev.AddReplace("elapsedTime", 0)
+        ev.AddReplace("playtimeSinceLastEvent", 0)
     else
-        ev.AddReplace("elapsedTime", m.nrPlaytimeSinceLastEvent.TotalMilliseconds())
+        ev.AddReplace("playtimeSinceLastEvent", m.nrPlaytimeSinceLastEvent.TotalMilliseconds())
     end if
     if m.nrTotalAdPlaytime > 0
         ev.AddReplace("totalAdPlaytime", m.nrTotalAdPlaytime)
@@ -1184,7 +1260,7 @@ function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
 end function
 
 function nrSendRAFEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
-    ev = nrCreateEvent("VideoAction", actionName)
+    ev = nrCreateEvent("VideoAdAction", actionName)
     ev = nrAddVideoAttributes(ev)
     ev = nrAddRAFAttributes(ev, ctx)
     ev = nrAddCustomAttributes(ev)
