@@ -473,6 +473,7 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             if ctx.errCode <> invalid then attr.AddReplace("adErrorCode", ctx.errCode)
             if ctx.errMsg <> invalid then attr.AddReplace("adErrorMsg", ctx.errMsg)
             nrSendRAFEvent("AD_ERROR", ctx, attr)
+            nrSendErrorEvent("AD_ERROR",attr)
         end if
     else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
         'Time progress event
@@ -735,6 +736,10 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
     dev = CreateObject("roDeviceInfo")
     ev.AddReplace("deviceSize","xLarge")
+    ev.AddReplace("playerName", "RokuVideoPlayer")
+    dev = CreateObject("roDeviceInfo")
+    ver = nrGetOSVersion(dev)
+    ev.AddReplace("playerVersion", ver["version"])
     ev.AddReplace("deviceUuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
     ev.AddReplace("deviceName", dev.GetModelDisplayName())
     ev.AddReplace("deviceGroup", "Roku")
@@ -825,6 +830,7 @@ function nrSendHTTPError(info as Object) as Void
     end if
 
     nrSendCustomEvent("VideoCustomAction", "HTTP_ERROR", attr)
+    nrSendErrorEvent("HTTP_ERROR", attr)
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
