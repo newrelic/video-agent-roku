@@ -17,7 +17,6 @@ sub init()
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2023 New Relic Inc. All Rights Reserved."
     print "************************************************************"
-    InitializeLastEventTimestamps()
 end sub
 
 '=========================='
@@ -472,7 +471,6 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             if ctx.errType <> invalid then attr.AddReplace("adErrorType", ctx.errType)
             if ctx.errCode <> invalid then attr.AddReplace("adErrorCode", ctx.errCode)
             if ctx.errMsg <> invalid then attr.AddReplace("adErrorMsg", ctx.errMsg)
-            nrSendRAFEvent("AD_ERROR", ctx, attr)
             nrSendErrorEvent("AD_ERROR",attr)
         end if
     else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
@@ -735,13 +733,6 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
     ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
     dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("deviceSize","xLarge")
-    ev.AddReplace("playerName", "RokuVideoPlayer")
-    dev = CreateObject("roDeviceInfo")
-    ver = nrGetOSVersion(dev)
-    ev.AddReplace("playerVersion", ver["version"])
-    ev.AddReplace("deviceUuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
-    ev.AddReplace("deviceName", dev.GetModelDisplayName())
     ev.AddReplace("deviceGroup", "Roku")
     ev.AddReplace("deviceManufacturer", "Roku")
     ev.AddReplace("deviceModel", dev.GetModel())
@@ -762,7 +753,7 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("connectionType", dev.GetConnectionType())
     'ev.AddReplace("ipAddress", dev.GetExternalIp())
     ev.AddReplace("displayType", dev.GetDisplayType())
-    ev.AddReplace("contentRenditionName", dev.GetDisplayMode())
+    ev.AddReplace("displayMode", dev.GetDisplayMode())
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
     ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
@@ -828,8 +819,6 @@ function nrSendHTTPError(info as Object) as Void
     else
         m.num_http_error_counters.AddReplace(domain, 1)
     end if
-
-    nrSendCustomEvent("VideoCustomAction", "HTTP_ERROR", attr)
     nrSendErrorEvent("HTTP_ERROR", attr)
 end function
 
@@ -961,6 +950,13 @@ function nrSendStart() as Void
     end if
     m.lastEventTimestamps["CONTENT_START"] = currentTimestamp
     nrSendVideoEvent("CONTENT_START", {"elapsedTime": elapsedTime})
+    ' Remove before merging
+    nrSendErrorEvent("CONTENT_ERROR", {"errorStr": "test error"})
+    nrSendErrorEvent("HTTP_ERROR", {"errorStr": "test error"})
+    nrSendErrorEvent("AD_ERROR", {"errorStr": "test error"})
+    ctx={}
+    nrSendRAFEvent("AD_START", ctx)
+    ' Remove before merging
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -992,6 +988,11 @@ sub InitializeLastEventTimestamps()
         "CONTENT_BUFFER_END": invalid
     }
 end sub
+
+function nrSendSeek() as Void
+    nrSendVideoEvent("CONTENT_SEEK_START")
+    nrSendVideoEvent("CONTENT_SEEK_END")
+end function
 
 function nrSendPause() as Void
     currentTime = CreateObject("roDateTime")
@@ -1068,7 +1069,7 @@ end function
 
 function nrSendError(video as Object) as Void
     attr = {
-        "errorMessage": video.errorMsg,
+        "errorName": video.errorMsg,
         "errorCode": video.errorCode
     }
     if video.errorStr <> invalid
@@ -1084,7 +1085,7 @@ function nrSendError(video as Object) as Void
             "errorCategory": video.errorInfo.category,
             "errorInfoCode": video.errorInfo.errcode,
             "errorDrmInfoCode": video.errorInfo.drmerrcode,
-            "errorDebugMsg": video.errorInfo.dbgmsg,
+            "backtrace": video.errorInfo.dbgmsg,
             "errorAttributes": video.errorInfo.error_attributes
         })
     end if
@@ -1156,8 +1157,6 @@ function nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
     ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
     ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
-    contentTitle = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
-    ev.AddReplace("contentTitle",contentTitle.title)
     streamUrl = nrGenerateStreamUrl()
     ev.AddReplace("contentSrc", streamUrl)
     'Generate Id from Src (hashing it)

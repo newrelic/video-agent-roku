@@ -146,9 +146,13 @@ function videoAction(key as String) as Boolean
         end if
     else if key = "fastforward"
         m.video.seek = m.video.position + 10
+        nrSendVideoEvent(m.nr, "CONTENT_SEEK_START")
+        nrSendVideoEvent(m.nr, "CONTENT_SEEK_END")
         return true
     else if key = "rewind"
         m.video.seek = m.video.position - 10
+        nrSendVideoEvent(m.nr, "CONTENT_SEEK_START")
+        nrSendVideoEvent(m.nr, "CONTENT_SEEK_END")
         return true
     else if key = "right"
         m.video.control = "skipcontent"
