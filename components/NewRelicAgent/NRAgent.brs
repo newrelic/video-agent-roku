@@ -292,6 +292,8 @@ end function
 
 function nrSendVideoCustomActionEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
     ev = nrCreateEvent("VideoCustomAction", actionName)
+    ev = nrAddVideoAttributes(ev)
+    ev = nrAddCustomAttributes(ev)
     ev = nrAddVideoCustomActionAttributes(ev)
     if type(attr) = "roAssociativeArray"
        ev.Append(attr)
@@ -1078,6 +1080,7 @@ end function
 
 function nrAddVideoCustomActionAttributes(ev as Object) as object
     'Add custom attributes for VideoCustomAction
+
     return ev
 end function
 
