@@ -1008,13 +1008,23 @@ end function
 
 function nrSendBufferStart() as Void
     m.nrTimeSinceBufferBegin = m.nrTimer.TotalMilliseconds()
-
+    
+    if m.nrTimeSinceStarted = 0
+        m.nrIsInitialBuffering = true
+    else
+        m.nrIsInitialBuffering = false
+    end if
     nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering, "elapsedTime": nrCalculateElapsedTime("CONTENT_BUFFER_START"), "bufferType": nrCalculateBufferType("CONTENT_BUFFER_START")})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendBufferEnd() as Void
+    if m.nrTimeSinceStarted = 0
+        m.nrIsInitialBuffering = true
+    else
+        m.nrIsInitialBuffering = false
+    end if
     nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "elapsedTime": nrCalculateElapsedTime("CONTENT_BUFFER_END"), "bufferType": nrCalculateBufferType("CONTENT_BUFFER_END")})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
