@@ -243,11 +243,11 @@ function nrAppStarted(aa as Object) as Void
         "instantOnRunMode": aa["instant_on_run_mode"],
         "launchSource": aa["source"]
     }
-    nrSendCustomEvent("VideoCustomAction", "APP_STARTED", attr)
+    nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
 end function
 
 function nrSceneLoaded(sceneName as String) as Void
-    nrSendCustomEvent("VideoCustomAction", "SCENE_LOADED", {"sceneName": sceneName})
+    nrSendCustomEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
 end function
 
 function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
@@ -261,7 +261,7 @@ function nrSendCustomEvent(eventType as String, actionName as String, attr = inv
 end function
 
 function nrSendSystemEvent(actionName as String, attr = invalid) as Void
-    nrSendCustomEvent("VideoCustomAction", actionName, attr)
+    nrSendCustomEvent("RokuSystem", actionName, attr)
 end function
 
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
@@ -284,6 +284,15 @@ function nrSendErrorEvent(actionName as String, ctx as Dynamic, attr = invalid) 
     ev = nrCreateEvent("VideoErrorAction", actionName)
     ev = nrAddVideoAttributes(ev)
     ev = nrAddCustomAttributes(ev)
+    if type(attr) = "roAssociativeArray"
+       ev.Append(attr)
+    end if
+    nrRecordEvent(ev)
+end function
+
+function nrSendVideoCustomActionEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
+    ev = nrCreateEvent("VideoCustomAction", actionName)
+    ev = nrAddVideoCustomActionAttributes(ev)
     if type(attr) = "roAssociativeArray"
        ev.Append(attr)
     end if
@@ -315,7 +324,7 @@ function nrSendHttpRequest(attr as Object) as Void
         m.num_http_request_counters.AddReplace(domain, 1)
     end if
 
-    nrSendCustomEvent("VideoCustomAction", "HTTP_REQUEST", attr)
+    nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
@@ -347,7 +356,7 @@ function nrSendHttpResponse(attr as Object) as Void
         end if
     end if
     
-    nrSendCustomEvent("VideoCustomAction", "HTTP_RESPONSE", attr)
+    nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
 end function
 
 function nrEnableHttpEvents() as Void
@@ -836,7 +845,7 @@ function nrSendHTTPConnect(info as Object) as Void
         m.num_http_connect_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendCustomEvent("VideoCustomAction", "HTTP_CONNECT", attr)
+    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -863,7 +872,7 @@ function nrSendHTTPComplete(info as Object) as Void
         m.num_http_complete_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendCustomEvent("VideoCustomAction", "HTTP_COMPLETE", attr)
+    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
 
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"domain": domain})
@@ -877,7 +886,7 @@ function nrSendBandwidth(info as Object) as Void
     attr = {
         "bandwidth": info["bandwidth"]
     }
-    nrSendCustomEvent("VideoCustomAction", "BANDWIDTH_MINUTE", attr)
+    nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
 end function
 
 'TODO:  Testing endpoint. If nrRegion is not US or EU, use it as endpoint. Deprecate the "TEST" region and "m.testServer".
@@ -1065,6 +1074,11 @@ function nrSendBackupVideoEnd() as Void
     nrSendBackupVideoEvent("CONTENT_END")
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
+end function
+
+function nrAddVideoCustomActionAttributes(ev as Object) as object
+    'Add custom attributes for VideoCustomAction
+    return ev
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object

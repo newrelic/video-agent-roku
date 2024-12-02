@@ -4,10 +4,10 @@
 
 The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events and one to monitor video related events, for apps that use a video player.
 
-Internally, it uses the Event API to send events using the REST interface. It sends two types of events: VideoCustomAction for system events and VideoAction for video events. After the agent has sent some data it will be accessible in NR One Dashboards with a simple NRQL request like:
+Internally, it uses the Event API to send events using the REST interface. It sends two types of events: RokuSystem for system events and RokuVideo for video events. After the agent has sent some data it will be accessible in NR One Dashboards with a simple NRQL request like:
 
 ```
-SELECT * FROM VideoCustomAction, VideoAction 
+SELECT * FROM RokuSystem, RokuVideo 
 ```
 Will result in something like the following: 
 
@@ -327,7 +327,7 @@ Example:
 nrAppStarted(nr as Object, obj as Object) as Void
 
 Description:
-	Send an APP_STARTED event of type VideoCustomAction.
+	Send an APP_STARTED event of type RokuSystem.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -349,7 +349,7 @@ Example:
 nrSceneLoaded(nr as Object, sceneName as String) as Void
 
 Description:
-	Send a SCENE_LOADED event of type VideoCustomAction.
+	Send a SCENE_LOADED event of type RokuSystem.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -393,7 +393,7 @@ Example:
 nrSendSystemEvent(nr as Object, actionName as String, attr = invalid) as Void
 
 Description:
-	Send a system event, type VideoCustomAction.
+	Send a system event, type RokuSystem.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -416,7 +416,7 @@ Example:
 nrSendVideoEvent(nr as Object, actionName as String, attr = invalid) as Void
 
 Description:
-	Send a video event, type VideoAction.
+	Send a video event, type RokuVideo.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -439,7 +439,7 @@ Example:
 nrSendHttpRequest(nr as Object, urlReq as Object) as Void
 
 Description:
-	Send an HTTP_REQUEST event of type VideoCustomAction.
+	Send an HTTP_REQUEST event of type RokuSystem.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -462,7 +462,7 @@ Example:
 nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
 
 Description:
-	Send an HTTP_RESPONSE event of type VideoCustomAction.
+	Send an HTTP_RESPONSE event of type RokuSystem.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -805,11 +805,11 @@ Example:
 
 ### Data Model
 
-The agent generates two different event types: `VideoCustomAction` and `VideoAction`.
+The agent generates two different event types: `RokuSystem` and `RokuVideo`.
 
 <a name="roku-system"></a>
 
-#### 1. VideoCustomAction
+#### 1. RokuSystem
 
 This event groups all actions related to system tracking.
 
@@ -828,7 +828,7 @@ This event groups all actions related to system tracking.
 
 #### 1.2 Attributes
 
-There is a set of attributes common to all actions sent over a `VideoCustomAction` and others are specific to a certain action.
+There is a set of attributes common to all actions sent over a `RokuSystem` and others are specific to a certain action.
 
 #### 1.2.1 Common Attributes
 
@@ -908,7 +908,7 @@ There is a set of attributes common to all actions sent over a `VideoCustomActio
 
 <a name="roku-video"></a>
 
-#### 2. VideoAction
+#### 2. RokuVideo
 
 This event groups all actions related to video tracking.
 
@@ -930,11 +930,11 @@ This event groups all actions related to video tracking.
 
 #### 2.2 Attributes
 
-There is a set of attributes common to all actions sent over a `VideoAction` and others are specific to a certain action.
+There is a set of attributes common to all actions sent over a `RokuVideo` and others are specific to a certain action.
 
 #### 2.2.1 Common Attributes
 
-For video events, the common attributes include all `VideoCustomAction` common attributes (1.2.1) plus the video event ones. Here we will describe only the video common attributes.
+For video events, the common attributes include all `RokuSystem` common attributes (1.2.1) plus the video event ones. Here we will describe only the video common attributes.
 
 | Attribute Name | Description |
 |---|---|
