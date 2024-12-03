@@ -292,9 +292,24 @@ end function
 
 function nrSendVideoCustomActionEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
     ev = nrCreateEvent("VideoCustomAction", actionName)
-    ev = nrAddVideoAttributes(ev)
-    ev = nrAddCustomAttributes(ev)
     ev = nrAddVideoCustomActionAttributes(ev)
+    ' Check if ctx contains attributes other than adpartner with value "raf"
+    hasOtherAdAttributes = false
+    if ctx <> invalid and type(ctx) = "roAssociativeArray"
+        for each key in ctx
+            if key <> "adpartner" or (key = "adpartner" and ctx[key] <> "raf")
+                hasOtherAdAttributes = true
+                exit for
+            end if
+        end for
+    end if   
+    ' Add RAF attributes only if there are other attributes present
+    if hasOtherAdAttributes
+        ev = nrAddRAFAttributes(ev, ctx)
+    else
+        ev = nrAddVideoAttributes(ev)
+    end if
+    ev = nrAddCustomAttributes(ev)
     if type(attr) = "roAssociativeArray"
        ev.Append(attr)
     end if
