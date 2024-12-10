@@ -244,25 +244,21 @@ function nrAppStarted(aa as Object) as Void
         "instantOnRunMode": aa["instant_on_run_mode"],
         "launchSource": aa["source"]
     }
-    nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
+    nrSendSystemEvent("RokuSystem", "APP_STARTED", attr)
 end function
 
 function nrSceneLoaded(sceneName as String) as Void
-    nrSendCustomEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
+    nrSendSystemEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
 end function
 
-function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
-    nrLog("nrSendCustomEvent")
+function nrSendSystemEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
+    nrLog("nrSendSystemEvent")
     ev = nrCreateEvent(eventType, actionName)
     ev = nrAddCustomAttributes(ev)
     if attr <> invalid
         ev.Append(attr)
     end if
     nrRecordEvent(ev)
-end function
-
-function nrSendSystemEvent(actionName as String, attr = invalid) as Void
-    nrSendCustomEvent("RokuSystem", actionName, attr)
 end function
 
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
@@ -291,9 +287,8 @@ function nrSendErrorEvent(actionName as String, ctx as Dynamic, attr = invalid) 
     nrRecordEvent(ev)
 end function
 
-function nrSendVideoCustomActionEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
+function nrSendCustomEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
     ev = nrCreateEvent("VideoCustomAction", actionName)
-    ev = nrAddVideoCustomActionAttributes(ev)
     ' Check if ctx contains attributes other than adpartner with value "raf"
     hasOtherAdAttributes = false
     if ctx <> invalid and type(ctx) = "roAssociativeArray"
@@ -342,7 +337,7 @@ function nrSendHttpRequest(attr as Object) as Void
         m.num_http_request_counters.AddReplace(domain, 1)
     end if
 
-    nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
+    nrSendSystemEvent("RokuSystem", "HTTP_REQUEST", attr)
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
@@ -374,7 +369,7 @@ function nrSendHttpResponse(attr as Object) as Void
         end if
     end if
     
-    nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
+    nrSendSystemEvent("RokuSystem", "HTTP_RESPONSE", attr)
 end function
 
 function nrEnableHttpEvents() as Void
@@ -457,42 +452,42 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
     if GetInterface(evtType, "ifString") <> invalid and ctx <> invalid
         if evtType = "PodStart"
             nrResetRAFTimers()
-            nrSendRAFEvent("AD_BREAK_START", ctx,{"elapsedTime": nrCalculateElapsedTime("AD_BREAK_START")})
+            nrSendRAFEvent("AD_BREAK_START", ctx)
             m.rafState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
         else if evtType = "PodComplete"
             'Calc attributes for Ad break end
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
             nrAddToTotalAdPlaytime(timeSinceAdBreakBegin)
-            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin, "elapsedTime": nrCalculateElapsedTime("AD_BREAK_END")})
+            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
         else if evtType = "Impression"
-            nrSendRAFEvent("AD_REQUEST", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_REQUEST")})
+            nrSendRAFEvent("AD_REQUEST", ctx)
             m.rafState.timeSinceAdRequested = m.nrTimer.TotalMilliseconds()
         else if evtType = "Start"
             m.rafState.numberOfAds = m.rafState.numberOfAds + 1
-            nrSendRAFEvent("AD_START", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_START")})
+            nrSendRAFEvent("AD_START", ctx)
             m.rafState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
         else if evtType = "Complete"
-            nrSendRAFEvent("AD_END", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_END")})
+            nrSendRAFEvent("AD_END", ctx)
             'Reset attributes after END
             nrResetRAFState()
             m.rafState.timeSinceAdRequested = 0
             m.rafState.timeSinceAdStarted = 0
         else if evtType = "Pause"
-            nrSendRAFEvent("AD_PAUSE", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_PAUSE")})
+            nrSendRAFEvent("AD_PAUSE", ctx)
             m.rafState.timeSinceAdPaused = m.nrTimer.TotalMilliseconds()
         else if evtType = "Resume"
             timeSinceAdPaused = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdPaused
-            nrSendRAFEvent("AD_RESUME", ctx, {"timeSinceAdPaused": timeSinceAdPaused, "elapsedTime": nrCalculateElapsedTime("AD_RESUME")})
+            nrSendRAFEvent("AD_RESUME", ctx, {"timeSinceAdPaused": timeSinceAdPaused})
         else if evtType = "Close"
-            nrSendRAFEvent("AD_SKIP", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_SKIP")})
-            nrSendRAFEvent("AD_END", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_END")})
+            nrSendRAFEvent("AD_SKIP", ctx)
+            nrSendRAFEvent("AD_END", ctx)
             'Reset attributes after END
             nrResetRAFState()
             m.rafState.timeSinceAdRequested = 0
             m.rafState.timeSinceAdStarted = 0
             'Calc attributes for Ad break end
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
-            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin, "elapsedTime": nrCalculateElapsedTime("AD_BREAK_END")})
+            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
         else if evtType = "Error"
             attr = {}
             if ctx.errType <> invalid then attr.AddReplace("adErrorType", ctx.errType)
@@ -508,13 +503,13 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
         
         if ctx.time >= firstQuartile and ctx.time < secondQuartile and m.rafState.didFirstQuartile = false
             m.rafState.didFirstQuartile = true
-            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 1, "elapsedTime": nrCalculateElapsedTime("AD_QUARTILE")})
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 1})
         else if ctx.time >= secondQuartile and ctx.time < thirdQuartile and m.rafState.didSecondQuartile = false
             m.rafState.didSecondQuartile = true
-            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 2, "elapsedTime": nrCalculateElapsedTime("AD_QUARTILE")})
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 2})
         else if ctx.time >= thirdQuartile and m.rafState.didThirdQuartile = false
             m.rafState.didThirdQuartile = true
-            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 3, "elapsedTime": nrCalculateElapsedTime("AD_QUARTILE")})
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 3})
         end if
     end if
 end function
@@ -822,6 +817,9 @@ function nrAddCustomAttributes(ev as Object) as Object
     actionName = ev["actionName"]
     actionCustomAttr = m.nrCustomAttributes[actionName]
     if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
+    ' Calculate and add elapsed time for the action
+    elapsedTime = nrCalculateElapsedTime(actionName)
+    ev.AddReplace("elapsedTime", elapsedTime)
     return ev
 end function
 
@@ -895,7 +893,7 @@ function nrSendHTTPConnect(info as Object) as Void
         m.num_http_connect_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
+    if m.http_events_enabled then nrSendSystemEvent("RokuSystem", "HTTP_CONNECT", attr)
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -922,7 +920,7 @@ function nrSendHTTPComplete(info as Object) as Void
         m.num_http_complete_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
+    if m.http_events_enabled then nrSendSystemEvent("RokuSystem", "HTTP_COMPLETE", attr)
 
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"domain": domain})
@@ -936,7 +934,7 @@ function nrSendBandwidth(info as Object) as Void
     attr = {
         "bandwidth": info["bandwidth"]
     }
-    nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
+    nrSendSystemEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
 end function
 
 'TODO:  Testing endpoint. If nrRegion is not US or EU, use it as endpoint. Deprecate the "TEST" region and "m.testServer".
@@ -1010,19 +1008,19 @@ end function
 
 function nrSendRequest() as Void
     m.nrTimeSinceRequested = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent("CONTENT_REQUEST", {"elapsedTime": nrCalculateElapsedTime("CONTENT_REQUEST")})
+    nrSendVideoEvent("CONTENT_REQUEST")
 end function
 
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent("CONTENT_START", {"elapsedTime": nrCalculateElapsedTime("CONTENT_START")})
+    nrSendVideoEvent("CONTENT_START")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendEnd() as Void
-    nrSendVideoEvent("CONTENT_END", {"elapsedTime": nrCalculateElapsedTime("CONTENT_END")})
+    nrSendVideoEvent("CONTENT_END")
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -1030,13 +1028,13 @@ end function
 
 function nrSendPause() as Void
     m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent("CONTENT_PAUSE", {"elapsedTime": nrCalculateElapsedTime("CONTENT_PAUSE")})
+    nrSendVideoEvent("CONTENT_PAUSE")
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendResume() as Void
-    nrSendVideoEvent("CONTENT_RESUME", {"elapsedTime": nrCalculateElapsedTime("CONTENT_RESUME")})
+    nrSendVideoEvent("CONTENT_RESUME")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -1049,7 +1047,7 @@ function nrSendBufferStart() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering, "elapsedTime": nrCalculateElapsedTime("CONTENT_BUFFER_START"), "bufferType": nrCalculateBufferType("CONTENT_BUFFER_START")})
+    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": nrCalculateBufferType("CONTENT_BUFFER_START")})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
@@ -1060,7 +1058,7 @@ function nrSendBufferEnd() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "elapsedTime": nrCalculateElapsedTime("CONTENT_BUFFER_END"), "bufferType": nrCalculateBufferType("CONTENT_BUFFER_END")})
+    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": nrCalculateBufferType("CONTENT_BUFFER_END")})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -1148,12 +1146,6 @@ function nrSendBackupVideoEnd() as Void
     nrSendBackupVideoEvent("CONTENT_END")
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
-end function
-
-function nrAddVideoCustomActionAttributes(ev as Object) as object
-    'Add custom attributes for VideoCustomAction
-
-    return ev
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
