@@ -17,6 +17,7 @@ sub init()
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2023 New Relic Inc. All Rights Reserved."
     print "************************************************************"
+    InitializeLastEventTimestamps()
 end sub
 
 '=========================='
@@ -456,47 +457,47 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
     if GetInterface(evtType, "ifString") <> invalid and ctx <> invalid
         if evtType = "PodStart"
             nrResetRAFTimers()
-            nrSendRAFEvent("AD_BREAK_START", ctx)
+            nrSendRAFEvent("AD_BREAK_START", ctx,{"elapsedTime": nrCalculateElapsedTime("AD_BREAK_START")})
             m.rafState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
         else if evtType = "PodComplete"
             'Calc attributes for Ad break end
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
             nrAddToTotalAdPlaytime(timeSinceAdBreakBegin)
-            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
+            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin, "elapsedTime": nrCalculateElapsedTime("AD_BREAK_END")})
         else if evtType = "Impression"
-            nrSendRAFEvent("AD_REQUEST", ctx)
+            nrSendRAFEvent("AD_REQUEST", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_REQUEST")})
             m.rafState.timeSinceAdRequested = m.nrTimer.TotalMilliseconds()
         else if evtType = "Start"
             m.rafState.numberOfAds = m.rafState.numberOfAds + 1
-            nrSendRAFEvent("AD_START", ctx)
+            nrSendRAFEvent("AD_START", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_START")})
             m.rafState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
         else if evtType = "Complete"
-            nrSendRAFEvent("AD_END", ctx)
+            nrSendRAFEvent("AD_END", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_END")})
             'Reset attributes after END
             nrResetRAFState()
             m.rafState.timeSinceAdRequested = 0
             m.rafState.timeSinceAdStarted = 0
         else if evtType = "Pause"
-            nrSendRAFEvent("AD_PAUSE", ctx)
+            nrSendRAFEvent("AD_PAUSE", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_PAUSE")})
             m.rafState.timeSinceAdPaused = m.nrTimer.TotalMilliseconds()
         else if evtType = "Resume"
             timeSinceAdPaused = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdPaused
-            nrSendRAFEvent("AD_RESUME", ctx, {"timeSinceAdPaused": timeSinceAdPaused})
+            nrSendRAFEvent("AD_RESUME", ctx, {"timeSinceAdPaused": timeSinceAdPaused, "elapsedTime": nrCalculateElapsedTime("AD_RESUME")})
         else if evtType = "Close"
-            nrSendRAFEvent("AD_SKIP", ctx)
-            nrSendRAFEvent("AD_END", ctx)
+            nrSendRAFEvent("AD_SKIP", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_SKIP")})
+            nrSendRAFEvent("AD_END", ctx, {"elapsedTime": nrCalculateElapsedTime("AD_END")})
             'Reset attributes after END
             nrResetRAFState()
             m.rafState.timeSinceAdRequested = 0
             m.rafState.timeSinceAdStarted = 0
             'Calc attributes for Ad break end
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
-            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
+            nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin, "elapsedTime": nrCalculateElapsedTime("AD_BREAK_END")})
         else if evtType = "Error"
             attr = {}
             if ctx.errType <> invalid then attr.AddReplace("adErrorType", ctx.errType)
-            if ctx.errCode <> invalid then attr.AddReplace("adErrorCode", ctx.errCode)
-            if ctx.errMsg <> invalid then attr.AddReplace("adErrorMsg", ctx.errMsg)
+            if ctx.errCode <> invalid then attr.AddReplace("errorCode", ctx.errCode)
+            if ctx.errMsg <> invalid then attr.AddReplace("errorName", ctx.errMsg)
             nrSendErrorEvent("AD_ERROR", ctx, attr) 
         end if
     else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
@@ -507,13 +508,13 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
         
         if ctx.time >= firstQuartile and ctx.time < secondQuartile and m.rafState.didFirstQuartile = false
             m.rafState.didFirstQuartile = true
-            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 1})
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 1, "elapsedTime": nrCalculateElapsedTime("AD_QUARTILE")})
         else if ctx.time >= secondQuartile and ctx.time < thirdQuartile and m.rafState.didSecondQuartile = false
             m.rafState.didSecondQuartile = true
-            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 2})
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 2, "elapsedTime": nrCalculateElapsedTime("AD_QUARTILE")})
         else if ctx.time >= thirdQuartile and m.rafState.didThirdQuartile = false
             m.rafState.didThirdQuartile = true
-            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 3})
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 3, "elapsedTime": nrCalculateElapsedTime("AD_QUARTILE")})
         end if
     end if
 end function
@@ -759,8 +760,9 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
     ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
     dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
-    ev.AddReplace("device", dev.GetModelDisplayName())
+    ev.AddReplace("deviceUuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
+    ev.AddReplace("deviceSize", "xLarge")
+    ev.AddReplace("deviceName", dev.GetModelDisplayName())
     ev.AddReplace("deviceGroup", "Roku")
     ev.AddReplace("deviceManufacturer", "Roku")
     ev.AddReplace("deviceModel", dev.GetModel())
@@ -781,7 +783,7 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("connectionType", dev.GetConnectionType())
     'ev.AddReplace("ipAddress", dev.GetExternalIp())
     ev.AddReplace("displayType", dev.GetDisplayType())
-    ev.AddReplace("displayMode", dev.GetDisplayMode())
+    ev.AddReplace("contentRenditionName", dev.GetDisplayMode())
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
     ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
@@ -834,6 +836,37 @@ function nrAddCommonHTTPAttr(info as Object) as Object
         "url": info["Url"]
     }
     return attr
+end function
+
+function nrCalculateElapsedTime(actionName as String) as Integer
+    currentTime = CreateObject("roDateTime")
+    currentTimestamp = currentTime.AsSeconds()
+    if m.lastEventTimestamps[actionName] <> invalid
+        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps[actionName]) * 1000
+        elapsedTime = timeSinceLastEvent
+    else
+        elapsedTime=0
+    end if
+    m.lastEventTimestamps[actionName] = currentTimestamp
+    return elapsedTime
+end function
+
+function nrCalculateBufferType(actionName as String) as String
+    bufferType = "connection" ' Default buffer type
+    if m.nrTimeSinceStarted = 0
+        m.nrIsInitialBuffering = true
+        bufferType = "initial"
+    else
+        m.nrIsInitialBuffering = false
+        if m.nrLastVideoState = "paused"
+            bufferType = "pause"
+        else if m.nrLastVideoState = "seeking"
+            bufferType = "seek"
+        else
+            bufferType = "connection"
+        end if
+    end if
+    return bufferType
 end function
 
 function nrSendHTTPError(info as Object) as Void
@@ -946,6 +979,30 @@ end function
 ' Video functions '
 '================='
 
+sub InitializeLastEventTimestamps()
+    m.lastEventTimestamps = {
+        "CONTENT_REQUEST": invalid,
+        "CONTENT_START": invalid,
+        "CONTENT_END": invalid,
+        "CONTENT_PAUSE": invalid,
+        "CONTENT_RESUME": invalid,
+        "CONTENT_BUFFER_START": invalid,
+        "CONTENT_BUFFER_END": invalid,
+        "HTTP_ERROR": invalid,
+        "CONTENT_ERROR": invalid,
+        "AD_ERROR": invalid,
+        "AD_BREAK_START": invalid,
+        "AD_BREAK_END": invalid,
+        "AD_REQUEST": invalid,
+        "AD_START": invalid,
+        "AD_END": invalid,
+        "AD_PAUSE": invalid,
+        "AD_RESUME": invalid,
+        "AD_QUARTILE": invalid,
+        "AD_SKIP": invalid
+    }
+end sub
+
 function nrSendPlayerReady() as Void
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent("PLAYER_READY")
@@ -953,19 +1010,19 @@ end function
 
 function nrSendRequest() as Void
     m.nrTimeSinceRequested = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent("CONTENT_REQUEST")
+    nrSendVideoEvent("CONTENT_REQUEST", {"elapsedTime": nrCalculateElapsedTime("CONTENT_REQUEST")})
 end function
 
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent("CONTENT_START")
+    nrSendVideoEvent("CONTENT_START", {"elapsedTime": nrCalculateElapsedTime("CONTENT_START")})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendEnd() as Void
-    nrSendVideoEvent("CONTENT_END")
+    nrSendVideoEvent("CONTENT_END", {"elapsedTime": nrCalculateElapsedTime("CONTENT_END")})
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -973,13 +1030,13 @@ end function
 
 function nrSendPause() as Void
     m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
-    nrSendVideoEvent("CONTENT_PAUSE")
+    nrSendVideoEvent("CONTENT_PAUSE", {"elapsedTime": nrCalculateElapsedTime("CONTENT_PAUSE")})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendResume() as Void
-    nrSendVideoEvent("CONTENT_RESUME")
+    nrSendVideoEvent("CONTENT_RESUME", {"elapsedTime": nrCalculateElapsedTime("CONTENT_RESUME")})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -992,7 +1049,7 @@ function nrSendBufferStart() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering, "elapsedTime": nrCalculateElapsedTime("CONTENT_BUFFER_START"), "bufferType": nrCalculateBufferType("CONTENT_BUFFER_START")})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
@@ -1003,14 +1060,14 @@ function nrSendBufferEnd() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering})
+    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "elapsedTime": nrCalculateElapsedTime("CONTENT_BUFFER_END"), "bufferType": nrCalculateBufferType("CONTENT_BUFFER_END")})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendError(video as Object) as Void
     attr = {
-        "errorMessage": video.errorMsg,
+        "errorName": video.errorMsg,
         "errorCode": video.errorCode
     }
     if video.errorStr <> invalid
@@ -1022,7 +1079,7 @@ function nrSendError(video as Object) as Void
         attr.append({
             "errorClipId": video.errorInfo.clipid,
             "errorIgnored": video.errorInfo.ignored,
-            "errorSource": video.errorInfo.source,
+            "backtrace": video.errorInfo.source,
             "errorCategory": video.errorInfo.category,
             "errorInfoCode": video.errorInfo.errcode,
             "errorDrmInfoCode": video.errorInfo.drmerrcode,
@@ -1103,6 +1160,7 @@ function nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
     ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
     ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
+    ev.AddReplace("ContentIsfullscreen","true")
     streamUrl = nrGenerateStreamUrl()
     ev.AddReplace("contentSrc", streamUrl)
     'Generate Id from Src (hashing it)
@@ -1161,6 +1219,15 @@ function nrAddVideoAttributes(ev as Object) as Object
     if m.nrTotalAdPlaytime > 0
         ev.AddReplace("totalAdPlaytime", m.nrTotalAdPlaytime)
     end if
+    contentNode = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
+    ' Check if contentNode is valid
+    if contentNode <> invalid
+        contentTitle = contentNode.title
+        if contentTitle <> invalid
+            ev.AddReplace("contentTitle", contentTitle)
+        end if
+    end if
+return ev
     
     return ev
 end function
