@@ -123,26 +123,26 @@ function nrSceneLoaded(nr as Object, sceneName as String) as Void
     nr.callFunc("nrSceneLoaded", sceneName)
 end function
 
-' Send a custom event.
+' Send a system event, type RokuSystem.
 '
 ' @param nr New Relic Agent object.
 ' @param eventType Event type.
 ' @param actionName Action name.
 ' @param attr (optional) Attributes associative array.
-function nrSendCustomEvent(nr as Object, eventType as String, actionName as String, attr = invalid as Object) as Void
-    nr.callFunc("nrSendCustomEvent", eventType, actionName, attr)
+function nrSendSystemEvent(nr as Object, eventType as String, actionName as String, attr = invalid as Object) as Void
+    nr.callFunc("nrSendSystemEvent", eventType, actionName, attr)
 end function
 
-' Send a system event, type RokuSystem.
+' Send a custom event, type VideoCustomAction.
 '
 ' @param nr New Relic Agent object.
 ' @param actionName Action name.
 ' @param attr (optional) Attributes associative array.
-function nrSendSystemEvent(nr as Object, actionName as String, attr = invalid) as Void
-    nr.callFunc("nrSendSystemEvent", actionName, attr)
+function nrSendCustomEvent(nr as Object, actionName as String, attr = invalid as Object) as Void
+    nr.callFunc("nrSendCustomEvent", actionName, attr)
 end function
 
-' Send a video event, type RokuVideo.
+' Send a video event, type VideoAction.
 '
 ' @param nr New Relic Agent object.
 ' @param actionName Action name.

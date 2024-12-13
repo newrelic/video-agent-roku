@@ -23,9 +23,10 @@
         <function name="nrAddDomainSubstitution"/>
         <function name="nrDelDomainSubstitution"/>
         <function name="nrAppStarted"/>
-        <function name="nrSendCustomEvent"/>
         <function name="nrSendSystemEvent"/>
         <function name="nrSendVideoEvent"/>
+        <function name="nrSendErrorEvent"/>
+        <function name="nrSendCustomEvent"/>
         <function name="nrSendHttpRequest"/>
         <function name="nrSendHttpResponse"/>
         <function name="nrEnableHttpEvents"/>
