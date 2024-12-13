@@ -244,21 +244,25 @@ function nrAppStarted(aa as Object) as Void
         "instantOnRunMode": aa["instant_on_run_mode"],
         "launchSource": aa["source"]
     }
-    nrSendSystemEvent("RokuSystem", "APP_STARTED", attr)
+    nrSendCustomEvent("RokuSystem", "APP_STARTED", attr)
 end function
 
 function nrSceneLoaded(sceneName as String) as Void
-    nrSendSystemEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
+    nrSendCustomEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
 end function
 
-function nrSendSystemEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
-    nrLog("nrSendSystemEvent")
+function nrSendCustomEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
+    nrLog("nrSendCustomEvent")
     ev = nrCreateEvent(eventType, actionName)
     ev = nrAddCustomAttributes(ev)
     if attr <> invalid
         ev.Append(attr)
     end if
     nrRecordEvent(ev)
+end function
+
+function nrSendSystemEvent(actionName as String, attr = invalid) as Void
+    nrSendCustomEvent("RokuSystem", actionName, attr)
 end function
 
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
@@ -287,30 +291,30 @@ function nrSendErrorEvent(actionName as String, ctx as Dynamic, attr = invalid) 
     nrRecordEvent(ev)
 end function
 
-function nrSendCustomEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
-    ev = nrCreateEvent("VideoCustomAction", actionName)
-    ' Check if ctx contains attributes other than adpartner with value "raf"
-    hasOtherAdAttributes = false
-    if ctx <> invalid and type(ctx) = "roAssociativeArray"
-        for each key in ctx
-            if key <> "adpartner" or (key = "adpartner" and ctx[key] <> "raf")
-                hasOtherAdAttributes = true
-                exit for
-            end if
-        end for
-    end if   
-    ' Add RAF attributes only if there are other attributes present
-    if hasOtherAdAttributes
-        ev = nrAddRAFAttributes(ev, ctx)
-    else
-        ev = nrAddVideoAttributes(ev)
-    end if
-    ev = nrAddCustomAttributes(ev)
-    if type(attr) = "roAssociativeArray"
-       ev.Append(attr)
-    end if
-    nrRecordEvent(ev)
-end function
+' function nrSendCustomEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
+'     ev = nrCreateEvent("VideoCustomAction", actionName)
+'     ' Check if ctx contains attributes other than adpartner with value "raf"
+'     hasOtherAdAttributes = false
+'     if ctx <> invalid and type(ctx) = "roAssociativeArray"
+'         for each key in ctx
+'             if key <> "adpartner" or (key = "adpartner" and ctx[key] <> "raf")
+'                 hasOtherAdAttributes = true
+'                 exit for
+'             end if
+'         end for
+'     end if   
+'     ' Add RAF attributes only if there are other attributes present
+'     if hasOtherAdAttributes
+'         ev = nrAddRAFAttributes(ev, ctx)
+'     else
+'         ev = nrAddVideoAttributes(ev)
+'     end if
+'     ev = nrAddCustomAttributes(ev)
+'     if type(attr) = "roAssociativeArray"
+'        ev.Append(attr)
+'     end if
+'     nrRecordEvent(ev)
+' end function
 
 function nrSendHttpRequest(attr as Object) as Void
     domain = nrExtractDomainFromUrl(attr["origUrl"])
@@ -337,7 +341,7 @@ function nrSendHttpRequest(attr as Object) as Void
         m.num_http_request_counters.AddReplace(domain, 1)
     end if
 
-    nrSendSystemEvent("RokuSystem", "HTTP_REQUEST", attr)
+    nrSendCustomEvent("RokuSystem", "HTTP_REQUEST", attr)
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
@@ -369,7 +373,7 @@ function nrSendHttpResponse(attr as Object) as Void
         end if
     end if
     
-    nrSendSystemEvent("RokuSystem", "HTTP_RESPONSE", attr)
+    nrSendCustomEvent("RokuSystem", "HTTP_RESPONSE", attr)
 end function
 
 function nrEnableHttpEvents() as Void
@@ -893,7 +897,7 @@ function nrSendHTTPConnect(info as Object) as Void
         m.num_http_connect_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendSystemEvent("RokuSystem", "HTTP_CONNECT", attr)
+    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_CONNECT", attr)
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -920,7 +924,7 @@ function nrSendHTTPComplete(info as Object) as Void
         m.num_http_complete_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendSystemEvent("RokuSystem", "HTTP_COMPLETE", attr)
+    if m.http_events_enabled then nrSendCustomEvent("RokuSystem", "HTTP_COMPLETE", attr)
 
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"domain": domain})
@@ -934,7 +938,7 @@ function nrSendBandwidth(info as Object) as Void
     attr = {
         "bandwidth": info["bandwidth"]
     }
-    nrSendSystemEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
+    nrSendCustomEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
 end function
 
 'TODO:  Testing endpoint. If nrRegion is not US or EU, use it as endpoint. Deprecate the "TEST" region and "m.testServer".
@@ -942,9 +946,9 @@ end function
 
 function nrEventApiUrl() as String
     if m.nrRegion = "US"
-        return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
+        return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "EU"
-        return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
+        return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "TEST"
         'NOTE: set address hosting the test server
         return m.testServer + "/event"
