@@ -47,7 +47,7 @@ function updateCustomAttr() as Void
     'Set a list of custom attributes to CONTENT_HEARTBEAT actions
     dict = {"key0":"val0", "key1":"val1"}
     nrSetCustomAttributeList(m.nr, dict, "CONTENT_HEARTBEAT")
-    nrSetCustomAttribute(m.nr,"UserID", m.userID)
+    nrSetCustomAttribute(m.nr,"Enduser.id", m.userID)
 end function
 
 function setUserID(userID as String) as Void
