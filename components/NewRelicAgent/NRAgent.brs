@@ -1220,8 +1220,6 @@ function nrAddVideoAttributes(ev as Object) as Object
         end if
     end if
 return ev
-    
-    return ev
 end function
 
 '=============='
