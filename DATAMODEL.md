@@ -34,8 +34,9 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | sessionId | Session ID, a hash that is generated every time the Roku app starts. |
 | hdmiIsConnected | Boolean. HDMI is connected or not. |
 | hdmiHdcpVersion | HDCP version. |
-| uuid | Roku Device UUID. |
-| device | Roku device name. |
+| deviceUuid | Roku Device UUID. |
+| deviceName | Roku device name. |
+| deviceSize | Always "xLarge". |
 | deviceGroup | Always “Roku”. |
 | deviceManufacturer | Always “Roku”. |
 | deviceModel | Roku model. |
@@ -54,7 +55,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | channelAvailMem | Estimated kilobytes of memory available for the channel. Only reported if the memory monitor is enabled. |
 | connectionType | Network connection type (WiFi, etc). |
 | displayType | Type of display, screen, TV, etc. |
-| displayMode | Display mode. |
+| contentRenditionName | Display mode. |
 | displayAspectRatio | Aspect ratio. |
 | videoMode | Video mode. |
 | graphicsPlatform | Graphics platform (OpenGL, etc). |
@@ -128,31 +129,17 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | viewId                   | Trackers will generate unique IDs for every new video iteration.                                                                                   |
 | contentId                | The ID of the video.                                                                                                                               |
 | contentTitle             | The title of the video.                                                                                                                            |
-| contentIsLive            | True if the video is live.                                                                                                                         |
 | contentBitrate           | Bitrate (in bits) of the video.                                                                                                                    |
+| contentIsFullscreen      | Always "true".                                                                                                                                     |
 | contentRenditionName     | Name of the rendition (e.g., 1080p).                                                                                                               |
-| contentRenditionBitrate  | Target Bitrate of the rendition.                                                                                                                   |
-| contentRenditionHeight   | Rendition actual Height (before re-scaling).                                                                                                       |
-| contentRenditionWidth    | Rendition actual Width (before re-scaling).                                                                                                        |
 | contentDuration          | Duration of the video, in ms.                                                                                                                      |
 | contentPlayhead          | Playhead (currentTime) of the video, in ms.                                                                                                        |
-| contentLanguage          | Language of the video. We recommend using locale notation, e.g., en_US.                                                                            |
 | contentSrc               | URL of the resource being played.                                                                                                                  |
-| contentPlayrate          | Playrate (speed) of the video, e.g., 1.0, 0.5, 1.25.                                                                                               |
 | contentIsFullscreen      | True if the video is currently fullscreen.                                                                                                         |
 | contentIsMuted           | True if the video is currently muted.                                                                                                              |
-| contentCdn               | The CDN serving the content.                                                                                                                       |
-| contentIsAutoplayed      | If the player was auto-played.                                                                                                                     |
-| contentPreload           | The player preload attribute.                                                                                                                      |
-| contentFps               | Current FPS (Frames per second).                                                                                                                   |
-| isBackgroundEvent        | If the player is hidden by another window.                                                                                                         |
 | totalAdPlaytime          | Total time ad is played for this video session.                                                                                                    |
 | elapsedTime              | Time that has passed since the last event.                                                                                                         |
 | bufferType               | When buffer starts, i.e., initial, seek, pause & connection.                                                                                       |
-| asn                      | Autonomous System Number: a unique number identifying a group of IP networks that serves the content to the end user.                              |
-| asnLatitude              | The latitude of the geographic center of the postal code where the Autonomous System Network is registered. This is not the end user's latitude.   |
-| asnLongitude             | The longitude of the geographic center of the postal code where the Autonomous System Network is registered. This is not the end user's longitude. |
-| asnOrganization          | The organization that owns the Autonomous System Number. Often an ISP, sometimes a private company or institution.                                 |
 | timestamp                | The time (date, hour, minute, second) at which the interaction occurred.                                                                           |
 | instrumentation.provider | Player/agent name.                                                                                                                                 |
 | instrumentation.name     | Name of the instrumentation collecting the data.                                                                                                   |
@@ -163,18 +150,14 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | Action Name              | Definition                                                                                       |
 | ------------------------ | ------------------------------------------------------------------------------------------------ |
 | PLAYER_READY             | The player is ready to start sending events.                                                     |
-| DOWNLOAD                 | Downloading data.                                                                                |
 | CONTENT_REQUEST          | Content video has been requested.                                                                |
 | CONTENT_START            | Content video started (first frame shown).                                                       |
 | CONTENT_END              | Content video ended.                                                                             |
 | CONTENT_PAUSE            | Content video paused.                                                                            |
 | CONTENT_RESUME           | Content video resumed.                                                                           |
-| CONTENT_SEEK_START       | Content video seek started.                                                                      |
-| CONTENT_SEEK_END         | Content video seek ended.                                                                        |
 | CONTENT_BUFFER_START     | Content video buffering started.                                                                 |
 | CONTENT_BUFFER_END       | Content video buffering ended.                                                                   |
 | CONTENT_HEARTBEAT        | Content video heartbeat, an event that happens once every 30 seconds while the video is playing. |
-| CONTENT_RENDITION_CHANGE | Content video stream quality changed.                                                            |
 
 ### VideoAdAction
 
@@ -193,28 +176,14 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | viewId                   | Trackers will generate unique IDs for every new video iteration.                                                                                   |
 | adId                     | The ID of the video.                                                                                                                               |
 | adTitle                  | The title of the video.                                                                                                                            |
-| adBitrate                | Bitrate (in bits) of the video.                                                                                                                    |
-| adRenditionName          | Name of the rendition (e.g., 1080p).                                                                                                               |
-| adRenditionBitrate       | Target Bitrate of the rendition.                                                                                                                   |
-| adRenditionHeight        | Rendition actual Height (before re-scaling).                                                                                                       |
-| adRenditionWidth         | Rendition actual Width (before re-scaling).                                                                                                        |
 | adDuration               | Duration of the video, in ms.                                                                                                                      |
 | adPlayhead               | Playhead (currentTime) of the video, in ms.                                                                                                        |
-| adLanguage               | Language of the ad video. We recommend using locale notation, e.g., en_US.                                                                         |
 | adSrc                    | URL of the resource being played.                                                                                                                  |
-| adCdn                    | The CDN serving the content.                                                                                                                       |
 | adIsMuted                | True if the video is currently muted.                                                                                                              |
-| adFps                    | Current FPS (Frames per second).                                                                                                                   |
 | adQuartile               | Quartile of the ad. 0 before first, 1 after first quartile, 2 after midpoint, 3 after third quartile, 4 when completed.                            |
 | adPosition               | The position of the ad.                                                                                                                            |
 | adCreativeId             | The creative ID of the ad.                                                                                                                         |
 | adPartner                | The ad partner, e.g., ima, freewheel.                                                                                                              |
-| isBackgroundEvent        | If the player is hidden by another window.                                                                                                         |
-| bufferType               | When buffer starts, i.e., initial, seek, pause & connection.                                                                                       |
-| asn                      | Autonomous System Number: a unique number identifying a group of IP networks that serves the content to the end user.                              |
-| asnLatitude              | The latitude of the geographic center of the postal code where the Autonomous System Network is registered. This is not the end user's latitude.   |
-| asnLongitude             | The longitude of the geographic center of the postal code where the Autonomous System Network is registered. This is not the end user's longitude. |
-| asnOrganization          | The organization that owns the Autonomous System Number. Often an ISP, sometimes a private company or institution.                                 |
 | timestamp                | The time (date, hour, minute, second) at which the interaction occurred.                                                                           |
 | elapsedTime              | Time that has passed since the last event.                                                                                                         |
 | instrumentation.provider | Player/agent name.                                                                                                                                 |
@@ -230,16 +199,9 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | AD_END              | Ad video ended.                                                                             |
 | AD_PAUSE            | Ad video paused.                                                                            |
 | AD_RESUME           | Ad video resumed.                                                                           |
-| AD_SEEK_START       | Ad video seek started.                                                                      |
-| AD_SEEK_END         | Ad video seek ended.                                                                        |
-| AD_BUFFER_START     | Ad video buffering started.                                                                 |
-| AD_BUFFER_END       | Ad video buffering ended.                                                                   |
-| AD_HEARTBEAT        | Ad video heartbeat, an event that happens once every 30 seconds while the video is playing. |
-| AD_RENDITION_CHANGE | Ad video stream quality changed.                                                            |
 | AD_BREAK_START      | Ad break (a block of ads) started.                                                          |
 | AD_BREAK_END        | Ad break ended.                                                                             |
 | AD_QUARTILE         | Ad quartile happened.                                                                       |
-| AD_CLICK            | Ad has been clicked.                                                                        |
 
 ### VideoErrorAction
 
@@ -261,13 +223,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | errorName                | Name of the error.                                                                                                                                 |
 | errorCode                | Error code if it's known.                                                                                                                          |
 | backTrace                | Stack trace of the error.                                                                                                                          |
-| isBackgroundEvent        | If the player is hidden by another window.                                                                                                         |
 | contentSrc               | Content source URL.                                                                                                                                |
-| contentCdn               | Content CDN URL.                                                                                                                                   |
-| asn                      | Autonomous System Number: a unique number identifying a group of IP networks that serves the content to the end user.                              |
-| asnLatitude              | The latitude of the geographic center of the postal code where the Autonomous System Network is registered. This is not the end user's latitude.   |
-| asnLongitude             | The longitude of the geographic center of the postal code where the Autonomous System Network is registered. This is not the end user's longitude. |
-| asnOrganization          | The organization that owns the Autonomous System Number. Often an ISP, sometimes a private company or institution.                                 |
 | elapsedTime              | Time that has passed since the last event.                                                                                                         |
 | timestamp                | The time (date, hour, minute, second) at which the interaction occurred.                                                                           |
 | instrumentation.provider | Player/agent name.                                                                                                                                 |
@@ -279,8 +235,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | Action Name   | Definition           |
 | ------------- | -------------------- |
 | AD_ERROR      | Ad video error.      |
-| ERROR         | An error happened.   |
-| CRASH         | App crash happened.  |
+| HTTP_ERROR    | An HTTP error.       |
 | CONTENT_ERROR | Content video error. |
 
 ### VideoCustomAction
@@ -300,11 +255,6 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | viewId                   | Trackers will generate unique IDs for every new video iteration.                                                                                   |
 | contentId                | The ID of the video.                                                                                                                               |
 | contentTitle             | The title of the video.                                                                                                                            |
-| isBackgroundEvent        | If the player is hidden by another window.                                                                                                         |
-| asn                      | Autonomous System Number: a unique number identifying a group of IP networks that serves the content to the end user.                              |
-| asnLatitude              | The latitude of the geographic center of the postal code where the Autonomous System Network is registered. This is not the end user's latitude.   |
-| asnLongitude             | The longitude of the geographic center of the postal code where the Autonomous System Network is registered. This is not the end user's longitude. |
-| asnOrganization          | The organization that owns the Autonomous System Number. Often an ISP, sometimes a private company or institution.                                 |
 | timestamp                | The time (date, hour, minute, second) at which the interaction occurred.                                                                           |
 | instrumentation.provider | Player/agent name.                                                                                                                                 |
 | instrumentation.name     | Name of the instrumentation collecting the data.                                                                                                   |
