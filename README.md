@@ -803,6 +803,25 @@ Return:
 Example:
 	nrSendSummaryMetric(m.nr, "test", 2000, 5, 1000, 100, 200)
 ```
+
+**setUserId**
+
+```
+setUserId(userId as String) as Void
+
+Description:
+	Sets userId.
+
+Arguments:
+	userId: attribute
+	
+Return:
+	Nothing.
+		
+Example:
+	setUserId("TEST_USER")
+```
+
 <a name="data-model"></a>
 ### Data Model
 To understand which actions and attributes are captured and emitted by the Dash Player under different event types, see [DataModel.md](./DATAMODEL.md).

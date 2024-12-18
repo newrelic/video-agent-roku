@@ -93,6 +93,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | transferIdentity | HTTP request identificator. |
 | sceneName | Identifier of the scene. |
 | timeSinceHttpRequest | Time since `HTTP_REQUEST` in milliseconds. |
+| enduser.id | User ID. |
 
 
 
@@ -144,6 +145,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | instrumentation.provider | Player/agent name.                                                                                                                                 |
 | instrumentation.name     | Name of the instrumentation collecting the data.                                                                                                   |
 | instrumentation.version  | Agent’s version.                                                                                                                                   |
+| enduser.id | User ID. |
 
 #### List of possible Video Actions
 
@@ -189,6 +191,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | instrumentation.provider | Player/agent name.                                                                                                                                 |
 | instrumentation.name     | Name of the instrumentation collecting the data.                                                                                                   |
 | instrumentation.version  | Agent’s version.                                                                                                                                   |
+| enduser.id | User ID. |
 
 #### List of possible Video Ad Actions
 
@@ -229,6 +232,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | instrumentation.provider | Player/agent name.                                                                                                                                 |
 | instrumentation.name     | Name of the instrumentation collecting the data.                                                                                                   |
 | instrumentation.version  | Agent’s version.                                                                                                                                   |
+| enduser.id | User ID. |
 
 #### List of possible Video Error Actions
 
@@ -259,3 +263,4 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | instrumentation.provider | Player/agent name.                                                                                                                                 |
 | instrumentation.name     | Name of the instrumentation collecting the data.                                                                                                   |
 | instrumentation.version  | Agent’s version.                                                                                                                                   |
+| enduser.id | User ID. |
