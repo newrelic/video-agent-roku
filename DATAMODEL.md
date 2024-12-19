@@ -8,6 +8,7 @@ This section defines the key terms used in the context of New Relic Media monito
 
 ## Event Types
 
+- **RokuSystem**: Events related to system tracking.
 - **videoAction**: Events triggered by general video interactions, such as starting, pausing, or seeking.
 - **videoAdAction**: Events related to ad playback, such as starting, completing, or skipping an ad.
 - **videoErrorAction**: Events triggered by errors encountered during video or ad playback.
@@ -264,3 +265,26 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | instrumentation.name     | Name of the instrumentation collecting the data.                                                                                                   |
 | instrumentation.version  | Agent’s version.                                                                                                                                   |
 | enduser.id | User ID. |
+
+#### The following attributes are also a part of VideoAction
+
+| Attribute Name   | Definition           |
+| ------------- | -------------------- |
+| contentMeasuredBitrate      | Video Measured Bitrate.      |
+| contentSegmentBitrate      | In case of segmented video sources (HLS, DASH), the current segment’s bitrate.    |
+| sessionDuration      | Time since the session started..      |
+| trackerName      | Always “rokutracker”.     |
+| trackerVersion      | Agent version.     |
+| numberOfVideos      | Number of videos played.     |
+| numberOfErrors      |  Number of errors happened. |
+| timeSinceLastHeartbeat      | Time since last heartbeat, in milliseconds.     |
+| timeSinceRequested      | Time since the video requested, in milliseconds.      |
+| timeSinceStarted | Time since the video started, in milliseconds. |
+| timeSinceTrackerReady | Time since `PLAYER_READY`, in milliseconds. |
+| totalPlaytime | Total time the user spend seeing the video. |
+| playtimeSinceLastEvent | Total time the user spend seeing the video since last video event. |
+| timeToStartStreaming | The time in milliseconds from playback being started until the video actually began playing. |
+| isPlaylist | Content is a playlist. Boolean. |
+| videoFormat | Video format, a mime type. |
+| timeSinceBufferBegin | Time since video last video buffering began, in milliseconds. |
+| timeSincePaused | Time since the video was paused, in milliseconds. |
