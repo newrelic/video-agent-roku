@@ -1152,7 +1152,7 @@ function nrAddVideoAttributes(ev as Object) as Object
     ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
     ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
     ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
-    ev.AddReplace("ContentIsfullscreen","true")
+    ev.AddReplace("contentIsFullscreen","true")
     streamUrl = nrGenerateStreamUrl()
     ev.AddReplace("contentSrc", streamUrl)
     'Generate Id from Src (hashing it)
