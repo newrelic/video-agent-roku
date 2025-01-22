@@ -3,6 +3,8 @@
 sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
+    'Uncomment the following line to set a user ID
+    'setUserId("TEST_USER")
 end sub
 
 function nrRefUpdated()
@@ -45,6 +47,11 @@ function updateCustomAttr() as Void
     'Set a list of custom attributes to CONTENT_HEARTBEAT actions
     dict = {"key0":"val0", "key1":"val1"}
     nrSetCustomAttributeList(m.nr, dict, "CONTENT_HEARTBEAT")
+    nrSetCustomAttribute(m.nr,"enduser.id", m.userId)
+end function
+
+function setUserId(userId as String) as Void
+    m.userId = userId
 end function
 
 function setupSingleVideo() as void
