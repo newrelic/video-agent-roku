@@ -174,6 +174,7 @@ function nrConnect(appToken as string, body as object)
     jsonRequestBody = FormatJSON(body)
     urlReq = CreateObject("roUrlTransfer")    
     rport = CreateObject("roMessagePort")
+    ' Remove staging after testing is done
     urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)

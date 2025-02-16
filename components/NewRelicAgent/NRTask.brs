@@ -144,6 +144,7 @@ function nrData(videoSamples)
     jsonRequestBody = FormatJSON(body)
     urlReq = CreateObject("roUrlTransfer")    
     rport = CreateObject("roMessagePort")
+    ' Remove staging after testing is done
     urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v3/data")
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
