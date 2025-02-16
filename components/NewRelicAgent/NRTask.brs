@@ -83,7 +83,30 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
     if m.nr <> invalid
         samples = m.nr.callFunc("nrExtractAllSamples", sampleType)
         if samples.Count() > 0
-            res = nrPushSamples(samples, endpoint, sampleType)
+            if(sampleType = "event")
+                rokuSystemSamples = []
+                videoSamples = []
+                    for i = 0 to samples.count() - 1
+                         item = samples[i]
+                        if type(item) = "roAssociativeArray"
+                            if item["eventType"] = "RokuSystem"
+                                rokuSystemSamples.push(item)
+                            else    
+                                print "Video Event"; item
+                                videoSamples.push(item)
+                            end if
+                        end if
+                    end for
+                    print "FOR LOOP ENDED";videoSamples.count()
+                    if rokuSystemSamples.count() > 0
+                        res = nrPushSamples(rokuSystemSamples, endpoint, sampleType)
+                    end if
+                     if videoSamples.count() > 0
+                        print "VIDEO SAMPLES OUTSIDE"
+                       nres = nrData(videoSamples)
+                    end if
+                else 
+                    res = nrPushSamples(samples, endpoint, sampleType)
             if isStatusErr(res)
                 nrLog("-- nrSampleProcessor (" + sampleType + "): FAILED with code " + Str(res) + ", retry later --")
                 if res = 429 or res = 408 or res = 503
@@ -102,9 +125,49 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
             else
                 m.nr.callFunc("nrReqOk", sampleType)
             end if
+            end if
         end if
     else
         print("-- nrSampleProcessor: m.nr is invalid!! --")
+    end if
+end function
+
+function getV3ReqBody(dataToken,videoSamples,appInfo)
+    ' To test if events are going or not you can write your own custom event name here
+    '  videoSamples.push({ "timeSinceLoad": 3.4510000000000001, "eventType": "FinalTest", "timestamp": 1680034704303})
+return [dataToken,appInfo,0,[],[],[],[],[],{},videoSamples]
+end function
+
+function nrData(videoSamples)
+    
+    body = getV3ReqBody(m.top.dataToken,videoSamples, m.top.appInfo)
+    jsonRequestBody = FormatJSON(body)
+    urlReq = CreateObject("roUrlTransfer")    
+    rport = CreateObject("roMessagePort")
+    urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v3/data")
+    urlReq.RetainBodyOnError(true)
+    urlReq.EnablePeerVerification(false)
+    urlReq.EnableHostVerification(false)
+    urlReq.EnableEncodings(true)
+   
+    urlReq.AddHeader("CONTENT-TYPE", "application/json")
+    urlReq.AddHeader("X-NewRelic-OS-Name","RokuOS")
+    urlReq.AddHeader("X-App-License-Key", m.top.appToken)
+    urlReq.AddHeader("X-NewRelic-App-Version","1.0")
+    urlReq.AddHeader("X-NewRelic-ID", "VwEFU1NaABAGVFBRAQUHU1w=")
+    urlReq.SetMessagePort(rport)
+
+    urlReq.AsyncPostFromString(jsonRequestBody)
+    
+   msg = wait(10000, rport)
+    if type(msg) = "roUrlEvent" then
+        print "Response Code: "; msg.GetResponseCode()
+        return msg.GetResponseCode()
+    else
+        'Timeout, cancel transfer and return error code
+        nrLog("-- nrData: timeout, cancel request and return --")
+        urlReq.AsyncCancel()
+        return 0
     end if
 end function
 

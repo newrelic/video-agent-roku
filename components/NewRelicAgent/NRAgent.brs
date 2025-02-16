@@ -24,10 +24,15 @@ end sub
 ' Public Wrapped Functions '
 '=========================='
 
-function NewRelicInit(account as String, apikey as String, region as String) as Void
+function NewRelicInit(account as String, apikey as String, region as String, appToken = "" as String) as Void
     'Session
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
+    m.nrMobileAppToken = appToken
+    appConfig = nrCreateAppInfo()
+    m.nrDeviceInfo = appConfig.deviceInfo
+    dataToken = nrConnect(appToken, appConfig.appInfo)
+    m.dataToken = dataToken
     m.nrRegion = region
     m.nrSessionId = nrGenerateId()
     'Reservoir sampling for events
@@ -38,7 +43,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrEventArrayDeltaK = 40
     m.nrEventArrayK = m.nrEventArrayNormalK
     'Harvest cycles for events
-    m.nrEventHarvestTimeNormal = 60
+    m.nrEventHarvestTimeNormal = 5
     m.nrEventHarvestTimeMax = 600
     m.nrEventHarvestTimeDelta = 60
     'Reservoir sampling for logs
@@ -100,6 +105,9 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     'Create and configure tasks (events)
     m.bgTaskEvents = m.top.findNode("NRTaskEvents")
     m.bgTaskEvents.setField("apiKey", m.nrInsightsApiKey)
+    m.bgTaskEvents.setField("dataToken", m.dataToken)
+    m.bgTaskEvents.setField("appToken", m.nrMobileAppToken)
+    m.bgTaskEvents.setField("appInfo", m.nrDeviceInfo)
     m.eventApiUrl = box(nrEventApiUrl())
     m.bgTaskEvents.setField("eventApiUrl", m.eventApiUrl)
     m.bgTaskEvents.sampleType = "event"
@@ -159,6 +167,40 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     end if
     
     nrLog(["NewRelicInit, m = ", m])
+end function
+
+
+function nrConnect(appToken as string, body as object)
+    jsonRequestBody = FormatJSON(body)
+    urlReq = CreateObject("roUrlTransfer")    
+    rport = CreateObject("roMessagePort")
+    urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
+    urlReq.RetainBodyOnError(true)
+    urlReq.EnablePeerVerification(false)
+    urlReq.EnableHostVerification(false)
+    urlReq.EnableEncodings(true)
+    urlReq.AddHeader("CONTENT-TYPE", "application/json")
+    urlReq.AddHeader("X-App-License-Key", appToken)
+    urlReq.AddHeader("X-NewRelic-Connect-Time", nrTimestampFromDateTime(CreateObject("roDateTime")).toStr())
+    urlReq.SetMessagePort(rport)
+    urlReq.AsyncPostFromString(jsonRequestBody)
+    
+    msg = wait(10000, rport)
+
+    if type(msg) = "roUrlEvent" then
+        if msg.GetResponseCode() = 200 then 
+                responseString = msg.GetString()
+                response = ParseJson(responseString)
+                dataToken = response.data_token
+            else
+                print "HTTP Error: "; msg.GetResponseCode()
+                dataToken = invalid
+        end if
+        else
+            print "No valid roUrlEvent message received."
+            dataToken = invalid
+    end if
+    return dataToken
 end function
 
 function NewRelicVideoStart(videoObject as Object) as Void
@@ -409,10 +451,10 @@ function nrSetHarvestTime(seconds as Integer) as Void
 end function
 
 function nrSetHarvestTimeEvents(seconds as Integer) as Void
-    if seconds < 60 then seconds = 60
-    m.nrEventHarvestTimeNormal = seconds
-    m.nrHarvestTimerEvents.duration = seconds
-    nrLog(["Harvest time events = ", seconds])
+    ' if seconds < 60 then seconds = 60
+    m.nrEventHarvestTimeNormal = 5
+    m.nrHarvestTimerEvents.duration = 5
+    nrLog(["Harvest time events = ", 5])
 end function
 
 function nrSetHarvestTimeLogs(seconds as Integer) as Void
@@ -731,6 +773,50 @@ end function
 '=================='
 ' System functions '
 '=================='
+
+function nrCreateAppInfo() as Object
+    app = CreateObject("roAppInfo")
+    dev = CreateObject("roDeviceInfo")
+
+    APPLICATION_NAME = app.GetTitle()
+    APPLICATION_VERSION = app.GetValue("major_version") + "." + app.GetValue("minor_version")
+    APPLICATION_PACKAGE = "com.example." + APPLICATION_NAME
+    OS_NAME = "Android"
+    OS_VERSION = nrGetOSVersion(dev).version
+    MANUFACTURE_AND_MODEL = dev.GetModel()
+    AGENT_NAME = "RokuAgent"
+    AGENT_VERSION = m.nrAgentVersion
+    DEVICE_ID = dev.GetChannelClientId()
+    DEPRECATED_COUNTRY_CODE = ""
+    DEPRECATED_REGION_CODE = ""
+    MANUFACTURER = "Roku"
+    MISCELLANEOUS_PARAMETERS_JSON = {
+        "platform" : "Native",
+        "platformVersion" : OS_VERSION
+    }
+
+    appInfo = [
+        [
+            APPLICATION_NAME,
+            APPLICATION_VERSION,
+            APPLICATION_PACKAGE
+        ],
+        [
+            OS_NAME,
+            OS_VERSION,
+            MANUFACTURE_AND_MODEL,
+            AGENT_NAME,
+            AGENT_VERSION,
+            DEVICE_ID,
+            DEPRECATED_COUNTRY_CODE,
+            DEPRECATED_REGION_CODE,
+            MANUFACTURER,
+            MISCELLANEOUS_PARAMETERS_JSON
+        ]
+    ]
+    
+    return {"appInfo" : appInfo, "deviceInfo":appInfo[1]}
+end function
 
 function nrCreateEvent(eventType as String, actionName as String) as Object
     ev = CreateObject("roAssociativeArray")

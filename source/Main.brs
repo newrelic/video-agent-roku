@@ -31,7 +31,7 @@ sub Main(aa as Object)
     screen.show()
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "US", true)
+    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "AA52435c8cefad36341ac68a923a3e02472fcf3d38-NRMA" , "US", true)
 
     'Set custom harvest time
     nrSetHarvestTime(m.nr, 60)
