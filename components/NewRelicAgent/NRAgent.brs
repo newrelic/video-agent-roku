@@ -745,6 +745,7 @@ end function
 
 function nrAddBaseAttributes(ev as Object) as Object
     'Add default custom attributes for instrumentation'
+    ev.AddReplace("src","Roku")
     ev.AddReplace("instrumentation.provider", "media")
     ev.AddReplace("instrumentation.name", "roku")
     ev.AddReplace("instrumentation.version", m.nrAgentVersion)
@@ -942,9 +943,9 @@ end function
 
 function nrEventApiUrl() as String
     if m.nrRegion = "US"
-        return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
+        return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "EU"
-        return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
+        return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "TEST"
         'NOTE: set address hosting the test server
         return m.testServer + "/event"
@@ -1149,6 +1150,12 @@ function nrSendBackupVideoEnd() as Void
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
+    print "nrVideoObject: "; m.nrVideoObject
+    ev.AddReplace("errorName",m.nrVideoObject.errorMsg)
+    ev.AddReplace("errorCode",m.nrVideoObject.errorCode)
+    if m.nrVideoObject.errorInfo <> invalid
+        ev.AddReplace("backtrace",m.nrVideoObject.errorInfo.source)
+    end if
     ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
     ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
     ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
