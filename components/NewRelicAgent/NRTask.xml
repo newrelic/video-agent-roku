@@ -17,6 +17,9 @@
 		<field id="metricApiUrl" type="string" onChange="onConfigUpdate" value=""/>
 		<field id="apiKey" type="string" value=""/>
 		<field id="sampleType" type="string" value=""/>
+		<field id="appToken" type="string" value=""/>
+		<field id="dataToken" type="roArray" value="[]"/>
+		<field id="appInfo" type="roArray" value="[]"/>
     </interface>
 
 	<script type="text/brightscript" uri="NRTask.brs"/>
