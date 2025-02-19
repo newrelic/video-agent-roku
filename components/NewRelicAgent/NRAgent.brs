@@ -218,6 +218,11 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrTimeSinceRequested = 0.0
     m.nrTimeSinceStarted = 0.0
     m.nrTimeSinceTrackerReady = 0.0
+    m.nrElapsedTime = 0.0
+    m.nrHeartbeatElapsedTime = 0.0
+    m.nrLastPlayTimestamp = 0.0
+    m.nrIsPlaying = false
+
     'Playtimes
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -1573,6 +1578,11 @@ function nrStateObserver() as Void
 end function
 
 function nrStateTransitionPlaying() as Void
+    if m.nrLastVideoState = "paused" or m.nrLastVideoState = "buffering"
+        ' Resume playtime tracking
+        m.nrIsPlaying = true
+        m.nrLastPlayTimestamp = CreateObject("roDateTime").AsSeconds()
+    end if
     nrLog("nrStateTransitionPlaying")
     if m.nrLastVideoState = "paused"
         nrSendResume()
@@ -1596,6 +1606,10 @@ end function
 function nrStateTransitionPaused() as Void
     nrLog("nrStateTransitionPaused")
     if m.nrLastVideoState = "playing"
+        currentTime = CreateObject("roDateTime").AsSeconds()
+        m.nrElapsedTime = m.nrElapsedTime + (currentTime - m.nrLastPlayTimestamp)
+        m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime + (currentTime - m.nrLastPlayTimestamp)
+        m.nrIsPlaying = false
         nrSendPause()
     end if
 end function
@@ -1662,9 +1676,21 @@ function getLicenseStatusAttributes(licenseStatus as Object) as object
 end function
 
 function nrHeartbeatHandler() as Void
-    'Only send while it is playing (state is not "none" or "finished")
+    ' Only send while it is playing (state is not "none" or "finished")
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
-        nrSendVideoEvent("CONTENT_HEARTBEAT")
+        if m.nrIsPlaying
+            currentTime = CreateObject("roDateTime").AsSeconds()
+            m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime + (currentTime - m.nrLastPlayTimestamp)
+            m.nrLastPlayTimestamp = currentTime
+        end if
+
+        ' Send content heartbeat with elapsed time for the last period
+        m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime * 1000
+        nrSendVideoEvent("CONTENT_HEARTBEAT", {"elapsedTime": m.nrHeartbeatElapsedTime})
+
+        ' Reset the heartbeatElapsedTime after sending the heartbeat
+        m.nrHeartbeatElapsedTime = 0.0
+
         m.nrTimeSinceLastHeartbeat = m.nrTimer.TotalMilliseconds()
         if m.nrPlaytimeSinceLastEvent <> invalid
             m.nrPlaytimeSinceLastEvent.Mark()
