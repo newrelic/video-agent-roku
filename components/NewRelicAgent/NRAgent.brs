@@ -17,7 +17,6 @@ sub init()
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2023 New Relic Inc. All Rights Reserved."
     print "************************************************************"
-    InitializeLastEventTimestamps()
 end sub
 
 '=========================='
@@ -562,7 +561,7 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
     if message <> invalid and message <> "" then lg["message"] = message
     if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
     if fields <> invalid then lg.Append(fields)
-    lg["timestamp"] = FormatJson(nrTimestamp())
+    lg["timestamp"] = nrTimestamp()
     lg["newRelicAgentSource"] = "roku"
 
     nrLog(["RECORD NEW LOG = ", lg])
@@ -824,7 +823,7 @@ function nrCreateEvent(eventType as String, actionName as String) as Object
     if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
     if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
     
-    ev["timestamp"] = FormatJson(nrTimestamp())
+    ev["timestamp"] = nrTimestamp()
     ev = nrAddBaseAttributes(ev)
     
     return ev
@@ -905,9 +904,6 @@ function nrAddCustomAttributes(ev as Object) as Object
     actionName = ev["actionName"]
     actionCustomAttr = m.nrCustomAttributes[actionName]
     if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
-    ' Calculate and add elapsed time for the action
-    elapsedTime = nrCalculateElapsedTime(actionName)
-    ev.AddReplace("elapsedTime", elapsedTime)
     return ev
 end function
 
@@ -924,18 +920,6 @@ function nrAddCommonHTTPAttr(info as Object) as Object
     return attr
 end function
 
-function nrCalculateElapsedTime(actionName as String) as Integer
-    currentTime = CreateObject("roDateTime")
-    currentTimestamp = currentTime.AsSeconds()
-    if m.lastEventTimestamps[actionName] <> invalid
-        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps[actionName]) * 1000
-        elapsedTime = timeSinceLastEvent
-    else
-        elapsedTime=0
-    end if
-    m.lastEventTimestamps[actionName] = currentTimestamp
-    return elapsedTime
-end function
 
 function nrCalculateBufferType(actionName as String) as String
     bufferType = "connection" ' Default buffer type
@@ -1065,30 +1049,6 @@ end function
 ' Video functions '
 '================='
 
-sub InitializeLastEventTimestamps()
-    m.lastEventTimestamps = {
-        "CONTENT_REQUEST": invalid,
-        "CONTENT_START": invalid,
-        "CONTENT_END": invalid,
-        "CONTENT_PAUSE": invalid,
-        "CONTENT_RESUME": invalid,
-        "CONTENT_BUFFER_START": invalid,
-        "CONTENT_BUFFER_END": invalid,
-        "HTTP_ERROR": invalid,
-        "CONTENT_ERROR": invalid,
-        "AD_ERROR": invalid,
-        "AD_BREAK_START": invalid,
-        "AD_BREAK_END": invalid,
-        "AD_REQUEST": invalid,
-        "AD_START": invalid,
-        "AD_END": invalid,
-        "AD_PAUSE": invalid,
-        "AD_RESUME": invalid,
-        "AD_QUARTILE": invalid,
-        "AD_SKIP": invalid
-    }
-end sub
-
 function nrSendPlayerReady() as Void
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent("PLAYER_READY")
@@ -1190,9 +1150,9 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["actionName"] = actionName
     '- Set current timestamp
     backupTimestamp = ev["timestamp"]
-    ev["timestamp"] = FormatJson(nrTimestamp())
+    ev["timestamp"] = nrTimestamp()
     '- Recalculate playhead, adding timestamp offset
-    lint& = ParseJson(ev["timestamp"]) - ParseJson(backupTimestamp)
+    lint& = ev["timestamp"] - backupTimestamp
     offsetTime = lint&
     nrLog(["Offset time = ", offsetTime])
     if ev["contentPlayhead"] <> invalid then ev["contentPlayhead"] = ev["contentPlayhead"] + offsetTime
