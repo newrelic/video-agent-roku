@@ -31,7 +31,7 @@ sub Main(aa as Object)
     screen.show()
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "US", true)
+    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_TOKEN" , "US", true)
 
     'Set custom harvest time
     nrSetHarvestTime(m.nr, 60)
@@ -40,7 +40,7 @@ sub Main(aa as Object)
     'Send APP_STARTED event
     nrAppStarted(m.nr, aa)
     'Send a custom system
-    nrSendSystemEvent(m.nr, "TEST_ACTION")
+    nrSendSystemEvent(m.nr, "RokuSystem","TEST_ACTION")
     
     'Define multiple domain substitutions
     nrAddDomainSubstitution(m.nr, "^www\.google\.com$", "Google COM")
