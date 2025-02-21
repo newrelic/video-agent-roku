@@ -62,24 +62,24 @@ end function
 
 function nrEventProcessor() as Void
     nrLog("-- nrEventProcessor at URL " + m.eventApiUrl)
-    nrSampleProcessor("event", m.eventApiUrl)
+    nrSampleProcessor("event", m.eventApiUrl,m.appName)
 end function
 
 function nrLogProcessor() as Void
     nrLog("-- nrLogProcessor at URL " + m.logApiUrl)
-    nrSampleProcessor("log", m.logApiUrl)
+    nrSampleProcessor("log", m.logApiUrl,m.appName)
 end function
 
 function nrMetricProcessor() as Void
     nrLog("-- nrMetricProcessor at URL " + m.metricApiUrl)
-    nrSampleProcessor("metric", m.metricApiUrl)
+    nrSampleProcessor("metric", m.metricApiUrl,m.appName)
 end function
 
 function isStatusErr(res) as boolean
     return res >= 400
 end function
 
-function nrSampleProcessor(sampleType as String, endpoint as String) as Void
+function nrSampleProcessor(sampleType as String, endpoint as String,appName as String) as Void
     if m.nr <> invalid
         samples = m.nr.callFunc("nrExtractAllSamples", sampleType)
         if samples.Count() > 0
@@ -90,6 +90,8 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
                          item = samples[i]
                         if type(item) = "roAssociativeArray"
                             if item["eventType"] = "RokuSystem"
+                                item["appId"]= m.top.dataToken[0]
+                                item["appName"]= appName
                                 rokuSystemSamples.push(item)
                             else    
                                 print "Video Event"; item
@@ -103,7 +105,7 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
                     end if
                      if videoSamples.count() > 0
                         print "VIDEO SAMPLES OUTSIDE"
-                       nres = nrData(videoSamples)
+                       res = nrData(videoSamples)
                     end if
                 else 
                     res = nrPushSamples(samples, endpoint, sampleType)
@@ -178,6 +180,7 @@ function nrTaskMain() as Void
         m.nr = m.top.getParent()
         m.apiKey = m.top.apiKey
         m.sampleType = m.top.sampleType
+        m.appName = m.top.appName
         if m.eventApiUrl = "" then m.eventApiUrl = m.top.eventApiUrl
         if m.logApiUrl = "" then m.logApiUrl = m.top.logApiUrl
         if m.metricApiUrl = "" then m.metricApiUrl = m.top.metricApiUrl
