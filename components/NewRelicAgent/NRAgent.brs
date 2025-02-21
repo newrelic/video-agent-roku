@@ -24,10 +24,16 @@ end sub
 ' Public Wrapped Functions '
 '=========================='
 
-function NewRelicInit(account as String, apikey as String, region as String) as Void
+function NewRelicInit(account as String, apikey as String,appName as String, region as String, appToken = "" as String) as Void
     'Session
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
+    m.nrMobileAppToken = appToken
+    appConfig = nrCreateAppInfo()
+    m.nrDeviceInfo = appConfig.deviceInfo
+    dataToken = nrConnect(appToken, appConfig.appInfo)
+    m.dataToken = dataToken
+    m.appName = appName
     m.nrRegion = region
     m.nrSessionId = nrGenerateId()
     'Reservoir sampling for events
@@ -38,7 +44,7 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.nrEventArrayDeltaK = 40
     m.nrEventArrayK = m.nrEventArrayNormalK
     'Harvest cycles for events
-    m.nrEventHarvestTimeNormal = 60
+    m.nrEventHarvestTimeNormal = 5
     m.nrEventHarvestTimeMax = 600
     m.nrEventHarvestTimeDelta = 60
     'Reservoir sampling for logs
@@ -100,6 +106,10 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     'Create and configure tasks (events)
     m.bgTaskEvents = m.top.findNode("NRTaskEvents")
     m.bgTaskEvents.setField("apiKey", m.nrInsightsApiKey)
+    m.bgTaskEvents.setField("dataToken", m.dataToken)
+    m.bgTaskEvents.setField("appName", m.appName)
+    m.bgTaskEvents.setField("appToken", m.nrMobileAppToken)
+    m.bgTaskEvents.setField("appInfo", m.nrDeviceInfo)
     m.eventApiUrl = box(nrEventApiUrl())
     m.bgTaskEvents.setField("eventApiUrl", m.eventApiUrl)
     m.bgTaskEvents.sampleType = "event"
@@ -107,12 +117,14 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.bgTaskLogs = m.top.findNode("NRTaskLogs")
     m.bgTaskLogs.setField("apiKey", m.nrInsightsApiKey)
     m.logApiUrl = box(nrLogApiUrl())
+    m.bgTaskEvents.setField("appName", m.appName)
     m.bgTaskLogs.setField("logApiUrl", m.logApiUrl)
     m.bgTaskLogs.sampleType = "log"
     'Create and configure tasks (metrics)
     m.bgTaskMetrics = m.top.findNode("NRTaskMetrics")
     m.bgTaskMetrics.setField("apiKey", m.nrInsightsApiKey)
     m.metricApiUrl = box(nrMetricApiUrl())
+    m.bgTaskEvents.setField("appName", m.appName)
     m.bgTaskMetrics.setField("metricApiUrl", m.metricApiUrl)
     m.bgTaskMetrics.sampleType = "metric"
 
@@ -161,6 +173,41 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     nrLog(["NewRelicInit, m = ", m])
 end function
 
+
+function nrConnect(appToken as string, body as object)
+    jsonRequestBody = FormatJSON(body)
+    urlReq = CreateObject("roUrlTransfer")    
+    rport = CreateObject("roMessagePort")
+    ' Remove staging after testing is done
+    urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
+    urlReq.RetainBodyOnError(true)
+    urlReq.EnablePeerVerification(false)
+    urlReq.EnableHostVerification(false)
+    urlReq.EnableEncodings(true)
+    urlReq.AddHeader("CONTENT-TYPE", "application/json")
+    urlReq.AddHeader("X-App-License-Key", appToken)
+    urlReq.AddHeader("X-NewRelic-Connect-Time", nrTimestampFromDateTime(CreateObject("roDateTime")).toStr())
+    urlReq.SetMessagePort(rport)
+    urlReq.AsyncPostFromString(jsonRequestBody)
+    
+    msg = wait(10000, rport)
+
+    if type(msg) = "roUrlEvent" then
+        if msg.GetResponseCode() = 200 then 
+                responseString = msg.GetString()
+                response = ParseJson(responseString)
+                dataToken = response.data_token
+            else
+                print "HTTP Error: "; msg.GetResponseCode()
+                dataToken = invalid
+        end if
+        else
+            print "No valid roUrlEvent message received."
+            dataToken = invalid
+    end if
+    return dataToken
+end function
+
 function NewRelicVideoStart(videoObject as Object) as Void
     nrLog("NewRelicVideoStart")
 
@@ -176,6 +223,11 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrTimeSinceRequested = 0.0
     m.nrTimeSinceStarted = 0.0
     m.nrTimeSinceTrackerReady = 0.0
+    m.nrElapsedTime = 0.0
+    m.nrHeartbeatElapsedTime = 0.0
+    m.nrLastPlayTimestamp = 0.0
+    m.nrIsPlaying = false
+
     'Playtimes
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -409,10 +461,10 @@ function nrSetHarvestTime(seconds as Integer) as Void
 end function
 
 function nrSetHarvestTimeEvents(seconds as Integer) as Void
-    if seconds < 60 then seconds = 60
-    m.nrEventHarvestTimeNormal = seconds
-    m.nrHarvestTimerEvents.duration = seconds
-    nrLog(["Harvest time events = ", seconds])
+    ' if seconds < 60 then seconds = 60
+    m.nrEventHarvestTimeNormal = 5
+    m.nrHarvestTimerEvents.duration = 5
+    nrLog(["Harvest time events = ", 5])
 end function
 
 function nrSetHarvestTimeLogs(seconds as Integer) as Void
@@ -519,7 +571,7 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
     if message <> invalid and message <> "" then lg["message"] = message
     if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
     if fields <> invalid then lg.Append(fields)
-    lg["timestamp"] = FormatJson(nrTimestamp())
+    lg["timestamp"] = nrTimestamp()
     lg["newRelicAgentSource"] = "roku"
 
     nrLog(["RECORD NEW LOG = ", lg])
@@ -732,12 +784,56 @@ end function
 ' System functions '
 '=================='
 
+function nrCreateAppInfo() as Object
+    app = CreateObject("roAppInfo")
+    dev = CreateObject("roDeviceInfo")
+
+    APPLICATION_NAME = app.GetTitle()
+    APPLICATION_VERSION = app.GetValue("major_version") + "." + app.GetValue("minor_version")
+    APPLICATION_PACKAGE = "com.example." + APPLICATION_NAME
+    OS_NAME = "Android"
+    OS_VERSION = nrGetOSVersion(dev).version
+    MANUFACTURE_AND_MODEL = dev.GetModel()
+    AGENT_NAME = "RokuAgent"
+    AGENT_VERSION = m.nrAgentVersion
+    DEVICE_ID = dev.GetChannelClientId()
+    DEPRECATED_COUNTRY_CODE = ""
+    DEPRECATED_REGION_CODE = ""
+    MANUFACTURER = "Roku"
+    MISCELLANEOUS_PARAMETERS_JSON = {
+        "platform" : "Native",
+        "platformVersion" : OS_VERSION
+    }
+
+    appInfo = [
+        [
+            APPLICATION_NAME,
+            APPLICATION_VERSION,
+            APPLICATION_PACKAGE
+        ],
+        [
+            OS_NAME,
+            OS_VERSION,
+            MANUFACTURE_AND_MODEL,
+            AGENT_NAME,
+            AGENT_VERSION,
+            DEVICE_ID,
+            DEPRECATED_COUNTRY_CODE,
+            DEPRECATED_REGION_CODE,
+            MANUFACTURER,
+            MISCELLANEOUS_PARAMETERS_JSON
+        ]
+    ]
+    
+    return {"appInfo" : appInfo, "deviceInfo":appInfo[1]}
+end function
+
 function nrCreateEvent(eventType as String, actionName as String) as Object
     ev = CreateObject("roAssociativeArray")
     if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
     if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
     
-    ev["timestamp"] = FormatJson(nrTimestamp())
+    ev["timestamp"] = nrTimestamp()
     ev = nrAddBaseAttributes(ev)
     
     return ev
@@ -745,6 +841,7 @@ end function
 
 function nrAddBaseAttributes(ev as Object) as Object
     'Add default custom attributes for instrumentation'
+    ev.AddReplace("src","Roku")
     ev.AddReplace("instrumentation.provider", "media")
     ev.AddReplace("instrumentation.name", "roku")
     ev.AddReplace("instrumentation.version", m.nrAgentVersion)
@@ -795,9 +892,9 @@ function nrAddBaseAttributes(ev as Object) as Object
     app = CreateObject("roAppInfo")
     appid = app.GetID().ToInt()
     if appid = 0 then appid = 1
-    ev.AddReplace("appId", appid)
+    'ev.AddReplace("appId", appid)
     ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
-    ev.AddReplace("appName", app.GetTitle())
+    'ev.AddReplace("appName", app.GetTitle())
     ev.AddReplace("appDevId", app.GetDevID())
     ev.AddReplace("appIsDev", app.IsDev())
     appbuild = app.GetValue("build_version").ToInt()
@@ -834,19 +931,6 @@ function nrAddCommonHTTPAttr(info as Object) as Object
         "url": info["Url"]
     }
     return attr
-end function
-
-function nrCalculateElapsedTime(actionName as String) as Integer
-    currentTime = CreateObject("roDateTime")
-    currentTimestamp = currentTime.AsSeconds()
-    if m.lastEventTimestamps[actionName] <> invalid
-        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps[actionName]) * 1000
-        elapsedTime = timeSinceLastEvent
-    else
-        elapsedTime=0
-    end if
-    m.lastEventTimestamps[actionName] = currentTimestamp
-    return elapsedTime
 end function
 
 function nrCalculateBufferType(actionName as String) as String
@@ -1102,9 +1186,9 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["actionName"] = actionName
     '- Set current timestamp
     backupTimestamp = ev["timestamp"]
-    ev["timestamp"] = FormatJson(nrTimestamp())
+    ev["timestamp"] = nrTimestamp()
     '- Recalculate playhead, adding timestamp offset
-    lint& = ParseJson(ev["timestamp"]) - ParseJson(backupTimestamp)
+    lint& = ev["timestamp"] - backupTimestamp
     offsetTime = lint&
     nrLog(["Offset time = ", offsetTime])
     if ev["contentPlayhead"] <> invalid then ev["contentPlayhead"] = ev["contentPlayhead"] + offsetTime
@@ -1149,6 +1233,12 @@ function nrSendBackupVideoEnd() as Void
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
+    print "nrVideoObject: "; m.nrVideoObject
+    ev.AddReplace("errorName",m.nrVideoObject.errorMsg)
+    ev.AddReplace("errorCode",m.nrVideoObject.errorCode)
+    if m.nrVideoObject.errorInfo <> invalid
+        ev.AddReplace("backtrace",m.nrVideoObject.errorInfo.source)
+    end if
     ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
     ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
     ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
@@ -1519,6 +1609,11 @@ function nrStateObserver() as Void
 end function
 
 function nrStateTransitionPlaying() as Void
+    if m.nrLastVideoState = "paused" or m.nrLastVideoState = "buffering"
+        ' Resume playtime tracking
+        m.nrIsPlaying = true
+        m.nrLastPlayTimestamp = CreateObject("roDateTime").AsSeconds()
+    end if
     nrLog("nrStateTransitionPlaying")
     if m.nrLastVideoState = "paused"
         nrSendResume()
@@ -1542,6 +1637,10 @@ end function
 function nrStateTransitionPaused() as Void
     nrLog("nrStateTransitionPaused")
     if m.nrLastVideoState = "playing"
+        currentTime = CreateObject("roDateTime").AsSeconds()
+        m.nrElapsedTime = m.nrElapsedTime + (currentTime - m.nrLastPlayTimestamp)
+        m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime + (currentTime - m.nrLastPlayTimestamp)
+        m.nrIsPlaying = false
         nrSendPause()
     end if
 end function
@@ -1608,9 +1707,21 @@ function getLicenseStatusAttributes(licenseStatus as Object) as object
 end function
 
 function nrHeartbeatHandler() as Void
-    'Only send while it is playing (state is not "none" or "finished")
+    ' Only send while it is playing (state is not "none" or "finished")
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
-        nrSendVideoEvent("CONTENT_HEARTBEAT")
+        if m.nrIsPlaying
+            currentTime = CreateObject("roDateTime").AsSeconds()
+            m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime + (currentTime - m.nrLastPlayTimestamp)
+            m.nrLastPlayTimestamp = currentTime
+        end if
+
+        ' Send content heartbeat with elapsed time for the last period
+        m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime * 1000
+        nrSendVideoEvent("CONTENT_HEARTBEAT", {"elapsedTime": m.nrHeartbeatElapsedTime})
+
+        ' Reset the heartbeatElapsedTime after sending the heartbeat
+        m.nrHeartbeatElapsedTime = 0.0
+
         m.nrTimeSinceLastHeartbeat = m.nrTimer.TotalMilliseconds()
         if m.nrPlaytimeSinceLastEvent <> invalid
             m.nrPlaytimeSinceLastEvent.Mark()
