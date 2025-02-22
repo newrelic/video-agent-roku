@@ -1204,7 +1204,6 @@ function nrSendBackupVideoEnd() as Void
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
-    print "nrVideoObject: "; m.nrVideoObject
     ev.AddReplace("errorName",m.nrVideoObject.errorMsg)
     ev.AddReplace("errorCode",m.nrVideoObject.errorCode)
     if m.nrVideoObject.errorInfo <> invalid

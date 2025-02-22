@@ -62,24 +62,24 @@ end function
 
 function nrEventProcessor() as Void
     nrLog("-- nrEventProcessor at URL " + m.eventApiUrl)
-    nrSampleProcessor("event", m.eventApiUrl,m.appName)
+    nrSampleProcessor("event", m.eventApiUrl, m.appName)
 end function
 
 function nrLogProcessor() as Void
     nrLog("-- nrLogProcessor at URL " + m.logApiUrl)
-    nrSampleProcessor("log", m.logApiUrl,m.appName)
+    nrSampleProcessor("log", m.logApiUrl, m.appName)
 end function
 
 function nrMetricProcessor() as Void
     nrLog("-- nrMetricProcessor at URL " + m.metricApiUrl)
-    nrSampleProcessor("metric", m.metricApiUrl,m.appName)
+    nrSampleProcessor("metric", m.metricApiUrl, m.appName)
 end function
 
 function isStatusErr(res) as boolean
     return res >= 400
 end function
 
-function nrSampleProcessor(sampleType as String, endpoint as String,appName as String) as Void
+function nrSampleProcessor(sampleType as String, endpoint as String, appName as String) as Void
     if m.nr <> invalid
         samples = m.nr.callFunc("nrExtractAllSamples", sampleType)
         if samples.Count() > 0
@@ -135,8 +135,6 @@ function nrSampleProcessor(sampleType as String, endpoint as String,appName as S
 end function
 
 function getV3ReqBody(dataToken,videoSamples,appInfo)
-    ' To test if events are going or not you can write your own custom event name here
-    '  videoSamples.push({ "timeSinceLoad": 3.4510000000000001, "eventType": "FinalTest", "timestamp": 1680034704303})
 return [dataToken,appInfo,0,[],[],[],[],[],{},videoSamples]
 end function
 
@@ -156,7 +154,6 @@ function nrData(videoSamples)
     urlReq.AddHeader("X-NewRelic-OS-Name","RokuOS")
     urlReq.AddHeader("X-App-License-Key", m.top.appToken)
     urlReq.AddHeader("X-NewRelic-App-Version","1.0")
-    urlReq.AddHeader("X-NewRelic-ID", "VwEFU1NaABAGVFBRAQUHU1w=")
     urlReq.SetMessagePort(rport)
 
     urlReq.AsyncPostFromString(jsonRequestBody)

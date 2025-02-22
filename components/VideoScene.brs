@@ -3,8 +3,6 @@
 sub init()
     print "INIT VideoScene"
     m.top.setFocus(true)
-    'Uncomment the following line to set a user ID
-    'setUserId("TEST_USER")
 end sub
 
 function nrRefUpdated()
