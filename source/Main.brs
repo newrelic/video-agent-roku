@@ -30,7 +30,7 @@ sub Main(aa as Object)
     scene = screen.CreateScene("VideoScene")
     screen.show()
     
-    'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
+    'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID, API_KEY, APP_NAME and APP_TOKEN)
     m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true)
 
     'Set custom harvest time
@@ -40,7 +40,7 @@ sub Main(aa as Object)
     'Send APP_STARTED event
     nrAppStarted(m.nr, aa)
     'Send a custom system
-    nrSendSystemEvent(m.nr, "RokuSystem","TEST_ACTION")
+    nrSendSystemEvent(m.nr, "ConnectedDeviceSystem","TEST_ACTION")
     
     'Define multiple domain substitutions
     nrAddDomainSubstitution(m.nr, "^www\.google\.com$", "Google COM")

@@ -84,15 +84,15 @@ function nrSampleProcessor(sampleType as String, endpoint as String,appName as S
         samples = m.nr.callFunc("nrExtractAllSamples", sampleType)
         if samples.Count() > 0
             if(sampleType = "event")
-                rokuSystemSamples = []
+                ConnectedDeviceSystemSamples = []
                 videoSamples = []
                     for i = 0 to samples.count() - 1
                          item = samples[i]
                         if type(item) = "roAssociativeArray"
-                            if item["eventType"] = "RokuSystem"
+                            if item["eventType"] = "ConnectedDeviceSystem"
                                 item["appId"]= m.top.dataToken[0]
                                 item["appName"]= appName
-                                rokuSystemSamples.push(item)
+                                ConnectedDeviceSystemSamples.push(item)
                             else    
                                 print "Video Event"; item
                                 videoSamples.push(item)
@@ -100,12 +100,12 @@ function nrSampleProcessor(sampleType as String, endpoint as String,appName as S
                         end if
                     end for
                     print "FOR LOOP ENDED";videoSamples.count()
-                    if rokuSystemSamples.count() > 0
-                        res = nrPushSamples(rokuSystemSamples, endpoint, sampleType)
+                    if ConnectedDeviceSystemSamples.count() > 0
+                        res = nrPushSamples(ConnectedDeviceSystemSamples, endpoint, sampleType)
                     end if
                      if videoSamples.count() > 0
                         print "VIDEO SAMPLES OUTSIDE"
-                       res = nrData(videoSamples)
+                        res = nrData(videoSamples)
                     end if
                 else 
                     res = nrPushSamples(samples, endpoint, sampleType)
@@ -146,8 +146,7 @@ function nrData(videoSamples)
     jsonRequestBody = FormatJSON(body)
     urlReq = CreateObject("roUrlTransfer")    
     rport = CreateObject("roMessagePort")
-    ' Remove staging after testing is done
-    urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v3/data")
+    urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v3/data")
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)

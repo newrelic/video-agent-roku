@@ -17,7 +17,6 @@ sub init()
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2023 New Relic Inc. All Rights Reserved."
     print "************************************************************"
-    InitializeLastEventTimestamps()
 end sub
 
 '=========================='
@@ -178,8 +177,7 @@ function nrConnect(appToken as string, body as object)
     jsonRequestBody = FormatJSON(body)
     urlReq = CreateObject("roUrlTransfer")    
     rport = CreateObject("roMessagePort")
-    ' Remove staging after testing is done
-    urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
+    urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v4/connect")
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
@@ -296,11 +294,11 @@ function nrAppStarted(aa as Object) as Void
         "instantOnRunMode": aa["instant_on_run_mode"],
         "launchSource": aa["source"]
     }
-    nrSendSystemEvent("RokuSystem", "APP_STARTED", attr)
+    nrSendSystemEvent("ConnectedDeviceSystem", "APP_STARTED", attr)
 end function
 
 function nrSceneLoaded(sceneName as String) as Void
-    nrSendSystemEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
+    nrSendSystemEvent("ConnectedDeviceSystem", "SCENE_LOADED", {"sceneName": sceneName})
 end function
 
 function nrSendSystemEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
@@ -389,7 +387,7 @@ function nrSendHttpRequest(attr as Object) as Void
         m.num_http_request_counters.AddReplace(domain, 1)
     end if
 
-    nrSendSystemEvent("RokuSystem", "HTTP_REQUEST", attr)
+    nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_REQUEST", attr)
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
@@ -421,7 +419,7 @@ function nrSendHttpResponse(attr as Object) as Void
         end if
     end if
     
-    nrSendSystemEvent("RokuSystem", "HTTP_RESPONSE", attr)
+    nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_RESPONSE", attr)
 end function
 
 function nrEnableHttpEvents() as Void
@@ -974,7 +972,7 @@ function nrSendHTTPConnect(info as Object) as Void
         m.num_http_connect_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendSystemEvent("RokuSystem", "HTTP_CONNECT", attr)
+    if m.http_events_enabled then nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_CONNECT", attr)
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -1001,7 +999,7 @@ function nrSendHTTPComplete(info as Object) as Void
         m.num_http_complete_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendSystemEvent("RokuSystem", "HTTP_COMPLETE", attr)
+    if m.http_events_enabled then nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_COMPLETE", attr)
 
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"domain": domain})
@@ -1015,7 +1013,7 @@ function nrSendBandwidth(info as Object) as Void
     attr = {
         "bandwidth": info["bandwidth"]
     }
-    nrSendSystemEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
+    nrSendSystemEvent("ConnectedDeviceSystem", "BANDWIDTH_MINUTE", attr)
 end function
 
 'TODO:  Testing endpoint. If nrRegion is not US or EU, use it as endpoint. Deprecate the "TEST" region and "m.testServer".
@@ -1057,30 +1055,6 @@ end function
 '================='
 ' Video functions '
 '================='
-
-sub InitializeLastEventTimestamps()
-    m.lastEventTimestamps = {
-        "CONTENT_REQUEST": invalid,
-        "CONTENT_START": invalid,
-        "CONTENT_END": invalid,
-        "CONTENT_PAUSE": invalid,
-        "CONTENT_RESUME": invalid,
-        "CONTENT_BUFFER_START": invalid,
-        "CONTENT_BUFFER_END": invalid,
-        "HTTP_ERROR": invalid,
-        "CONTENT_ERROR": invalid,
-        "AD_ERROR": invalid,
-        "AD_BREAK_START": invalid,
-        "AD_BREAK_END": invalid,
-        "AD_REQUEST": invalid,
-        "AD_START": invalid,
-        "AD_END": invalid,
-        "AD_PAUSE": invalid,
-        "AD_RESUME": invalid,
-        "AD_QUARTILE": invalid,
-        "AD_SKIP": invalid
-    }
-end sub
 
 function nrSendPlayerReady() as Void
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
