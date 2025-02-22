@@ -43,7 +43,7 @@ function NewRelicInit(account as String, apikey as String,appName as String, reg
     m.nrEventArrayDeltaK = 40
     m.nrEventArrayK = m.nrEventArrayNormalK
     'Harvest cycles for events
-    m.nrEventHarvestTimeNormal = 5
+    m.nrEventHarvestTimeNormal = 60
     m.nrEventHarvestTimeMax = 600
     m.nrEventHarvestTimeDelta = 60
     'Reservoir sampling for logs
