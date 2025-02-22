@@ -90,7 +90,6 @@ function nrSampleProcessor(sampleType as String, endpoint as String,appName as S
                          item = samples[i]
                         if type(item) = "roAssociativeArray"
                             if item["eventType"] = "ConnectedDeviceSystem"
-                                ConnectedDeviceSystemSamples.push(item)
                                 item["appId"]= m.top.dataToken[0]
                                 item["appName"]= appName
                                 ConnectedDeviceSystemSamples.push(item)
