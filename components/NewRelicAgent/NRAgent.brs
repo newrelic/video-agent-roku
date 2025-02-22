@@ -914,9 +914,6 @@ function nrAddCustomAttributes(ev as Object) as Object
     actionName = ev["actionName"]
     actionCustomAttr = m.nrCustomAttributes[actionName]
     if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
-    ' Calculate and add elapsed time for the action
-    elapsedTime = nrCalculateElapsedTime(actionName)
-    ev.AddReplace("elapsedTime", elapsedTime)
     return ev
 end function
 
