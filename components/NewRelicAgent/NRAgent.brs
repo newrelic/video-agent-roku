@@ -23,7 +23,7 @@ end sub
 ' Public Wrapped Functions '
 '=========================='
 
-function NewRelicInit(account as String, apikey as String, region as String, appToken = "" as String) as Void
+function NewRelicInit(account as String, apikey as String,appName as String, region as String, appToken = "" as String) as Void
     'Session
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
@@ -32,6 +32,7 @@ function NewRelicInit(account as String, apikey as String, region as String, app
     m.nrDeviceInfo = appConfig.deviceInfo
     dataToken = nrConnect(appToken, appConfig.appInfo)
     m.dataToken = dataToken
+    m.appName = appName
     m.nrRegion = region
     m.nrSessionId = nrGenerateId()
     'Reservoir sampling for events
@@ -105,6 +106,7 @@ function NewRelicInit(account as String, apikey as String, region as String, app
     m.bgTaskEvents = m.top.findNode("NRTaskEvents")
     m.bgTaskEvents.setField("apiKey", m.nrInsightsApiKey)
     m.bgTaskEvents.setField("dataToken", m.dataToken)
+    m.bgTaskEvents.setField("appName", m.appName)
     m.bgTaskEvents.setField("appToken", m.nrMobileAppToken)
     m.bgTaskEvents.setField("appInfo", m.nrDeviceInfo)
     m.eventApiUrl = box(nrEventApiUrl())
@@ -114,12 +116,14 @@ function NewRelicInit(account as String, apikey as String, region as String, app
     m.bgTaskLogs = m.top.findNode("NRTaskLogs")
     m.bgTaskLogs.setField("apiKey", m.nrInsightsApiKey)
     m.logApiUrl = box(nrLogApiUrl())
+    m.bgTaskEvents.setField("appName", m.appName)
     m.bgTaskLogs.setField("logApiUrl", m.logApiUrl)
     m.bgTaskLogs.sampleType = "log"
     'Create and configure tasks (metrics)
     m.bgTaskMetrics = m.top.findNode("NRTaskMetrics")
     m.bgTaskMetrics.setField("apiKey", m.nrInsightsApiKey)
     m.metricApiUrl = box(nrMetricApiUrl())
+    m.bgTaskEvents.setField("appName", m.appName)
     m.bgTaskMetrics.setField("metricApiUrl", m.metricApiUrl)
     m.bgTaskMetrics.sampleType = "metric"
 
@@ -887,9 +891,9 @@ function nrAddBaseAttributes(ev as Object) as Object
     app = CreateObject("roAppInfo")
     appid = app.GetID().ToInt()
     if appid = 0 then appid = 1
-    ev.AddReplace("appId", appid)
+    'ev.AddReplace("appId", appid)
     ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
-    ev.AddReplace("appName", app.GetTitle())
+    'ev.AddReplace("appName", app.GetTitle())
     ev.AddReplace("appDevId", app.GetDevID())
     ev.AddReplace("appIsDev", app.IsDev())
     appbuild = app.GetValue("build_version").ToInt()
@@ -924,7 +928,6 @@ function nrAddCommonHTTPAttr(info as Object) as Object
     }
     return attr
 end function
-
 
 function nrCalculateBufferType(actionName as String) as String
     bufferType = "connection" ' Default buffer type

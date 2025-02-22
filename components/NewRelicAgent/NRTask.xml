@@ -20,6 +20,7 @@
 		<field id="appToken" type="string" value=""/>
 		<field id="dataToken" type="roArray" value="[]"/>
 		<field id="appInfo" type="roArray" value="[]"/>
+		<field id="appName" type="string" value=""/>
     </interface>
 
 	<script type="text/brightscript" uri="NRTask.brs"/>
