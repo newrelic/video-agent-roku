@@ -8,7 +8,7 @@ This section defines the key terms used in the context of New Relic Media monito
 
 ## Event Types
 
-- **RokuSystem**: Events related to system tracking.
+- **ConnectedDeviceSystem**: Events related to system tracking.
 - **videoAction**: Events triggered by general video interactions, such as starting, pausing, or seeking.
 - **videoAdAction**: Events related to ad playback, such as starting, completing, or skipping an ad.
 - **videoErrorAction**: Events triggered by errors encountered during video or ad playback.
@@ -23,7 +23,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 
 ## Event Type Reference
 
-### RokuSystem
+### ConnectedDeviceSystem
 
 | Attribute Name | Description |
 |---|---|
@@ -98,7 +98,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 
 
 
-#### List of possible RokuSystem Actions
+#### List of possible ConnectedDeviceSystem Actions
 
 | Action Name | Description |
 |---|---|

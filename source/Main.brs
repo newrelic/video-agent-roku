@@ -40,7 +40,7 @@ sub Main(aa as Object)
     'Send APP_STARTED event
     nrAppStarted(m.nr, aa)
     'Send a custom system
-    nrSendSystemEvent(m.nr, "RokuSystem","TEST_ACTION")
+    nrSendSystemEvent(m.nr, "ConnectedDeviceSystem","TEST_ACTION")
     
     'Define multiple domain substitutions
     nrAddDomainSubstitution(m.nr, "^www\.google\.com$", "Google COM")

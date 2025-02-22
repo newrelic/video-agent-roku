@@ -5,7 +5,7 @@
 The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events and one to monitor video related events, for apps that use a video player.
 
 Internally, it uses the Event API to send events using the REST interface. It sends five types of events: 
-- RokuSystem for system events
+- ConnectedDeviceSystem for system events
 - VideoAction for video events. 
 - VideoErrorAction for errors.
 - VideoAdAction for ads.
@@ -13,7 +13,7 @@ Internally, it uses the Event API to send events using the REST interface. It se
 After the agent has sent some data it will be accessible in NR One Dashboards with a simple NRQL request like:
 
 ```
-SELECT * FROM RokuSystem, VideoAction, VideoErrorAction, VideoAdAction, VideoCustomAction
+SELECT * FROM ConnectedDeviceSystem, VideoAction, VideoErrorAction, VideoAdAction, VideoCustomAction
 ```
 Will result in something like the following: 
 
@@ -330,7 +330,7 @@ Example:
 nrAppStarted(nr as Object, obj as Object) as Void
 
 Description:
-	Send an APP_STARTED event of type RokuSystem.
+	Send an APP_STARTED event of type ConnectedDeviceSystem.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -352,7 +352,7 @@ Example:
 nrSceneLoaded(nr as Object, sceneName as String) as Void
 
 Description:
-	Send a SCENE_LOADED event of type RokuSystem.
+	Send a SCENE_LOADED event of type ConnectedDeviceSystem.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -396,7 +396,7 @@ Example:
 nrSendSystemEvent(nr as Object, actionName as String, attr = invalid) as Void
 
 Description:
-	Send a system event, type RokuSystem.
+	Send a system event, type ConnectedDeviceSystem.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -442,7 +442,7 @@ Example:
 nrSendHttpRequest(nr as Object, urlReq as Object) as Void
 
 Description:
-	Send an HTTP_REQUEST event of type RokuSystem.
+	Send an HTTP_REQUEST event of type ConnectedDeviceSystem.
 
 Arguments:
 	nr: New Relic Agent object.
@@ -465,7 +465,7 @@ Example:
 nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
 
 Description:
-	Send an HTTP_RESPONSE event of type RokuSystem.
+	Send an HTTP_RESPONSE event of type ConnectedDeviceSystem.
 
 Arguments:
 	nr: New Relic Agent object.

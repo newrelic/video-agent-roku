@@ -84,13 +84,13 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
         samples = m.nr.callFunc("nrExtractAllSamples", sampleType)
         if samples.Count() > 0
             if(sampleType = "event")
-                rokuSystemSamples = []
+                ConnectedDeviceSystemSamples = []
                 videoSamples = []
                     for i = 0 to samples.count() - 1
                          item = samples[i]
                         if type(item) = "roAssociativeArray"
-                            if item["eventType"] = "RokuSystem"
-                                rokuSystemSamples.push(item)
+                            if item["eventType"] = "ConnectedDeviceSystem"
+                                ConnectedDeviceSystemSamples.push(item)
                             else    
                                 print "Video Event"; item
                                 videoSamples.push(item)
@@ -98,8 +98,8 @@ function nrSampleProcessor(sampleType as String, endpoint as String) as Void
                         end if
                     end for
                     print "FOR LOOP ENDED";videoSamples.count()
-                    if rokuSystemSamples.count() > 0
-                        res = nrPushSamples(rokuSystemSamples, endpoint, sampleType)
+                    if ConnectedDeviceSystemSamples.count() > 0
+                        res = nrPushSamples(ConnectedDeviceSystemSamples, endpoint, sampleType)
                     end if
                      if videoSamples.count() > 0
                         print "VIDEO SAMPLES OUTSIDE"
