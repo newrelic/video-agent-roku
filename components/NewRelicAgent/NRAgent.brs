@@ -1022,9 +1022,9 @@ end function
 
 function nrEventApiUrl() as String
     if m.nrRegion = "US"
-        return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
+        return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "EU"
-        return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
+        return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "TEST"
         'NOTE: set address hosting the test server
         return m.testServer + "/event"
