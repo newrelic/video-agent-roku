@@ -458,11 +458,11 @@ function nrSetHarvestTime(seconds as Integer) as Void
     nrSetHarvestTimeMetrics(seconds)
 end function
 
-function nrSetHarvestTimeLogs(seconds as Integer) as Void
+function nrSetHarvestTimeEvents(seconds as Integer) as Void
     if seconds < 60 then seconds = 60
-    m.nrLogHarvestTimeNormal = seconds
-    m.nrHarvestTimerLogs.duration = seconds
-    nrLog(["Harvest time logs = ", seconds])
+    m.nrEventHarvestTimeNormal = seconds
+    m.nrHarvestTimerEvents.duration = seconds
+    nrLog(["Harvest time events = ", seconds])
 end function
 
 function nrSetHarvestTimeLogs(seconds as Integer) as Void
