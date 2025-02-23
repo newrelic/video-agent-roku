@@ -225,6 +225,14 @@ function nrSetHarvestTime(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTime", time)
 end function
 
+' Set userId
+'
+' @param nr New Relic Agent object.
+' @param userId UserId
+function nrSetUserId(nr as Object, userId as String) as Void
+    nr.callFunc("nrSetUserId", userId)
+end function
+
 ' Set harvest time for events, the time the events are buffered before being sent.
 '
 ' @param nr New Relic Agent object.

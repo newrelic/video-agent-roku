@@ -804,22 +804,23 @@ Example:
 	nrSendSummaryMetric(m.nr, "test", 2000, 5, 1000, 100, 200)
 ```
 
-**setUserId**
+**nrSetUserId**
 
 ```
-setUserId(userId as String) as Void
+nrSetUserId(userId as String) as Void
 
 Description:
 	Sets userId.
 
 Arguments:
+	nr: New Relic Agent object.
 	userId: attribute
 	
 Return:
 	Nothing.
 		
 Example:
-	setUserId("TEST_USER")
+	nrSetUserId(m.nr, "TEST_USER")
 ```
 
 <a name="data-model"></a>

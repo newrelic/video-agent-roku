@@ -206,6 +206,11 @@ function nrConnect(appToken as string, body as object)
     return dataToken
 end function
 
+function nrSetUserId(userId as String) as Void
+    m.userId = userId
+    print"Setting user id:"; m.userId;" actual userId", userId
+end function
+
 function NewRelicVideoStart(videoObject as Object) as Void
     nrLog("NewRelicVideoStart")
 
@@ -839,6 +844,11 @@ end function
 
 function nrAddBaseAttributes(ev as Object) as Object
     'Add default custom attributes for instrumentation'
+    if m.userId <> invalid
+        ev.AddReplace("enduser.id", m.userId)
+    else
+        ev.AddReplace("enduser.id", "unknown")
+    end if
     ev.AddReplace("src","Roku")
     ev.AddReplace("instrumentation.provider", "media")
     ev.AddReplace("instrumentation.name", "roku")
