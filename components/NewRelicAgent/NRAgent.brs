@@ -208,7 +208,6 @@ end function
 
 function nrSetUserId(userId as String) as Void
     m.userId = userId
-    print"Setting user id:"; m.userId;" actual userId", userId
 end function
 
 function NewRelicVideoStart(videoObject as Object) as Void
