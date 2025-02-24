@@ -225,7 +225,6 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrTimeSinceRequested = 0.0
     m.nrTimeSinceStarted = 0.0
     m.nrTimeSinceTrackerReady = 0.0
-    m.nrElapsedTime = 0.0
     m.nrHeartbeatElapsedTime = 0.0
     m.nrLastPlayTimestamp = 0.0
     m.nrIsPlaying = false
@@ -879,8 +878,10 @@ function nrAddBaseAttributes(ev as Object) as Object
     'ev.AddReplace("ipAddress", dev.GetExternalIp())
     ev.AddReplace("displayType", dev.GetDisplayType())
     ev.AddReplace("displayMode", dev.GetDisplayMode())
-    ev.AddReplace("contentRenditionHeight", dev.GetDisplaySize().h)
-    ev.AddReplace("contentRenditionWidth", dev.GetDisplaySize().w)
+    if dev.GetDisplaySize() <> invalid
+        ev.AddReplace("contentRenditionHeight", dev.GetDisplaySize().h)
+        ev.AddReplace("contentRenditionWidth", dev.GetDisplaySize().w)
+    end if
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
     ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
@@ -1612,7 +1613,6 @@ function nrStateTransitionPaused() as Void
     nrLog("nrStateTransitionPaused")
     if m.nrLastVideoState = "playing"
         currentTime = CreateObject("roDateTime").AsSeconds()
-        m.nrElapsedTime = m.nrElapsedTime + (currentTime - m.nrLastPlayTimestamp)
         m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime + (currentTime - m.nrLastPlayTimestamp)
         m.nrIsPlaying = false
         nrSendPause()
