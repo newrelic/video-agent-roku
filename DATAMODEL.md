@@ -27,7 +27,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 
 | Attribute Name | Description |
 |---|---|
-| instrumentation.provider | Always “media”. |
+| instrumentation.provider | Always “newrelic”. |
 | instrumentation.name | Always “roku”. |
 | instrumentation.version | Agent’s version. |
 | newRelicAgent | Always “RokuAgent”. |
