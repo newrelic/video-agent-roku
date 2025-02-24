@@ -573,7 +573,7 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
     if message <> invalid and message <> "" then lg["message"] = message
     if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
     if fields <> invalid then lg.Append(fields)
-    lg["timestamp"] = nrTimestamp()
+    lg["timestamp"] = FormatJson(nrTimestamp())
     lg["newRelicAgentSource"] = "roku"
 
     nrLog(["RECORD NEW LOG = ", lg])
@@ -843,15 +843,13 @@ end function
 
 function nrAddBaseAttributes(ev as Object) as Object
     'Add default custom attributes for instrumentation'
-    if m.userId <> invalid
-        ev.AddReplace("enduser.id", m.userId)
-    else
-        ev.AddReplace("enduser.id", "unknown")
-    end if
+    ev.AddReplace("enduser.id", m.userId)
     ev.AddReplace("src","Roku")
-    ev.AddReplace("instrumentation.provider", "media")
+    ev.AddReplace("instrumentation.provider", "newrelic")
     ev.AddReplace("instrumentation.name", "roku")
-    ev.AddReplace("instrumentation.version", m.nrAgentVersion)
+    dev = CreateObject("roDeviceInfo")
+    ver = nrGetOSVersion(dev)
+    ev.AddReplace("instrumentation.version", ver["version"])
     ev.AddReplace("newRelicAgent", "RokuAgent")
     ev.AddReplace("newRelicVersion", m.nrAgentVersion)
     ev.AddReplace("sessionId", m.nrSessionId)
@@ -860,7 +858,6 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
     dev = CreateObject("roDeviceInfo")
     ev.AddReplace("deviceUuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
-    ev.AddReplace("deviceSize", "xLarge")
     ev.AddReplace("deviceName", dev.GetModelDisplayName())
     ev.AddReplace("deviceGroup", "Roku")
     ev.AddReplace("deviceManufacturer", "Roku")
@@ -872,7 +869,6 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("vendorUsbName", modelDetails.VendorUSBName)
     ev.AddReplace("screenSize", modelDetails.ScreenSize)
     ev.AddReplace("osName", "RokuOS")
-    ver = nrGetOSVersion(dev)
     ev.AddReplace("osVersion", ver["version"])
     ev.AddReplace("osBuild", ver["build"])
     ev.AddReplace("countryCode", dev.GetUserCountryCode())
@@ -882,7 +878,9 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("connectionType", dev.GetConnectionType())
     'ev.AddReplace("ipAddress", dev.GetExternalIp())
     ev.AddReplace("displayType", dev.GetDisplayType())
-    ev.AddReplace("contentRenditionName", dev.GetDisplayMode())
+    ev.AddReplace("displayMode", dev.GetDisplayMode())
+    ev.AddReplace("contentRenditionHeight", dev.GetDisplaySize().h)
+    ev.AddReplace("contentRenditionWidth", dev.GetDisplaySize().w)
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
     ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
@@ -897,9 +895,6 @@ function nrAddBaseAttributes(ev as Object) as Object
     end if
 
     app = CreateObject("roAppInfo")
-    appid = app.GetID().ToInt()
-    if appid = 0 then appid = 1
-    'ev.AddReplace("appId", appid)
     ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
     'ev.AddReplace("appName", app.GetTitle())
     ev.AddReplace("appDevId", app.GetDevID())
