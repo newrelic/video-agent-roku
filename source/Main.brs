@@ -30,9 +30,9 @@ sub Main(aa as Object)
     scene = screen.CreateScene("VideoScene")
     screen.show()
     
-    'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID and API_KEY)
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "US", true)
-
+    'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID, API_KEY, APP_NAME and APP_TOKEN)
+    m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true)
+    
     'Set custom harvest time
     nrSetHarvestTime(m.nr, 60)
     'Version 3.0.0 (or above) disables HttpEvents by default
@@ -40,7 +40,7 @@ sub Main(aa as Object)
     'Send APP_STARTED event
     nrAppStarted(m.nr, aa)
     'Send a custom system
-    nrSendSystemEvent(m.nr, "TEST_ACTION")
+    nrSendSystemEvent(m.nr, "ConnectedDeviceSystem","TEST_ACTION")
     
     'Define multiple domain substitutions
     nrAddDomainSubstitution(m.nr, "^www\.google\.com$", "Google COM")

@@ -22,7 +22,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "SELECT uniqueCount(uuid) from RokuSystem since 30 minutes ago COMPARE WITH 1 week ago"
+                "query": "SELECT uniqueCount(uuid) from ConnectedDeviceSystem since 30 minutes ago COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -43,7 +43,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT filter(count(*), WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) / filter(count(*), WHERE actionName = 'APP_STARTED') * 100 as '%'COMPARE WITH 1 week ago"
+                "query": "FROM ConnectedDeviceSystem SELECT filter(count(*), WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) / filter(count(*), WHERE actionName = 'APP_STARTED') * 100 as '%'COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -64,7 +64,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) / filter(count(*), WHERE actionName = 'CONTENT_START' and contentPlayhead = 0)  * 100  as '%' since 30 minutes ago COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) / filter(count(*), WHERE actionName = 'CONTENT_START' and contentPlayhead = 0)  * 100  as '%' since 30 minutes ago COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -85,7 +85,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as '%'COMPARE WITH 1 week ago"
+                "query": "FROM ConnectedDeviceSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as '%'COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -106,7 +106,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as '%'COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as '%'COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -127,7 +127,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName ='CONTENT_ERROR') / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) * 100 as '%'COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName ='CONTENT_ERROR') / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) * 100 as '%'COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -148,7 +148,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -169,7 +169,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -190,7 +190,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -211,7 +211,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(contentMeasuredBitrate, 50) COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT percentile(contentMeasuredBitrate, 50) COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -232,7 +232,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "SELECT uniqueCount(uuid) from RokuSystem since 30 minutes ago TIMESERIES auto facet deviceModel"
+                "query": "SELECT uniqueCount(uuid) from ConnectedDeviceSystem since 30 minutes ago TIMESERIES auto facet deviceModel"
               }
             ]
           },
@@ -253,7 +253,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT (filter(count(*), WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) / filter(count(*), WHERE actionName = 'APP_STARTED')) as '%' facet deviceModel timeseries auto"
+                "query": "FROM ConnectedDeviceSystem SELECT (filter(count(*), WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) / filter(count(*), WHERE actionName = 'APP_STARTED')) as '%' facet deviceModel timeseries auto"
               }
             ]
           },
@@ -274,7 +274,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT  filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) / filter(count(*), WHERE actionName = 'CONTENT_START' and contentPlayhead = 0) * 100 as 'Video Start Failure' facet deviceModel timeseries AUTO "
+                "query": "FROM VideoAction SELECT  filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) / filter(count(*), WHERE actionName = 'CONTENT_START' and contentPlayhead = 0) * 100 as 'Video Start Failure' facet deviceModel timeseries AUTO "
               }
             ]
           },
@@ -295,7 +295,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as 'HTTP Error Ratio' facet deviceModel timeseries auto"
+                "query": "FROM ConnectedDeviceSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as 'HTTP Error Ratio' facet deviceModel timeseries auto"
               }
             ]
           },
@@ -316,7 +316,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as 'Interruption Ratio' facet deviceModel timeseries AUTO "
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as 'Interruption Ratio' facet deviceModel timeseries AUTO "
               }
             ]
           },
@@ -337,7 +337,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName ='CONTENT_ERROR') / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) * 100 as 'Content Error Ratio' facet deviceModel TIMESERIES auto"
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName ='CONTENT_ERROR') / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) * 100 as 'Content Error Ratio' facet deviceModel TIMESERIES auto"
               }
             ]
           },
@@ -358,7 +358,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 facet deviceModel TIMESERIES auto"
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 facet deviceModel TIMESERIES auto"
               }
             ]
           },
@@ -379,7 +379,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 facet deviceModel TIMESERIES AUTO "
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 facet deviceModel TIMESERIES AUTO "
               }
             ]
           },
@@ -400,7 +400,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' facet deviceModel TIMESERIES AUTO "
+                "query": "FROM VideoAction SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' facet deviceModel TIMESERIES AUTO "
               }
             ]
           },
@@ -421,7 +421,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(contentMeasuredBitrate, 50) facet deviceModel TIMESERIES AUTO "
+                "query": "FROM VideoAction SELECT percentile(contentMeasuredBitrate, 50) facet deviceModel TIMESERIES AUTO "
               }
             ]
           },
@@ -442,7 +442,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT (filter(count(*), WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) / filter(count(*), WHERE actionName = 'APP_STARTED')) as '%' facet deviceModel timeseries auto"
+                "query": "FROM ConnectedDeviceSystem SELECT (filter(count(*), WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) / filter(count(*), WHERE actionName = 'APP_STARTED')) as '%' facet deviceModel timeseries auto"
               }
             ]
           },
@@ -463,7 +463,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT count(*) as 'Crashes' WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY') FACET deviceModel"
+                "query": "FROM ConnectedDeviceSystem SELECT count(*) as 'Crashes' WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY') FACET deviceModel"
               }
             ]
           },
@@ -484,7 +484,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT count(*) as 'Crashes' WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY') FACET lastExitOrTerminationReason"
+                "query": "FROM ConnectedDeviceSystem SELECT count(*) as 'Crashes' WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY') FACET lastExitOrTerminationReason"
               }
             ]
           },
@@ -505,7 +505,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT count(*) as 'Crashes' WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY') FACET appVersion, appBuild"
+                "query": "FROM ConnectedDeviceSystem SELECT count(*) as 'Crashes' WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY') FACET appVersion, appBuild"
               }
             ]
           },
@@ -526,7 +526,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT count(*) as 'Crashes' WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY') FACET appVersion, appBuild TIMESERIES auto"
+                "query": "FROM ConnectedDeviceSystem SELECT count(*) as 'Crashes' WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY') FACET appVersion, appBuild TIMESERIES auto"
               }
             ]
           },
@@ -547,7 +547,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT  filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) / filter(count(*), WHERE actionName = 'CONTENT_START' and contentPlayhead = 0) * 100 as 'Video Start Failure' facet deviceModel timeseries AUTO "
+                "query": "FROM VideoAction SELECT  filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) / filter(count(*), WHERE actionName = 'CONTENT_START' and contentPlayhead = 0) * 100 as 'Video Start Failure' facet deviceModel timeseries AUTO "
               }
             ]
           },
@@ -568,7 +568,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0 facet errorMessage since 30 minutes ago"
+                "query": "FROM VideoAction SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0 facet errorMessage since 30 minutes ago"
               }
             ]
           },
@@ -589,7 +589,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0 facet appVersion, appBuild since 30 minutes ago"
+                "query": "FROM VideoAction SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0 facet appVersion, appBuild since 30 minutes ago"
               }
             ]
           },
@@ -610,7 +610,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0 facet appVersion, appBuild since 30 minutes ago TIMESERIES auto"
+                "query": "FROM VideoAction SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0 facet appVersion, appBuild since 30 minutes ago TIMESERIES auto"
               }
             ]
           },
@@ -631,7 +631,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0) / filter(count(*), WHERE actionName = 'CONTENT_START')  * 100  as '%' since 30 minutes ago"
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0) / filter(count(*), WHERE actionName = 'CONTENT_START')  * 100  as '%' since 30 minutes ago"
               }
             ]
           },
@@ -652,7 +652,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT  filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0) / filter(count(*), WHERE actionName = 'CONTENT_START') * 100 as 'Video Start Failure' facet deviceModel timeseries AUTO "
+                "query": "FROM VideoAction SELECT  filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0) / filter(count(*), WHERE actionName = 'CONTENT_START') * 100 as 'Video Start Failure' facet deviceModel timeseries AUTO "
               }
             ]
           },
@@ -673,7 +673,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0 facet errorMessage since 30 minutes ago"
+                "query": "FROM VideoAction SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0 facet errorMessage since 30 minutes ago"
               }
             ]
           },
@@ -694,7 +694,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0 facet appVersion, appBuild since 30 minutes ago"
+                "query": "FROM VideoAction SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0 facet appVersion, appBuild since 30 minutes ago"
               }
             ]
           },
@@ -715,7 +715,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0 facet appVersion, appBuild since 30 minutes ago TIMESERIES auto"
+                "query": "FROM VideoAction SELECT count(*) WHERE actionName = 'CONTENT_ERROR' and contentPlayhead > 0 facet appVersion, appBuild since 30 minutes ago TIMESERIES auto"
               }
             ]
           },
@@ -736,7 +736,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as '%'"
+                "query": "FROM ConnectedDeviceSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as '%'"
               }
             ]
           },
@@ -757,7 +757,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT count(*) where actionName like 'HTTP%' facet actionName "
+                "query": "FROM ConnectedDeviceSystem SELECT count(*) where actionName like 'HTTP%' facet actionName "
               }
             ]
           },
@@ -778,7 +778,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT count(*) where actionName like 'HTTP%' facet origUrl "
+                "query": "FROM ConnectedDeviceSystem SELECT count(*) where actionName like 'HTTP%' facet origUrl "
               }
             ]
           },
@@ -799,7 +799,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as 'HTTP Error Ratio' facet deviceModel timeseries auto"
+                "query": "FROM ConnectedDeviceSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as 'HTTP Error Ratio' facet deviceModel timeseries auto"
               }
             ]
           },
@@ -820,7 +820,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT count(*) where actionName like 'HTTP%' and httpResult != 'OK' facet httpResult"
+                "query": "FROM ConnectedDeviceSystem SELECT count(*) where actionName like 'HTTP%' and httpResult != 'OK' facet httpResult"
               }
             ]
           },
@@ -841,7 +841,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "SELECT count(*) FROM RokuSystem WHERE actionName='HTTP_ERROR' AND origUrl LIKE '%.ts%' FACET status SINCE 1 week ago TIMESERIES"
+                "query": "SELECT count(*) FROM ConnectedDeviceSystem WHERE actionName='HTTP_ERROR' AND origUrl LIKE '%.ts%' FACET status SINCE 1 week ago TIMESERIES"
               }
             ]
           },
@@ -862,7 +862,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "SELECT count(*) FROM RokuSystem WHERE actionName='HTTP_ERROR' AND (origUrl NOT LIKE '%.mp4%' AND origUrl NOT LIKE '%.m3u8%' AND origUrl NOT LIKE '%.ts%' AND origUrl NOT LIKE '%.mpd%') FACET status SINCE 1 month ago TIMESERIES"
+                "query": "SELECT count(*) FROM ConnectedDeviceSystem WHERE actionName='HTTP_ERROR' AND (origUrl NOT LIKE '%.mp4%' AND origUrl NOT LIKE '%.m3u8%' AND origUrl NOT LIKE '%.ts%' AND origUrl NOT LIKE '%.mpd%') FACET status SINCE 1 month ago TIMESERIES"
               }
             ]
           },
@@ -883,7 +883,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "SELECT count(*) FROM RokuSystem WHERE actionName='HTTP_ERROR' AND (origUrl LIKE '%.mp4%' AND origUrl NOT LIKE '%index_audio%.mp4%' AND origUrl NOT LIKE '%index_video%.mp4%') FACET status SINCE 1 week ago TIMESERIES"
+                "query": "SELECT count(*) FROM ConnectedDeviceSystem WHERE actionName='HTTP_ERROR' AND (origUrl LIKE '%.mp4%' AND origUrl NOT LIKE '%index_audio%.mp4%' AND origUrl NOT LIKE '%index_video%.mp4%') FACET status SINCE 1 week ago TIMESERIES"
               }
             ]
           },
@@ -904,7 +904,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "SELECT count(*) FROM RokuSystem WHERE actionName='HTTP_ERROR' AND (origUrl LIKE '%.m3u8%') FACET status SINCE 1 month ago TIMESERIES"
+                "query": "SELECT count(*) FROM ConnectedDeviceSystem WHERE actionName='HTTP_ERROR' AND (origUrl LIKE '%.m3u8%') FACET status SINCE 1 month ago TIMESERIES"
               }
             ]
           },
@@ -925,7 +925,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT percentile(firstByteTime, 50), percentile(transferTime, 50) timeseries auto"
+                "query": "FROM ConnectedDeviceSystem SELECT percentile(firstByteTime, 50), percentile(transferTime, 50) timeseries auto"
               }
             ]
           },
@@ -946,7 +946,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as '%'COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as '%'COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -967,7 +967,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as 'Interruption Ratio' facet deviceModel timeseries AUTO "
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as 'Interruption Ratio' facet deviceModel timeseries AUTO "
               }
             ]
           },
@@ -988,7 +988,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT count(*) as 'Buffer Starts' WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0 facet connectionType   since 30 seconds ago"
+                "query": "FROM VideoAction SELECT count(*) as 'Buffer Starts' WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0 facet connectionType   since 30 seconds ago"
               }
             ]
           },
@@ -1009,7 +1009,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -1030,7 +1030,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 facet deviceModel TIMESERIES auto"
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 facet deviceModel TIMESERIES auto"
               }
             ]
           },
@@ -1051,7 +1051,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 facet connectionType"
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 facet connectionType"
               }
             ]
           },
@@ -1072,7 +1072,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -1093,7 +1093,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 facet deviceModel TIMESERIES AUTO "
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 facet deviceModel TIMESERIES AUTO "
               }
             ]
           },
@@ -1114,7 +1114,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead > 0 facet connectionType"
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead > 0 facet connectionType"
               }
             ]
           },
@@ -1135,7 +1135,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT count(*) Where actionName ='CONTENT_BUFFER_START' and contentPlayhead > 0 FACET viewId "
+                "query": "FROM VideoAction SELECT count(*) Where actionName ='CONTENT_BUFFER_START' and contentPlayhead > 0 FACET viewId "
               }
             ]
           },
@@ -1156,7 +1156,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT sum(timeSinceBufferBegin/1000) WHERE actionName = 'CONTENT_BUFFER_END' and contentPlayhead > 0 FACET viewId "
+                "query": "FROM VideoAction SELECT sum(timeSinceBufferBegin/1000) WHERE actionName = 'CONTENT_BUFFER_END' and contentPlayhead > 0 FACET viewId "
               }
             ]
           },
@@ -1177,7 +1177,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT count(*) Where actionName ='CONTENT_BUFFER_START' and contentPlayhead = 0 FACET viewId "
+                "query": "FROM VideoAction SELECT count(*) Where actionName ='CONTENT_BUFFER_START' and contentPlayhead = 0 FACET viewId "
               }
             ]
           },
@@ -1198,7 +1198,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT sum(timeSinceBufferBegin/1000) WHERE actionName = 'CONTENT_BUFFER_END' and contentPlayhead = 0 FACET viewId "
+                "query": "FROM VideoAction SELECT sum(timeSinceBufferBegin/1000) WHERE actionName = 'CONTENT_BUFFER_END' and contentPlayhead = 0 FACET viewId "
               }
             ]
           },
@@ -1219,7 +1219,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' COMPARE WITH 1 week ago"
+                "query": "FROM VideoAction SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' COMPARE WITH 1 week ago"
               }
             ]
           },
@@ -1240,7 +1240,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' facet deviceModel TIMESERIES AUTO "
+                "query": "FROM VideoAction SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' facet deviceModel TIMESERIES AUTO "
               }
             ]
           },
@@ -1261,7 +1261,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' facet deviceModel "
+                "query": "FROM VideoAction SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' facet deviceModel "
               }
             ]
           },
@@ -1282,7 +1282,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT histogram(timeSinceLoad, buckets: 10, width: 20) WHERE actionName ='PLAYER_READY' facet deviceModel"
+                "query": "FROM VideoAction SELECT histogram(timeSinceLoad, buckets: 10, width: 20) WHERE actionName ='PLAYER_READY' facet deviceModel"
               }
             ]
           },
@@ -1303,7 +1303,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem, RokuVideo SELECT filter(count(*), WHERE actionName ='APP_STARTED' and lastExitOrTerminationReason IN ( 'EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) as 'Crashes', filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) as 'Video Start Failures', filter(count(*), WHERE actionName = 'HTTP_ERROR') as 'HTTP Errors', filter(count(*), WHERE actionName = 'CONTENT_ERROR') as 'Content Errors', filter(count(*), WHERE actionName = 'CONTENT_BUFFER_START' and contentPlayhead > 0) as 'Interruptions', filter(percentile(timeSinceBufferBegin/1000, 50), WHERE actionName = 'CONTENT_BUFFER_END' and contentPlayhead > 0) as 'Rebuffer Time (s)',  filter(percentile(timeSinceBufferBegin/1000, 50), WHERE actionName = 'CONTENT_BUFFER_END' and contentPlayhead = 0) as 'Initial Buffer Time (s)', filter(percentile(timeSinceLoad, 50), WHERE actionName = 'PLAYER_READY') as 'Player Load Time (s)', filter(percentile(contentMeasuredBitrate, 50), WHERE actionName = 'CONTENT_HEARTBEAT') as 'Measured Bitrate'  since 30 minutes ago"
+                "query": "FROM ConnectedDeviceSystem, VideoAction SELECT filter(count(*), WHERE actionName ='APP_STARTED' and lastExitOrTerminationReason IN ( 'EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) as 'Crashes', filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) as 'Video Start Failures', filter(count(*), WHERE actionName = 'HTTP_ERROR') as 'HTTP Errors', filter(count(*), WHERE actionName = 'CONTENT_ERROR') as 'Content Errors', filter(count(*), WHERE actionName = 'CONTENT_BUFFER_START' and contentPlayhead > 0) as 'Interruptions', filter(percentile(timeSinceBufferBegin/1000, 50), WHERE actionName = 'CONTENT_BUFFER_END' and contentPlayhead > 0) as 'Rebuffer Time (s)',  filter(percentile(timeSinceBufferBegin/1000, 50), WHERE actionName = 'CONTENT_BUFFER_END' and contentPlayhead = 0) as 'Initial Buffer Time (s)', filter(percentile(timeSinceLoad, 50), WHERE actionName = 'PLAYER_READY') as 'Player Load Time (s)', filter(percentile(contentMeasuredBitrate, 50), WHERE actionName = 'CONTENT_HEARTBEAT') as 'Measured Bitrate'  since 30 minutes ago"
               }
             ]
           },
@@ -1324,7 +1324,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem, RokuVideo SELECT uniqueCount(uuid) timeseries auto "
+                "query": "FROM ConnectedDeviceSystem, VideoAction SELECT uniqueCount(uuid) timeseries auto "
               }
             ]
           },
@@ -1345,7 +1345,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT filter(count(*), WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) / filter(count(*), WHERE actionName = 'APP_STARTED') * 100 facet uuid "
+                "query": "FROM ConnectedDeviceSystem SELECT filter(count(*), WHERE actionName = 'APP_STARTED' and lastExitOrTerminationReason IN ('EXIT_BRIGHTSCRIPT_TIMEOUT', 'EXIT_BRIGHTSCRIPT_CRASH', 'EXIT_OUT_OF_MEMORY')) / filter(count(*), WHERE actionName = 'APP_STARTED') * 100 facet uuid "
               }
             ]
           },
@@ -1366,7 +1366,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) / filter(count(*), WHERE actionName = 'CONTENT_START' and contentPlayhead = 0)  * 100  as '%' facet uuid "
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName = 'CONTENT_ERROR' and contentPlayhead = 0) / filter(count(*), WHERE actionName = 'CONTENT_START' and contentPlayhead = 0)  * 100  as '%' facet uuid "
               }
             ]
           },
@@ -1387,7 +1387,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as '%'facet uuid"
+                "query": "FROM ConnectedDeviceSystem SELECT filter(count(*), WHERE  actionName = 'HTTP_ERROR') / filter(count(*), where actionName = 'HTTP_REQUEST') * 100 as '%'facet uuid"
               }
             ]
           },
@@ -1408,7 +1408,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName ='CONTENT_ERROR') / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) * 100 as '%'facet uuid"
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName ='CONTENT_ERROR') / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) * 100 as '%'facet uuid"
               }
             ]
           },
@@ -1429,7 +1429,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as '%'facet uuid"
+                "query": "FROM VideoAction SELECT filter(count(*), WHERE actionName ='CONTENT_BUFFER_START' and contentPlayhead != 0) / filter(count(*), WHERE actionName IN ('CONTENT_START', 'CONTENT_NEXT')) as '%'facet uuid"
               }
             ]
           },
@@ -1450,7 +1450,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 facet uuid "
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead != 0 facet uuid "
               }
             ]
           },
@@ -1471,7 +1471,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 facet uuid"
+                "query": "FROM VideoAction SELECT percentile(timeSinceBufferBegin/1000, 50) as 'seconds' WHERE actionName ='CONTENT_BUFFER_END' and contentPlayhead = 0 facet uuid"
               }
             ]
           },
@@ -1492,7 +1492,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' facet uuid "
+                "query": "FROM VideoAction SELECT percentile(timeSinceLoad, 50) as 'seconds' WHERE actionName ='PLAYER_READY' facet uuid "
               }
             ]
           },
@@ -1513,7 +1513,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuVideo SELECT percentile(contentMeasuredBitrate, 50) facet uuid "
+                "query": "FROM VideoAction SELECT percentile(contentMeasuredBitrate, 50) facet uuid "
               }
             ]
           },
@@ -1534,7 +1534,7 @@
             "nrqlQueries": [
               {
                 "accountId": <your_account_id>,
-                "query": "FROM RokuSystem, RokuVideo SELECT * limit 1000"
+                "query": "FROM ConnectedDeviceSystem, VideoAction SELECT * limit 1000"
               }
             ]
           },
