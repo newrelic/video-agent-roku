@@ -1188,6 +1188,7 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["timeSinceLastKeypress"] = dev.TimeSinceLastKeypress() * 1000
     ev["timeSinceLoad"] = ev["timeSinceLoad"] + offsetTime/1000 ' (s)
     ev["totalPlaytime"] = nrCalculateTotalPlaytime() * 1000
+    ev["elapsedTime"]=0
     if m.nrPlaytimeSinceLastEvent = invalid
         ev["playtimeSinceLastEvent"] = 0
     else
