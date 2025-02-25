@@ -30,10 +30,10 @@ function NewRelicInit(account as String, apikey as String,appName as String, reg
     m.nrMobileAppToken = appToken
     appConfig = nrCreateAppInfo()
     m.nrDeviceInfo = appConfig.deviceInfo
-    dataToken = nrConnect(appToken, appConfig.appInfo)
-    m.dataToken = dataToken
     m.appName = appName
     m.nrRegion = region
+    dataToken = nrConnect(appToken, appConfig.appInfo)
+    m.dataToken = dataToken
     m.nrSessionId = nrGenerateId()
     'Reservoir sampling for events
     m.nrEventArray = []
@@ -107,6 +107,7 @@ function NewRelicInit(account as String, apikey as String,appName as String, reg
     m.bgTaskEvents.setField("apiKey", m.nrInsightsApiKey)
     m.bgTaskEvents.setField("dataToken", m.dataToken)
     m.bgTaskEvents.setField("appName", m.appName)
+    m.bgTaskEvents.setField("region", m.nrRegion)
     m.bgTaskEvents.setField("appToken", m.nrMobileAppToken)
     m.bgTaskEvents.setField("appInfo", m.nrDeviceInfo)
     m.eventApiUrl = box(nrEventApiUrl())
@@ -117,12 +118,14 @@ function NewRelicInit(account as String, apikey as String,appName as String, reg
     m.bgTaskLogs.setField("apiKey", m.nrInsightsApiKey)
     m.logApiUrl = box(nrLogApiUrl())
     m.bgTaskEvents.setField("appName", m.appName)
+    m.bgTaskEvents.setField("region", m.nrRegion)
     m.bgTaskLogs.setField("logApiUrl", m.logApiUrl)
     m.bgTaskLogs.sampleType = "log"
     'Create and configure tasks (metrics)
     m.bgTaskMetrics = m.top.findNode("NRTaskMetrics")
     m.bgTaskMetrics.setField("apiKey", m.nrInsightsApiKey)
     m.metricApiUrl = box(nrMetricApiUrl())
+    m.bgTaskEvents.setField("region", m.nrRegion)
     m.bgTaskEvents.setField("appName", m.appName)
     m.bgTaskMetrics.setField("metricApiUrl", m.metricApiUrl)
     m.bgTaskMetrics.sampleType = "metric"
@@ -177,7 +180,12 @@ function nrConnect(appToken as string, body as object)
     jsonRequestBody = FormatJSON(body)
     urlReq = CreateObject("roUrlTransfer")    
     rport = CreateObject("roMessagePort")
-    urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v4/connect")
+    if(m.nrRegion = "staging")
+        urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
+    else
+        urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v4/connect")
+    end if
+    'urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
@@ -1029,9 +1037,9 @@ function nrEventApiUrl() as String
         return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "EU"
         return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
-    else if m.nrRegion = "TEST"
+    else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
-        return m.testServer + "/event"
+        return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     end if
 end function
 
@@ -1040,9 +1048,9 @@ function nrLogApiUrl() as String
         return "https://log-api.newrelic.com/log/v1"
     else if m.nrRegion = "EU"
         return "https://log-api.eu.newrelic.com/log/v1"
-    else if m.nrRegion = "TEST"
+    else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
-        return m.testServer + "/log"
+        return "https://staging-log-api.newrelic.com/log/v1" 
     end if
 end function
 
@@ -1051,9 +1059,9 @@ function nrMetricApiUrl() as String
         return "https://metric-api.newrelic.com/metric/v1"
     else if m.nrRegion = "EU"
         return "https://metric-api.eu.newrelic.com/metric/v1"
-    else if m.nrRegion = "TEST"
+    else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
-        return m.testServer + "/metric"
+        return "https://staging-metric-api.newrelic.com/metric/v1"
     end if
 end function
 

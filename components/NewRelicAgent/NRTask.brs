@@ -144,7 +144,11 @@ function nrData(videoSamples)
     jsonRequestBody = FormatJSON(body)
     urlReq = CreateObject("roUrlTransfer")    
     rport = CreateObject("roMessagePort")
-    urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v3/data")
+    if(m.region = "staging")
+        urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v3/data")
+    else 
+        urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v3/data")
+    end if
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
@@ -177,6 +181,7 @@ function nrTaskMain() as Void
         m.apiKey = m.top.apiKey
         m.sampleType = m.top.sampleType
         m.appName = m.top.appName
+        m.region = m.top.region
         if m.eventApiUrl = "" then m.eventApiUrl = m.top.eventApiUrl
         if m.logApiUrl = "" then m.logApiUrl = m.top.logApiUrl
         if m.metricApiUrl = "" then m.metricApiUrl = m.top.metricApiUrl
