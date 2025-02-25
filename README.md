@@ -37,6 +37,8 @@ Will result in something like the following:
 
 To initialize the agent you need an [ACCOUNT ID](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/) and a [LICENSE KEY](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key). 
 
+To configure the agent to use the staging endpoint, you need to modify the `main.brs` file. Specifically, you should replace config value from `US` to `staging`.
+
 <a name="installation"></a>
 
 ### Installation
