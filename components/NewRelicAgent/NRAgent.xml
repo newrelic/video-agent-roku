@@ -13,7 +13,7 @@
 
 	<interface>
 		<!-- Properties -->
-		<field id="version" type="string" value="3.2.5"/>
+		<field id="version" type="string" value="4.0.0"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
         <function name="NewRelicVideoStart"/>
@@ -35,6 +35,7 @@
         <function name="nrSetCustomAttributeList"/>
         <function name="nrSetHarvestTime"/>
         <function name="nrSetHarvestTimeEvents"/>
+        <function name = "nrSetUserId" />
         <function name="nrSetHarvestTimeLogs"/>
         <function name="nrSetHarvestTimeMetrics"/>
         <function name="nrForceHarvest"/>

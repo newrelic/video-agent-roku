@@ -10,13 +10,15 @@
 '
 ' @param account New Relic account number.
 ' @param apikey Insights API key.
+' @param appName Name of application
+' @param appToken Mobile application token
 ' @param region (optional) New Relic API region, EU or US. Default US.
 ' @param activeLogs (optional) Activate logs or not. Default False.
 ' @return New Relic Agent object.
-function NewRelic(account as String, apikey as String, region = "US" as String, activeLogs = false as Boolean) as Object
+function NewRelic(account as String, apikey as String,appName as String, appToken = "" as String , region = "US" as String, activeLogs = false as Boolean) as Object
     nr = CreateObject("roSGNode", "com.newrelic.NRAgent")
     nr.callFunc("nrActivateLogging", activeLogs)
-    nr.callFunc("NewRelicInit", account, apikey, region)
+    nr.callFunc("NewRelicInit", account, apikey,appName, region, appToken)
     return nr
 end function
 
@@ -107,7 +109,7 @@ function nrDelDomainSubstitution(nr as object, pattern as String) as Void
     nr.callFunc("nrDelDomainSubstitution", pattern)
 end function
 
-' Send an APP_STARTED event of type RokuSystem.
+' Send an APP_STARTED event of type ConnectedDeviceSystem.
 '
 ' @param nr New Relic Agent object.
 ' @param obj The object sent as argument of Main subroutine.
@@ -115,7 +117,7 @@ function nrAppStarted(nr as Object, obj as Object) as Void
     nr.callFunc("nrAppStarted", obj)
 end function
 
-' Send a SCENE_LOADED event of type RokuSystem.
+' Send a SCENE_LOADED event of type ConnectedDeviceSystem.
 '
 ' @param nr New Relic Agent object.
 ' @param sceneName The scene name.
@@ -123,7 +125,7 @@ function nrSceneLoaded(nr as Object, sceneName as String) as Void
     nr.callFunc("nrSceneLoaded", sceneName)
 end function
 
-' Send a system event, type RokuSystem.
+' Send a system event, type ConnectedDeviceSystem.
 '
 ' @param nr New Relic Agent object.
 ' @param eventType Event type.
@@ -151,7 +153,7 @@ function nrSendVideoEvent(nr as Object, actionName as String, attr = invalid) as
     nr.callFunc("nrSendVideoEvent", actionName, attr)
 end function
 
-' Send an HTTP_REQUEST event of type RokuSystem.
+' Send an HTTP_REQUEST event of type ConnectedDeviceSystem.
 '
 ' @param nr New Relic Agent object.
 ' @param urlReq URL request, roUrlTransfer object.
@@ -166,7 +168,7 @@ function nrSendHttpRequest(nr as Object, urlReq as Object) as Void
     end if
 end function
 
-' Send an HTTP_RESPONSE event of type RokuSystem.
+' Send an HTTP_RESPONSE event of type ConnectedDeviceSystem.
 '
 ' @param nr New Relic Agent object.
 ' @param _url Request URL.
@@ -221,6 +223,14 @@ end function
 ' @param time Time in seconds (min 60).
 function nrSetHarvestTime(nr as Object, time as Integer) as Void
     nr.callFunc("nrSetHarvestTime", time)
+end function
+
+' Set userId
+'
+' @param nr New Relic Agent object.
+' @param userId UserId
+function nrSetUserId(nr as Object, userId as String) as Void
+    nr.callFunc("nrSetUserId", userId)
 end function
 
 ' Set harvest time for events, the time the events are buffered before being sent.

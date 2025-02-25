@@ -17,18 +17,23 @@ sub init()
     print "   New Relic Agent for Roku v" + m.nrAgentVersion
     print "   Copyright 2019-2023 New Relic Inc. All Rights Reserved."
     print "************************************************************"
-    InitializeLastEventTimestamps()
 end sub
 
 '=========================='
 ' Public Wrapped Functions '
 '=========================='
 
-function NewRelicInit(account as String, apikey as String, region as String) as Void
+function NewRelicInit(account as String, apikey as String,appName as String, region as String, appToken = "" as String) as Void
     'Session
     m.nrAccountNumber = account
     m.nrInsightsApiKey = apikey
+    m.nrMobileAppToken = appToken
+    appConfig = nrCreateAppInfo()
+    m.nrDeviceInfo = appConfig.deviceInfo
+    m.appName = appName
     m.nrRegion = region
+    dataToken = nrConnect(appToken, appConfig.appInfo)
+    m.dataToken = dataToken
     m.nrSessionId = nrGenerateId()
     'Reservoir sampling for events
     m.nrEventArray = []
@@ -100,6 +105,11 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     'Create and configure tasks (events)
     m.bgTaskEvents = m.top.findNode("NRTaskEvents")
     m.bgTaskEvents.setField("apiKey", m.nrInsightsApiKey)
+    m.bgTaskEvents.setField("dataToken", m.dataToken)
+    m.bgTaskEvents.setField("appName", m.appName)
+    m.bgTaskEvents.setField("region", m.nrRegion)
+    m.bgTaskEvents.setField("appToken", m.nrMobileAppToken)
+    m.bgTaskEvents.setField("appInfo", m.nrDeviceInfo)
     m.eventApiUrl = box(nrEventApiUrl())
     m.bgTaskEvents.setField("eventApiUrl", m.eventApiUrl)
     m.bgTaskEvents.sampleType = "event"
@@ -107,12 +117,16 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
     m.bgTaskLogs = m.top.findNode("NRTaskLogs")
     m.bgTaskLogs.setField("apiKey", m.nrInsightsApiKey)
     m.logApiUrl = box(nrLogApiUrl())
+    m.bgTaskEvents.setField("appName", m.appName)
+    m.bgTaskEvents.setField("region", m.nrRegion)
     m.bgTaskLogs.setField("logApiUrl", m.logApiUrl)
     m.bgTaskLogs.sampleType = "log"
     'Create and configure tasks (metrics)
     m.bgTaskMetrics = m.top.findNode("NRTaskMetrics")
     m.bgTaskMetrics.setField("apiKey", m.nrInsightsApiKey)
     m.metricApiUrl = box(nrMetricApiUrl())
+    m.bgTaskEvents.setField("region", m.nrRegion)
+    m.bgTaskEvents.setField("appName", m.appName)
     m.bgTaskMetrics.setField("metricApiUrl", m.metricApiUrl)
     m.bgTaskMetrics.sampleType = "metric"
 
@@ -157,8 +171,50 @@ function NewRelicInit(account as String, apikey as String, region as String) as 
             end if
         end if
     end if
-    
+
     nrLog(["NewRelicInit, m = ", m])
+end function
+
+
+function nrConnect(appToken as string, body as object)
+    jsonRequestBody = FormatJSON(body)
+    urlReq = CreateObject("roUrlTransfer")    
+    rport = CreateObject("roMessagePort")
+    if(m.nrRegion = "staging")
+        urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
+    else
+        urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v4/connect")
+    end if
+    urlReq.RetainBodyOnError(true)
+    urlReq.EnablePeerVerification(false)
+    urlReq.EnableHostVerification(false)
+    urlReq.EnableEncodings(true)
+    urlReq.AddHeader("CONTENT-TYPE", "application/json")
+    urlReq.AddHeader("X-App-License-Key", appToken)
+    urlReq.AddHeader("X-NewRelic-Connect-Time", nrTimestampFromDateTime(CreateObject("roDateTime")).toStr())
+    urlReq.SetMessagePort(rport)
+    urlReq.AsyncPostFromString(jsonRequestBody)
+    
+    msg = wait(10000, rport)
+
+    if type(msg) = "roUrlEvent" then
+        if msg.GetResponseCode() = 200 then 
+                responseString = msg.GetString()
+                response = ParseJson(responseString)
+                dataToken = response.data_token
+            else
+                print "HTTP Error: "; msg.GetResponseCode()
+                dataToken = invalid
+        end if
+        else
+            print "No valid roUrlEvent message received."
+            dataToken = invalid
+    end if
+    return dataToken
+end function
+
+function nrSetUserId(userId as String) as Void
+    m.userId = userId
 end function
 
 function NewRelicVideoStart(videoObject as Object) as Void
@@ -176,6 +232,10 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrTimeSinceRequested = 0.0
     m.nrTimeSinceStarted = 0.0
     m.nrTimeSinceTrackerReady = 0.0
+    m.nrHeartbeatElapsedTime = 0.0
+    m.nrLastPlayTimestamp = 0.0
+    m.nrIsPlaying = false
+
     'Playtimes
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -244,11 +304,11 @@ function nrAppStarted(aa as Object) as Void
         "instantOnRunMode": aa["instant_on_run_mode"],
         "launchSource": aa["source"]
     }
-    nrSendSystemEvent("RokuSystem", "APP_STARTED", attr)
+    nrSendSystemEvent("ConnectedDeviceSystem", "APP_STARTED", attr)
 end function
 
 function nrSceneLoaded(sceneName as String) as Void
-    nrSendSystemEvent("RokuSystem", "SCENE_LOADED", {"sceneName": sceneName})
+    nrSendSystemEvent("ConnectedDeviceSystem", "SCENE_LOADED", {"sceneName": sceneName})
 end function
 
 function nrSendSystemEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
@@ -337,7 +397,7 @@ function nrSendHttpRequest(attr as Object) as Void
         m.num_http_request_counters.AddReplace(domain, 1)
     end if
 
-    nrSendSystemEvent("RokuSystem", "HTTP_REQUEST", attr)
+    nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_REQUEST", attr)
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
@@ -369,7 +429,7 @@ function nrSendHttpResponse(attr as Object) as Void
         end if
     end if
     
-    nrSendSystemEvent("RokuSystem", "HTTP_RESPONSE", attr)
+    nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_RESPONSE", attr)
 end function
 
 function nrEnableHttpEvents() as Void
@@ -732,12 +792,56 @@ end function
 ' System functions '
 '=================='
 
+function nrCreateAppInfo() as Object
+    app = CreateObject("roAppInfo")
+    dev = CreateObject("roDeviceInfo")
+
+    APPLICATION_NAME = app.GetTitle()
+    APPLICATION_VERSION = app.GetValue("major_version") + "." + app.GetValue("minor_version")
+    APPLICATION_PACKAGE = "com.example." + APPLICATION_NAME
+    OS_NAME = "Android"
+    OS_VERSION = nrGetOSVersion(dev).version
+    MANUFACTURE_AND_MODEL = dev.GetModel()
+    AGENT_NAME = "RokuAgent"
+    AGENT_VERSION = m.nrAgentVersion
+    DEVICE_ID = dev.GetChannelClientId()
+    DEPRECATED_COUNTRY_CODE = ""
+    DEPRECATED_REGION_CODE = ""
+    MANUFACTURER = "Roku"
+    MISCELLANEOUS_PARAMETERS_JSON = {
+        "platform" : "Native",
+        "platformVersion" : OS_VERSION
+    }
+
+    appInfo = [
+        [
+            APPLICATION_NAME,
+            APPLICATION_VERSION,
+            APPLICATION_PACKAGE
+        ],
+        [
+            OS_NAME,
+            OS_VERSION,
+            MANUFACTURE_AND_MODEL,
+            AGENT_NAME,
+            AGENT_VERSION,
+            DEVICE_ID,
+            DEPRECATED_COUNTRY_CODE,
+            DEPRECATED_REGION_CODE,
+            MANUFACTURER,
+            MISCELLANEOUS_PARAMETERS_JSON
+        ]
+    ]
+    
+    return {"appInfo" : appInfo, "deviceInfo":appInfo[1]}
+end function
+
 function nrCreateEvent(eventType as String, actionName as String) as Object
     ev = CreateObject("roAssociativeArray")
     if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
     if eventType <> invalid and eventType <> "" then ev["eventType"] = eventType
     
-    ev["timestamp"] = FormatJson(nrTimestamp())
+    ev["timestamp"] = nrTimestamp()
     ev = nrAddBaseAttributes(ev)
     
     return ev
@@ -745,9 +849,13 @@ end function
 
 function nrAddBaseAttributes(ev as Object) as Object
     'Add default custom attributes for instrumentation'
-    ev.AddReplace("instrumentation.provider", "media")
+    ev.AddReplace("enduser.id", m.userId)
+    ev.AddReplace("src","Roku")
+    ev.AddReplace("instrumentation.provider", "newrelic")
     ev.AddReplace("instrumentation.name", "roku")
-    ev.AddReplace("instrumentation.version", m.nrAgentVersion)
+    dev = CreateObject("roDeviceInfo")
+    ver = nrGetOSVersion(dev)
+    ev.AddReplace("instrumentation.version", ver["version"])
     ev.AddReplace("newRelicAgent", "RokuAgent")
     ev.AddReplace("newRelicVersion", m.nrAgentVersion)
     ev.AddReplace("sessionId", m.nrSessionId)
@@ -755,8 +863,7 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("hdmiIsConnected", hdmi.IsConnected())
     ev.AddReplace("hdmiHdcpVersion", hdmi.GetHdcpVersion())
     dev = CreateObject("roDeviceInfo")
-    ev.AddReplace("deviceUuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
-    ev.AddReplace("deviceSize", "xLarge")
+    ev.AddReplace("uuid", dev.GetChannelClientId()) 'GetDeviceUniqueId is deprecated, so we use GetChannelClientId
     ev.AddReplace("deviceName", dev.GetModelDisplayName())
     ev.AddReplace("deviceGroup", "Roku")
     ev.AddReplace("deviceManufacturer", "Roku")
@@ -768,7 +875,6 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("vendorUsbName", modelDetails.VendorUSBName)
     ev.AddReplace("screenSize", modelDetails.ScreenSize)
     ev.AddReplace("osName", "RokuOS")
-    ver = nrGetOSVersion(dev)
     ev.AddReplace("osVersion", ver["version"])
     ev.AddReplace("osBuild", ver["build"])
     ev.AddReplace("countryCode", dev.GetUserCountryCode())
@@ -778,7 +884,11 @@ function nrAddBaseAttributes(ev as Object) as Object
     ev.AddReplace("connectionType", dev.GetConnectionType())
     'ev.AddReplace("ipAddress", dev.GetExternalIp())
     ev.AddReplace("displayType", dev.GetDisplayType())
-    ev.AddReplace("contentRenditionName", dev.GetDisplayMode())
+    ev.AddReplace("displayMode", dev.GetDisplayMode())
+    if dev.GetDisplaySize() <> invalid
+        ev.AddReplace("contentRenditionHeight", dev.GetDisplaySize().h)
+        ev.AddReplace("contentRenditionWidth", dev.GetDisplaySize().w)
+    end if
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
     ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
@@ -793,11 +903,8 @@ function nrAddBaseAttributes(ev as Object) as Object
     end if
 
     app = CreateObject("roAppInfo")
-    appid = app.GetID().ToInt()
-    if appid = 0 then appid = 1
-    ev.AddReplace("appId", appid)
     ev.AddReplace("appVersion", app.GetValue("major_version") + "." + app.GetValue("minor_version"))
-    ev.AddReplace("appName", app.GetTitle())
+    'ev.AddReplace("appName", app.GetTitle())
     ev.AddReplace("appDevId", app.GetDevID())
     ev.AddReplace("appIsDev", app.IsDev())
     appbuild = app.GetValue("build_version").ToInt()
@@ -817,9 +924,6 @@ function nrAddCustomAttributes(ev as Object) as Object
     actionName = ev["actionName"]
     actionCustomAttr = m.nrCustomAttributes[actionName]
     if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
-    ' Calculate and add elapsed time for the action
-    elapsedTime = nrCalculateElapsedTime(actionName)
-    ev.AddReplace("elapsedTime", elapsedTime)
     return ev
 end function
 
@@ -834,19 +938,6 @@ function nrAddCommonHTTPAttr(info as Object) as Object
         "url": info["Url"]
     }
     return attr
-end function
-
-function nrCalculateElapsedTime(actionName as String) as Integer
-    currentTime = CreateObject("roDateTime")
-    currentTimestamp = currentTime.AsSeconds()
-    if m.lastEventTimestamps[actionName] <> invalid
-        timeSinceLastEvent = (currentTimestamp - m.lastEventTimestamps[actionName]) * 1000
-        elapsedTime = timeSinceLastEvent
-    else
-        elapsedTime=0
-    end if
-    m.lastEventTimestamps[actionName] = currentTimestamp
-    return elapsedTime
 end function
 
 function nrCalculateBufferType(actionName as String) as String
@@ -893,7 +984,7 @@ function nrSendHTTPConnect(info as Object) as Void
         m.num_http_connect_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendSystemEvent("RokuSystem", "HTTP_CONNECT", attr)
+    if m.http_events_enabled then nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_CONNECT", attr)
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
@@ -920,7 +1011,7 @@ function nrSendHTTPComplete(info as Object) as Void
         m.num_http_complete_counters.AddReplace(domain, 1)
     end if
 
-    if m.http_events_enabled then nrSendSystemEvent("RokuSystem", "HTTP_COMPLETE", attr)
+    if m.http_events_enabled then nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_COMPLETE", attr)
 
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     nrSendMetric("roku.http.complete.connectTime", attr["connectTime"], {"domain": domain})
@@ -934,7 +1025,7 @@ function nrSendBandwidth(info as Object) as Void
     attr = {
         "bandwidth": info["bandwidth"]
     }
-    nrSendSystemEvent("RokuSystem", "BANDWIDTH_MINUTE", attr)
+    nrSendSystemEvent("ConnectedDeviceSystem", "BANDWIDTH_MINUTE", attr)
 end function
 
 'TODO:  Testing endpoint. If nrRegion is not US or EU, use it as endpoint. Deprecate the "TEST" region and "m.testServer".
@@ -945,9 +1036,9 @@ function nrEventApiUrl() as String
         return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "EU"
         return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
-    else if m.nrRegion = "TEST"
+    else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
-        return m.testServer + "/event"
+        return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
     end if
 end function
 
@@ -956,9 +1047,9 @@ function nrLogApiUrl() as String
         return "https://log-api.newrelic.com/log/v1"
     else if m.nrRegion = "EU"
         return "https://log-api.eu.newrelic.com/log/v1"
-    else if m.nrRegion = "TEST"
+    else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
-        return m.testServer + "/log"
+        return "https://staging-log-api.newrelic.com/log/v1" 
     end if
 end function
 
@@ -967,39 +1058,15 @@ function nrMetricApiUrl() as String
         return "https://metric-api.newrelic.com/metric/v1"
     else if m.nrRegion = "EU"
         return "https://metric-api.eu.newrelic.com/metric/v1"
-    else if m.nrRegion = "TEST"
+    else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
-        return m.testServer + "/metric"
+        return "https://staging-metric-api.newrelic.com/metric/v1"
     end if
 end function
 
 '================='
 ' Video functions '
 '================='
-
-sub InitializeLastEventTimestamps()
-    m.lastEventTimestamps = {
-        "CONTENT_REQUEST": invalid,
-        "CONTENT_START": invalid,
-        "CONTENT_END": invalid,
-        "CONTENT_PAUSE": invalid,
-        "CONTENT_RESUME": invalid,
-        "CONTENT_BUFFER_START": invalid,
-        "CONTENT_BUFFER_END": invalid,
-        "HTTP_ERROR": invalid,
-        "CONTENT_ERROR": invalid,
-        "AD_ERROR": invalid,
-        "AD_BREAK_START": invalid,
-        "AD_BREAK_END": invalid,
-        "AD_REQUEST": invalid,
-        "AD_START": invalid,
-        "AD_END": invalid,
-        "AD_PAUSE": invalid,
-        "AD_RESUME": invalid,
-        "AD_QUARTILE": invalid,
-        "AD_SKIP": invalid
-    }
-end sub
 
 function nrSendPlayerReady() as Void
     m.nrTimeSinceTrackerReady = m.nrTimer.TotalMilliseconds()
@@ -1102,9 +1169,9 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["actionName"] = actionName
     '- Set current timestamp
     backupTimestamp = ev["timestamp"]
-    ev["timestamp"] = FormatJson(nrTimestamp())
+    ev["timestamp"] = nrTimestamp()
     '- Recalculate playhead, adding timestamp offset
-    lint& = ParseJson(ev["timestamp"]) - ParseJson(backupTimestamp)
+    lint& = ev["timestamp"] - backupTimestamp
     offsetTime = lint&
     nrLog(["Offset time = ", offsetTime])
     if ev["contentPlayhead"] <> invalid then ev["contentPlayhead"] = ev["contentPlayhead"] + offsetTime
@@ -1128,6 +1195,9 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
     ev["timeSinceLastKeypress"] = dev.TimeSinceLastKeypress() * 1000
     ev["timeSinceLoad"] = ev["timeSinceLoad"] + offsetTime/1000 ' (s)
     ev["totalPlaytime"] = nrCalculateTotalPlaytime() * 1000
+    if actionName = "CONTENT_END"
+        ev.Delete("elapsedTime")
+    end if
     if m.nrPlaytimeSinceLastEvent = invalid
         ev["playtimeSinceLastEvent"] = 0
     else
@@ -1149,6 +1219,11 @@ function nrSendBackupVideoEnd() as Void
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
+    ev.AddReplace("errorName",m.nrVideoObject.errorMsg)
+    ev.AddReplace("errorCode",m.nrVideoObject.errorCode)
+    if m.nrVideoObject.errorInfo <> invalid
+        ev.AddReplace("backtrace",m.nrVideoObject.errorInfo.source)
+    end if
     ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
     ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
     ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
@@ -1519,6 +1594,11 @@ function nrStateObserver() as Void
 end function
 
 function nrStateTransitionPlaying() as Void
+    if m.nrLastVideoState = "paused" or m.nrLastVideoState = "buffering"
+        ' Resume playtime tracking
+        m.nrIsPlaying = true
+        m.nrLastPlayTimestamp = CreateObject("roDateTime").AsSeconds()
+    end if
     nrLog("nrStateTransitionPlaying")
     if m.nrLastVideoState = "paused"
         nrSendResume()
@@ -1542,6 +1622,9 @@ end function
 function nrStateTransitionPaused() as Void
     nrLog("nrStateTransitionPaused")
     if m.nrLastVideoState = "playing"
+        currentTime = CreateObject("roDateTime").AsSeconds()
+        m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime + (currentTime - m.nrLastPlayTimestamp)
+        m.nrIsPlaying = false
         nrSendPause()
     end if
 end function
@@ -1608,9 +1691,21 @@ function getLicenseStatusAttributes(licenseStatus as Object) as object
 end function
 
 function nrHeartbeatHandler() as Void
-    'Only send while it is playing (state is not "none" or "finished")
+    ' Only send while it is playing (state is not "none" or "finished")
     if m.nrVideoObject.state <> "none" and m.nrVideoObject.state <> "finished"
-        nrSendVideoEvent("CONTENT_HEARTBEAT")
+        if m.nrIsPlaying
+            currentTime = CreateObject("roDateTime").AsSeconds()
+            m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime + (currentTime - m.nrLastPlayTimestamp)
+            m.nrLastPlayTimestamp = currentTime
+        end if
+
+        ' Send content heartbeat with elapsed time for the last period
+        m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime * 1000
+        nrSendVideoEvent("CONTENT_HEARTBEAT", {"elapsedTime": m.nrHeartbeatElapsedTime})
+
+        ' Reset the heartbeatElapsedTime after sending the heartbeat
+        m.nrHeartbeatElapsedTime = 0.0
+
         m.nrTimeSinceLastHeartbeat = m.nrTimer.TotalMilliseconds()
         if m.nrPlaytimeSinceLastEvent <> invalid
             m.nrPlaytimeSinceLastEvent.Mark()
