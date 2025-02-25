@@ -37,6 +37,8 @@ Will result in something like the following:
 
 To initialize the agent you need an [ACCOUNT ID](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/) and a [LICENSE KEY](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key). 
 
+To configure the agent to use different endpoints based on the environment, you need to modify the `main.brs` file. The default configuration value is `US`, and it can be changed to `EU` or `staging` depending on the environment you want to use.
+
 <a name="installation"></a>
 
 ### Installation
