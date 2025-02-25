@@ -171,7 +171,7 @@ function NewRelicInit(account as String, apikey as String,appName as String, reg
             end if
         end if
     end if
-    
+
     nrLog(["NewRelicInit, m = ", m])
 end function
 
@@ -185,7 +185,6 @@ function nrConnect(appToken as string, body as object)
     else
         urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v4/connect")
     end if
-    'urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
