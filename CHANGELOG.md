@@ -1,11 +1,11 @@
 # CHANGELOG
 All notable changes to this project will be documented in this file.
 
-## [4.0.1] - 2024/07/16
+## [4.0.1] - 2025/04/22
 ### Add
 - errorName has been replaced with errorMessage and errorName is deprecated from the datamodel
 
-## [4.0.0] - 2024/07/16
+## [4.0.0] - 2054/02/25
 ### Add
 - streamlined the event types with other media streaming agents
 
