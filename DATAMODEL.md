@@ -224,7 +224,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | viewId                   | Trackers will generate unique IDs for every new video iteration.                                                                                   |
 | contentId                | The ID of the video.                                                                                                                               |
 | contentTitle             | The title of the video.                                                                                                                            |
-| errorName                | Name of the error.                                                                                                                                 |
+| errorMessage                | Message of the error.                                                                                                                                 |
 | errorCode                | Error code if it's known.                                                                                                                          |
 | backTrace                | Stack trace of the error.                                                                                                                          |
 | contentSrc               | Content source URL.                                                                                                                                |
