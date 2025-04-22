@@ -552,7 +552,7 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             attr = {}
             if ctx.errType <> invalid then attr.AddReplace("adErrorType", ctx.errType)
             if ctx.errCode <> invalid then attr.AddReplace("errorCode", ctx.errCode)
-            if ctx.errMsg <> invalid then attr.AddReplace("errorName", ctx.errMsg)
+            if ctx.errMsg <> invalid then attr.AddReplace("errorMessage", ctx.errMsg)
             nrSendErrorEvent("AD_ERROR", ctx, attr) 
         end if
     else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
@@ -1132,7 +1132,7 @@ end function
 
 function nrSendError(video as Object) as Void
     attr = {
-        "errorName": video.errorMsg,
+        "errorMessage": video.errorMsg,
         "errorCode": video.errorCode
     }
     if video.errorStr <> invalid
@@ -1219,7 +1219,7 @@ function nrSendBackupVideoEnd() as Void
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
-    ev.AddReplace("errorName",m.nrVideoObject.errorMsg)
+    ev.AddReplace("errorMessage",m.nrVideoObject.errorMsg)
     ev.AddReplace("errorCode",m.nrVideoObject.errorCode)
     if m.nrVideoObject.errorInfo <> invalid
         ev.AddReplace("backtrace",m.nrVideoObject.errorInfo.source)
