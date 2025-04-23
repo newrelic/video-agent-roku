@@ -35,7 +35,14 @@ Will result in something like the following:
 
 ### Requirements
 
-To initialize the agent you need an [ACCOUNT ID](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/) and a [LICENSE KEY](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/#license-key). 
+To initialize the agent you need an ACCOUNT ID, API KEY, APPLICATION TOKEN and ENDPOINT.
+
+For initializing the agent, please follow the steps:
+1. Start by logging into your New Relic account to access the necessary configurations.
+2. Once logged in, go to Integrations & Agents in the dashboard.
+3. Under the Integrations & Agents section, choose Streaming Video & Ads.
+4. Find and click on Roku within the Streaming Video & Ads category.
+5. Complete the onboarding process by following the detailed steps provided in the Roku section.
 
 To configure the agent to use different endpoints based on the environment, you need to modify the `main.brs` file. The default configuration value is `US`, and it can be changed to `EU` or `staging` depending on the environment you want to use.
 
