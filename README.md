@@ -20,8 +20,7 @@ Will result in something like the following:
 ![image](https://user-images.githubusercontent.com/8813505/77453470-b2942d00-6dcd-11ea-9d5b-e48b5ae3c9c6.png)
 
 ## On This Page
-  * [Requirements](#requirements)  
-  * [Installation](#installation)  
+  * [Requirements & Installation](#requirements)  
   * [Usage](#usage)  
   * [Agent API](#api)  
   * [Data Model](#data-model)
@@ -33,7 +32,7 @@ Will result in something like the following:
 
 <a name="requirements"></a>
 
-### Requirements
+### Requirements & Installation
 
 To initialize the agent you need an ACCOUNT ID, API KEY, APPLICATION TOKEN and ENDPOINT.
 
@@ -46,23 +45,6 @@ For initializing the agent, please follow the steps:
 
 To configure the agent to use different endpoints based on the environment, you need to modify the `main.brs` file. The default configuration value is `US`, and it can be changed to `EU` or `staging` depending on the environment you want to use.
 
-<a name="installation"></a>
-
-### Installation
-
-1. Download the [Roku Video Agent](https://github.com/newrelic/video-agent-roku/releases/latest) and unzip it. Inside the package you will find the following file structure:
-
-```
-components/NewRelicAgent/
-	NRAgent.brs
-	NRAgent.xml
-	NRTask.brs
-	NRTask.xml
-source/
-	NewRelicAgent.brs
-```
-
-2. Open your Roku app project’s directory and copy the “NewRelicAgent” folder to “components” and "NewRelicAgent.brs" file to “source”.
 
 <a name="usage"></a>
 
