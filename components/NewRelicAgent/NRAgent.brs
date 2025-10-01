@@ -1237,11 +1237,20 @@ function nrAddVideoAttributes(ev as Object) as Object
     ba = CreateObject("roByteArray")
     ba.FromAsciiString(streamUrl)
     ev.AddReplace("contentId", ba.GetCRC32())
-    if m.nrVideoObject.streamInfo <> invalid
-        ev.AddReplace("contentBitrate", m.nrVideoObject.streamInfo["streamBitrate"])
+    ' Set contentBitrate: prefer segBitrateBps, fallback to streamBitrate
+    contentBitrate = invalid
+    if m.nrVideoObject.streamingSegment <> invalid and m.nrVideoObject.streamingSegment["segBitrateBps"] <> invalid
+        contentBitrate = m.nrVideoObject.streamingSegment["segBitrateBps"]
+    else if m.nrVideoObject.streamInfo <> invalid and m.nrVideoObject.streamInfo["streamBitrate"] <> invalid
+        contentBitrate = m.nrVideoObject.streamInfo["streamBitrate"]
+    end if
+    ev.AddReplace("contentBitrate", contentBitrate)
+    ' Keep contentMeasuredBitrate as before
+    if m.nrVideoObject.streamInfo <> invalid and m.nrVideoObject.streamInfo["measuredBitrate"] <> invalid
         ev.AddReplace("contentMeasuredBitrate", m.nrVideoObject.streamInfo["measuredBitrate"])
     end if
-    if m.nrVideoObject.streamingSegment <> invalid
+    ' Keep contentSegmentBitrate for segment info
+    if m.nrVideoObject.streamingSegment <> invalid and m.nrVideoObject.streamingSegment["segBitrateBps"] <> invalid
         ev.AddReplace("contentSegmentBitrate", m.nrVideoObject.streamingSegment["segBitrateBps"])
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
