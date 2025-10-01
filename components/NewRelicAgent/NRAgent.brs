@@ -236,6 +236,9 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrLastPlayTimestamp = 0.0
     m.nrIsPlaying = false
 
+    'timeSinceLastError
+    m.nrTimeSinceLastError = 0.0
+
     'Playtimes
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -1274,6 +1277,9 @@ function nrAddVideoAttributes(ev as Object) as Object
     if m.nrTimeSinceTrackerReady > 0
         ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
     end if
+     if m.nrTimeSinceLastError > 0
+        ev.AddReplace("timeSinceLastError", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastError)
+    end if
     'TTFF calculated internally by RokuOS
     ev.AddReplace("timeToStartStreaming", m.nrVideoObject.timeToStartStreaming * 1000)
     'Playtimes
@@ -1651,6 +1657,7 @@ function nrStateTransitionError() as Void
         nrSendBufferEnd()
     end if
     m.nrNumberOfErrors = m.nrNumberOfErrors + 1
+    m.nrTimeSinceLastError = m.nrTimer.TotalMilliseconds()  ' calculating time of error'
     nrSendError(m.nrVideoObject)
 end function
 
