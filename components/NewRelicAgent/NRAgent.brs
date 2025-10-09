@@ -1323,13 +1323,13 @@ end function
 
 function nrExtractAdBitrate(ad as Object) as Integer
     ' Custom logic to extract bitrate from ad object properties - returns bitrate in bps
-    nrLog("DEBUG: nrExtractAdBitrate called")
+   
     if ad = invalid 
         nrLog("DEBUG: ad object is invalid, returning 0")
         return 0
     end if
     
-    nrLog(["DEBUG: ad object keys = ", ad.Keys()])
+    
     
     ' Method 1: Calculate dynamic bitrate from video node streaming data (similar to webkit approach)
     nrLog("DEBUG: Trying method 1 - dynamic bitrate calculation")
@@ -1672,8 +1672,6 @@ function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
             nrLog(["DEBUG: extractedBitrate result = ", extractedBitrate])
             if extractedBitrate > 0
                 ev.AddReplace("adBitrate", extractedBitrate)
-                ev.AddReplace("adBitrateSource", "extracted")
-                ev.AddReplace("adBitrateSet", "Dynamic")
                 nrLog(["DEBUG: Successfully set adBitrate to ", extractedBitrate])
             else
                 nrLog("DEBUG: No bitrate extracted, adBitrate not set")
