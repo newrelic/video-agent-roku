@@ -236,6 +236,9 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrLastPlayTimestamp = 0.0
     m.nrIsPlaying = false
 
+    'timeSinceLastError
+    m.nrTimeSinceLastError = 0.0
+
     'Playtimes
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -1234,11 +1237,20 @@ function nrAddVideoAttributes(ev as Object) as Object
     ba = CreateObject("roByteArray")
     ba.FromAsciiString(streamUrl)
     ev.AddReplace("contentId", ba.GetCRC32())
-    if m.nrVideoObject.streamInfo <> invalid
-        ev.AddReplace("contentBitrate", m.nrVideoObject.streamInfo["streamBitrate"])
+    ' Set contentBitrate: prefer segBitrateBps, fallback to streamBitrate
+    contentBitrate = invalid
+    if m.nrVideoObject.streamingSegment <> invalid and m.nrVideoObject.streamingSegment["segBitrateBps"] <> invalid
+        contentBitrate = m.nrVideoObject.streamingSegment["segBitrateBps"]
+    else if m.nrVideoObject.streamInfo <> invalid and m.nrVideoObject.streamInfo["streamBitrate"] <> invalid
+        contentBitrate = m.nrVideoObject.streamInfo["streamBitrate"]
+    end if
+    ev.AddReplace("contentBitrate", contentBitrate)
+    ' Keep contentMeasuredBitrate as before
+    if m.nrVideoObject.streamInfo <> invalid and m.nrVideoObject.streamInfo["measuredBitrate"] <> invalid
         ev.AddReplace("contentMeasuredBitrate", m.nrVideoObject.streamInfo["measuredBitrate"])
     end if
-    if m.nrVideoObject.streamingSegment <> invalid
+    ' Keep contentSegmentBitrate for segment info
+    if m.nrVideoObject.streamingSegment <> invalid and m.nrVideoObject.streamingSegment["segBitrateBps"] <> invalid
         ev.AddReplace("contentSegmentBitrate", m.nrVideoObject.streamingSegment["segBitrateBps"])
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
@@ -1273,6 +1285,9 @@ function nrAddVideoAttributes(ev as Object) as Object
     end if
     if m.nrTimeSinceTrackerReady > 0
         ev.AddReplace("timeSinceTrackerReady", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceTrackerReady)
+    end if
+     if m.nrTimeSinceLastError > 0
+        ev.AddReplace("timeSinceLastError", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastError)
     end if
     'TTFF calculated internally by RokuOS
     ev.AddReplace("timeToStartStreaming", m.nrVideoObject.timeToStartStreaming * 1000)
@@ -1651,6 +1666,7 @@ function nrStateTransitionError() as Void
         nrSendBufferEnd()
     end if
     m.nrNumberOfErrors = m.nrNumberOfErrors + 1
+    m.nrTimeSinceLastError = m.nrTimer.TotalMilliseconds()  ' calculating time of error'
     nrSendError(m.nrVideoObject)
 end function
 
