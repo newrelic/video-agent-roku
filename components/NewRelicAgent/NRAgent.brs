@@ -527,12 +527,14 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             m.rafState.timeSinceAdRequested = m.nrTimer.TotalMilliseconds()
         else if evtType = "Start"
             m.rafState.numberOfAds = m.rafState.numberOfAds + 1
+            nrResetAdBitrateTracker()  ' Reset tracker for new ad
             nrSendRAFEvent("AD_START", ctx)
             m.rafState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
         else if evtType = "Complete"
             nrSendRAFEvent("AD_END", ctx)
             'Reset attributes after END
             nrResetRAFState()
+            nrResetAdBitrateTracker()  ' Reset tracker when ad ends
             m.rafState.timeSinceAdRequested = 0
             m.rafState.timeSinceAdStarted = 0
         else if evtType = "Pause"
@@ -1301,12 +1303,15 @@ function nrAddVideoAttributes(ev as Object) as Object
     if m.nrTotalAdPlaytime > 0
         ev.AddReplace("totalAdPlaytime", m.nrTotalAdPlaytime)
     end if
-    contentNode = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
-    ' Check if contentNode is valid
-    if contentNode <> invalid
-        contentTitle = contentNode.title
-        if contentTitle <> invalid
-            ev.AddReplace("contentTitle", contentTitle)
+    videoContent = m.nrVideoObject.content
+    if videoContent <> invalid
+        contentNode = videoContent.getChild(m.nrVideoObject.contentIndex)
+        ' Check if contentNode is valid
+        if contentNode <> invalid
+            contentTitle = contentNode.title
+            if contentTitle <> invalid
+                ev.AddReplace("contentTitle", contentTitle)
+            end if
         end if
     end if
 return ev
@@ -1315,6 +1320,318 @@ end function
 '=============='
 ' Ad functions '
 '=============='
+
+function nrExtractAdBitrate(ad as Object) as Integer
+    ' Custom logic to extract bitrate from ad object properties - returns bitrate in bps
+   
+    if ad = invalid 
+        nrLog("DEBUG: ad object is invalid, returning 0")
+        return 0
+    end if
+    
+    
+    
+    ' Method 1: Calculate dynamic bitrate from video node streaming data (similar to webkit approach)
+    nrLog("DEBUG: Trying method 1 - dynamic bitrate calculation")
+    dynamicBitrate = nrCalculateAdBitrate()
+    nrLog(["DEBUG: dynamicBitrate result = ", dynamicBitrate])
+    if dynamicBitrate > 0
+        ' Dynamic bitrate is already in bps
+        nrLog(["DEBUG: Returning dynamic bitrate (bps) = ", dynamicBitrate])
+        return dynamicBitrate
+    end if
+    
+    ' Method 2: Check for streams array with bitrate info
+    nrLog("DEBUG: Trying method 2 - streams array bitrate")
+    if ad.streams <> invalid and ad.streams.Count() > 0
+        nrLog(["DEBUG: Found streams, count = ", ad.streams.Count()])
+        for each stream in ad.streams
+            if stream <> invalid
+                nrLog(["DEBUG: stream keys = ", stream.Keys()])
+                ' Check various bitrate fields in stream
+                if stream.bitrate <> invalid
+                    nrLog(["DEBUG: Found bitrate in stream = ", stream.bitrate])
+                    nrLog(["DEBUG: bitrate type = ", type(stream.bitrate)])
+                    ' Handle different types - bitrate might already be an integer
+                    bitrateValue = 0
+                    if type(stream.bitrate) = "roInt" or type(stream.bitrate) = "Integer"
+                        bitrateValue = stream.bitrate
+                    else if type(stream.bitrate) = "roString" or type(stream.bitrate) = "String"
+                        bitrateValue = stream.bitrate.ToInt()
+                    else
+                        ' Try to convert to integer directly
+                        bitrateValue = Int(stream.bitrate)
+                    end if
+                    ' Assume if value > 10000 it's in bps, otherwise it's in kbps and needs conversion
+                    if bitrateValue > 10000
+                        nrLog(["DEBUG: Returning bitrate (already in bps) = ", bitrateValue])
+                        return bitrateValue
+                    else
+                        bitrateBps = bitrateValue * 1000
+                        nrLog(["DEBUG: Converted kbps to bps = ", bitrateBps])
+                        return bitrateBps
+                    end if
+                else if stream.bitrateKbps <> invalid
+                    nrLog(["DEBUG: Found bitrateKbps in stream = ", stream.bitrateKbps])
+                    ' Convert bitrateKbps to bps
+                    bitrateValue = 0
+                    if type(stream.bitrateKbps) = "roInt" or type(stream.bitrateKbps) = "Integer"
+                        bitrateValue = stream.bitrateKbps
+                    else if type(stream.bitrateKbps) = "roString" or type(stream.bitrateKbps) = "String"
+                        bitrateValue = stream.bitrateKbps.ToInt()
+                    else
+                        bitrateValue = Int(stream.bitrateKbps)
+                    end if
+                    bitrateBps = bitrateValue * 1000
+                    nrLog(["DEBUG: Converted bitrateKbps to bps = ", bitrateBps])
+                    return bitrateBps
+                else if stream.bitrateBps <> invalid
+                    nrLog(["DEBUG: Found bitrateBps in stream = ", stream.bitrateBps])
+                    ' bitrateBps is already in bps, return as-is
+                    if type(stream.bitrateBps) = "roInt" or type(stream.bitrateBps) = "Integer"
+                        return stream.bitrateBps
+                    else if type(stream.bitrateBps) = "roString" or type(stream.bitrateBps) = "String"
+                        return stream.bitrateBps.ToInt()
+                    else
+                        return Int(stream.bitrateBps)
+                    end if
+                else if stream.bandwidth <> invalid
+                    nrLog(["DEBUG: Found bandwidth in stream = ", stream.bandwidth])
+                    ' Convert bandwidth to bps if needed
+                    bandwidthValue = 0
+                    if type(stream.bandwidth) = "roInt" or type(stream.bandwidth) = "Integer"
+                        bandwidthValue = stream.bandwidth
+                    else if type(stream.bandwidth) = "roString" or type(stream.bandwidth) = "String"
+                        bandwidthValue = stream.bandwidth.ToInt()
+                    else
+                        bandwidthValue = Int(stream.bandwidth)
+                    end if
+                    ' Assume if value > 10000 it's in bps, otherwise it's in kbps and needs conversion
+                    if bandwidthValue > 10000
+                        nrLog(["DEBUG: Returning bandwidth (already in bps) = ", bandwidthValue])
+                        return bandwidthValue
+                    else
+                        bitrateBps = bandwidthValue * 1000
+                        nrLog(["DEBUG: Converted bandwidth kbps to bps = ", bitrateBps])
+                        return bitrateBps
+                    end if
+                end if
+            end if
+        end for
+    else
+        nrLog("DEBUG: No streams found")
+    end if
+    
+    ' Method 2b: Check for media files with bitrate info (fallback)
+    nrLog("DEBUG: Trying method 2b - media files bitrate")
+    if ad.mediaFiles <> invalid
+        nrLog(["DEBUG: Found mediaFiles, count = ", ad.mediaFiles.Count()])
+        for each mediaFile in ad.mediaFiles
+            nrLog(["DEBUG: mediaFile keys = ", mediaFile.Keys()])
+            if mediaFile.bitrate <> invalid
+                nrLog(["DEBUG: Found bitrate in mediaFile = ", mediaFile.bitrate])
+                bitrateValue = mediaFile.bitrate.ToInt()
+                ' Assume if value > 10000 it's in bps, otherwise it's in kbps and needs conversion
+                if bitrateValue > 10000
+                    nrLog(["DEBUG: Returning mediaFile bitrate (already in bps) = ", bitrateValue])
+                    return bitrateValue
+                else
+                    bitrateBps = bitrateValue * 1000
+                    nrLog(["DEBUG: Converted mediaFile bitrate kbps to bps = ", bitrateBps])
+                    return bitrateBps
+                end if
+            else if mediaFile.bitrateKbps <> invalid
+                nrLog(["DEBUG: Found bitrateKbps in mediaFile = ", mediaFile.bitrateKbps])
+                bitrateBps = mediaFile.bitrateKbps.ToInt() * 1000
+                nrLog(["DEBUG: Converted mediaFile bitrateKbps to bps = ", bitrateBps])
+                return bitrateBps
+            end if
+        end for
+    else
+        nrLog("DEBUG: No mediaFiles found")
+    end if
+    
+    ' Method 3: Parse bitrate from media URL patterns (e.g., "_1000k", "_2mbps")
+    nrLog("DEBUG: Trying method 3 - URL pattern parsing")
+    if ad.url <> invalid
+        nrLog(["DEBUG: Found ad.url = ", ad.url])
+        result = nrParseBitrateFromUrl(ad.url)
+        if result > 0
+            nrLog(["DEBUG: Parsed bitrate from url = ", result])
+            return result
+        end if
+    else if ad.mediaurl <> invalid
+        nrLog(["DEBUG: Found ad.mediaurl = ", ad.mediaurl])
+        result = nrParseBitrateFromUrl(ad.mediaurl)
+        if result > 0
+            nrLog(["DEBUG: Parsed bitrate from mediaurl = ", result])
+            return result
+        end if
+    else if ad.videourl <> invalid
+        nrLog(["DEBUG: Found ad.videourl = ", ad.videourl])
+        result = nrParseBitrateFromUrl(ad.videourl)
+        if result > 0
+            nrLog(["DEBUG: Parsed bitrate from videourl = ", result])
+            return result
+        end if
+    else
+        nrLog("DEBUG: No URL fields found in ad object")
+    end if
+    
+    ' Method 4: Use minbandwidth as fallback if available
+    nrLog("DEBUG: Trying method 4 - minbandwidth fallback")
+    if ad.minbandwidth <> invalid and ad.minbandwidth > 0
+        ' Convert minbandwidth to bps - assume it's in kbps if < 10000, otherwise already bps
+        result = ad.minbandwidth
+        if result < 10000
+            result = result * 1000  ' Convert kbps to bps
+        end if
+        nrLog(["DEBUG: Found minbandwidth converted to bps = ", result])
+        return result
+    else
+        nrLog("DEBUG: No minbandwidth available")
+    end if
+    
+    nrLog("DEBUG: No bitrate found - returning 0")
+    return 0  ' No bitrate found - only use truly dynamic methods, not hardcoded estimates
+end function
+
+function nrCalculateAdBitrate() as Integer
+    ' Calculate bitrate dynamically from streaming data (similar to webkitVideoDecodedByteCount)
+    nrLog("DEBUG: nrCalculateAdBitrate called")
+    if m.nrVideoObject = invalid 
+        nrLog("DEBUG: nrVideoObject is invalid, returning 0")
+        return 0
+    end if
+    
+    ' Get current streaming info
+    streamInfo = m.nrVideoObject.streamInfo
+    if streamInfo = invalid 
+        nrLog("DEBUG: streamInfo is invalid, returning 0")
+        return 0
+    end if
+    
+    nrLog(["DEBUG: streamInfo keys = ", streamInfo.Keys()])
+    
+    ' Method 1: Use streamInfo.measuredBitrate if available
+    if streamInfo.measuredBitrate <> invalid and streamInfo.measuredBitrate > 0
+        nrLog(["DEBUG: Found measuredBitrate = ", streamInfo.measuredBitrate])
+        return streamInfo.measuredBitrate
+    else
+        nrLog("DEBUG: No measuredBitrate available")
+    end if
+    
+    ' Method 2: Calculate from downloadedSegments and time
+    if streamInfo.downloadedSegments <> invalid and streamInfo.downloadedSegments > 0
+        ' Initialize tracking variables if not exists
+        if m.nrAdBitrateTracker = invalid
+            m.nrAdBitrateTracker = {
+                lastBytes: 0,
+                lastTime: 0,
+                samples: []
+            }
+        end if
+        
+        currentTime = m.nrTimer.TotalMilliseconds()
+        currentBytes = 0
+        
+        ' Sum up bytes from downloaded segments
+        if streamInfo.downloadedBytes <> invalid
+            currentBytes = streamInfo.downloadedBytes
+        end if
+        
+        ' Calculate delta if we have previous measurement
+        if m.nrAdBitrateTracker.lastBytes > 0 and currentBytes > m.nrAdBitrateTracker.lastBytes
+            deltaBytes = currentBytes - m.nrAdBitrateTracker.lastBytes
+            deltaTime = (currentTime - m.nrAdBitrateTracker.lastTime) / 1000.0  ' Convert to seconds
+            
+            if deltaTime > 0
+                bitrate = Int((deltaBytes / deltaTime) * 8)  ' Convert bytes/sec to bits/sec
+                
+                ' Store sample for averaging
+                m.nrAdBitrateTracker.samples.Push(bitrate)
+                
+                ' Keep only last 5 samples for rolling average
+                if m.nrAdBitrateTracker.samples.Count() > 5
+                    m.nrAdBitrateTracker.samples.Shift()
+                end if
+                
+                ' Update tracking values
+                m.nrAdBitrateTracker.lastBytes = currentBytes
+                m.nrAdBitrateTracker.lastTime = currentTime
+                
+                ' Return averaged bitrate
+                return nrCalculateAverageBitrate(m.nrAdBitrateTracker.samples)
+            end if
+        else
+            ' First measurement, just store values
+            m.nrAdBitrateTracker.lastBytes = currentBytes
+            m.nrAdBitrateTracker.lastTime = currentTime
+        end if
+    end if
+    
+    ' Method 3: Use segment bitrate if available
+    streamingSegment = m.nrVideoObject.streamingSegment
+    if streamingSegment <> invalid and streamingSegment.segBitrateBps <> invalid
+        return streamingSegment.segBitrateBps
+    end if
+    
+    return 0
+end function
+
+function nrCalculateAverageBitrate(samples as Object) as Integer
+    if samples.Count() = 0 then return 0
+    
+    total = 0
+    for each sample in samples
+        total = total + sample
+    end for
+    
+    return Int(total / samples.Count())
+end function
+
+function nrResetAdBitrateTracker() as Void
+    ' Reset bitrate tracking when ad starts/ends
+    m.nrAdBitrateTracker = invalid
+end function
+
+function nrParseBitrateFromUrl(url as String) as Integer
+    ' Parse common bitrate patterns from URLs - returns bitrate in bps
+    if url = invalid then return 0
+    
+    ' Pattern: _1000k, _2000k, etc. (in kbps)
+    regex = CreateObject("roRegex", "_(\d+)k", "i")
+    match = regex.Match(url)
+    if match.Count() > 1
+        return match[1].ToInt() * 1000  ' Convert kbps to bps
+    end if
+    
+    ' Pattern: _1mbps, _2mbps, etc. (in mbps)
+    regex = CreateObject("roRegex", "_(\d+)mbps", "i")
+    match = regex.Match(url)
+    if match.Count() > 1
+        return match[1].ToInt() * 1000000  ' Convert mbps to bps
+    end if
+    
+    ' Pattern: bitrate=1000000 in URL parameters
+    regex = CreateObject("roRegex", "bitrate=(\d+)", "i")
+    match = regex.Match(url)
+    if match.Count() > 1
+        bitrateValue = match[1].ToInt()
+        ' Assume if value > 10000 it's in bps, otherwise it's in kbps and needs conversion
+        if bitrateValue > 10000
+            return bitrateValue  ' Already in bps
+        else
+            return bitrateValue * 1000  ' Convert kbps to bps
+        end if
+    end if
+    
+    return 0
+end function
+
+
+
+
 
 function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
     if ctx.rendersequence <> invalid
@@ -1341,6 +1658,32 @@ function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
         if ctx.ad.adtitle <> invalid
             ev.AddReplace("adTitle", ctx.ad.adtitle)
         end if
+        ' Add adBitrate for IMA tracker
+        if ctx.ad.bitrate <> invalid
+            ev.AddReplace("adBitrate", ctx.ad.bitrate)
+        else if ctx.ad.bitrateKbps <> invalid
+            ev.AddReplace("adBitrate", ctx.ad.bitrateKbps * 1000)
+        else if ctx.ad.bitrateBps <> invalid
+            ev.AddReplace("adBitrate", ctx.ad.bitrateBps)
+        else
+            ' Custom logic to extract bitrate from ad properties
+            nrLog("DEBUG: Attempting to extract ad bitrate from ctx.ad")
+            extractedBitrate = nrExtractAdBitrate(ctx.ad)
+            nrLog(["DEBUG: extractedBitrate result = ", extractedBitrate])
+            if extractedBitrate > 0
+                ev.AddReplace("adBitrate", extractedBitrate)
+                nrLog(["DEBUG: Successfully set adBitrate to ", extractedBitrate])
+            else
+                nrLog("DEBUG: No bitrate extracted, adBitrate not set")
+            end if
+        end if
+    end if
+    
+    ' Check for adBitrate directly in ctx for IMA SDK
+    if ctx.adBitrate <> invalid
+        ev.AddReplace("adBitrate", ctx.adBitrate)
+    else if ctx.bitrate <> invalid
+        ev.AddReplace("adBitrate", ctx.bitrate)
     end if
     
     if m.rafState.timeSinceAdRequested <> 0

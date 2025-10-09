@@ -1,4 +1,16 @@
-'NR Video Agent Example - Video'
+'NR Video Agent Ex    'NOTE: Uncomment ONE of the following setup calls
+    
+    'Setup the video player with a single video
+    'setupSingleVideo()
+    
+    'Setup the video player with a playlist
+    'setupVideoPlaylist(true)
+    
+    'Setup the video player with a single video and ads
+    ' setupVideoWithAds()
+    
+    'Setup the video player with a single video and Google IMA ads
+    ' setupVideoWithIMA()
 
 sub init()
     print "INIT VideoScene"
@@ -11,7 +23,7 @@ function nrRefUpdated()
     
     'Init custom attributes
     m.pauseCounter = 0
-    updateCustomAttr()
+   updateCustomAttr()
     
     'Send SCENE_LOADED action
     nrSceneLoaded(m.nr, "MyVideoScene")
@@ -19,16 +31,16 @@ function nrRefUpdated()
     'NOTE: Uncomment ONE of the following setup calls
     
     'Setup the video player with a single video
-    'setupSingleVideo()
+    ' setupSingleVideo()
     
     'Setup the video player with a playlist
-    setupVideoPlaylist(true)
+    ' setupVideoPlaylist(true)
     
     'Setup the video player with a single video and ads
-    'setupVideoWithAds()
+    setupVideoWithAds()
     
     'Setup the video player with a single video and Google IMA ads
-    'setupVideoWithIMA()
+    ' setupVideoWithIMA()
     
     'Activate video tracking
     NewRelicVideoStart(m.nr, m.video)
@@ -50,7 +62,7 @@ end function
 function setupSingleVideo() as void
     print "Prepare video player with single video"
     
-    singleVideo = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+    singleVideo = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
     
     videoContent = createObject("RoSGNode", "ContentNode")
     videoContent.url = singleVideo
@@ -59,14 +71,33 @@ function setupSingleVideo() as void
     m.video = m.top.findNode("myVideo")
     m.video.content = videoContent
     m.video.control = "play"
+    
+    ' After 20 seconds, change the video URL to a new one
+    timer20 = createObject("roSGNode", "Timer")
+    timer20.duration = 20
+    timer20.control = "start"
+    timer20.observeField("fire", "onChangeToNewUrl")
+    m.top.appendChild(timer20)
 end function
+
+' Handler to change video URL after 20 seconds
+sub onChangeToNewUrl()
+    print "[DEBUG] Changing video URL after 20 seconds"
+    newUrl = "https://test-streams.mux.dev/x36xhzz/x36.m3"
+    m.video = m.top.findNode("myVideo")
+    if m.video <> invalid
+        m.video.content.url = newUrl
+        m.video.content.title = "New Video"
+        m.video.control = "play"
+    end if
+end sub
 
 function setupVideoPlaylist(loop as boolean) as void
     print "Prepare video player with Playlist"
 
-    'httprange = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.m4v"
-    hls = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
-    dash = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd"
+    'Working test video URLs
+    hls = "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8"
+    dash = "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd"
 
     playlistContent = createObject("RoSGNode", "ContentNode")
     
@@ -90,8 +121,8 @@ end function
 function setupVideoWithAds() as void
     print "Prepare video player with ads"
     
-    singleVideo = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
-    
+    singleVideo = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+   
     videoContent = createObject("RoSGNode", "ContentNode")
     videoContent.url = singleVideo
     videoContent.title = "Single Video"
@@ -122,6 +153,8 @@ function setupVideoWithIMA() as Void
         apiKey: "",
         type: "vod"
     }
+
+    
     
     loadImaSdk(testVodStream)
 end function
