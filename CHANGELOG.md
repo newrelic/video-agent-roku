@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.3] - 2025/10/17
+
+### Add
+
+- Added `timeSinceLastAdError` attribute to ad events. This reports the time elapsed (in milliseconds) since the previous ad error event occurred, helping track ad error patterns and recovery times.
+
 ## [4.0.2] - 2025/10/09
 
 ### Add

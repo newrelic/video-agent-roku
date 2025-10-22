@@ -238,6 +238,9 @@ function NewRelicVideoStart(videoObject as Object) as Void
 
     'timeSinceLastError
     m.nrTimeSinceLastError = 0.0
+    
+    'timeSinceLastAdError
+    m.nrTimeSinceLastAdError = 0.0
 
     'Playtimes
     nrResetPlaytime()
@@ -554,6 +557,9 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
             nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
         else if evtType = "Error"
+            ' Set timestamp for last ad error
+            m.nrTimeSinceLastAdError = m.nrTimer.TotalMilliseconds()
+            
             attr = {}
             if ctx.errType <> invalid then attr.AddReplace("adErrorType", ctx.errType)
             if ctx.errCode <> invalid then attr.AddReplace("errorCode", ctx.errCode)
@@ -1692,6 +1698,11 @@ function nrAddRAFAttributes(ev as Object, ctx as Dynamic) as Object
     
     if m.rafState.timeSinceAdStarted <> 0
         ev.AddReplace("timeSinceAdStarted", m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdStarted)
+    end if
+    
+    ' Add timeSinceLastAdError attribute ONLY for VideoAdAction events
+    if ev.eventType = "VideoAdAction" and m.nrTimeSinceLastAdError > 0
+        ev.AddReplace("timeSinceLastAdError", m.nrTimer.TotalMilliseconds() - m.nrTimeSinceLastAdError)
     end if
     
     ev.AddReplace("adPartner", "raf")
