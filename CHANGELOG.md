@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.4] - 2025/11/11
+
+### Fix
+
+- Avoid adding appId from dataToken.
+- Fix `nrSendErrorEvent` to send proper data.
+
 ## [4.0.3] - 2025/10/17
 
 ### Add
