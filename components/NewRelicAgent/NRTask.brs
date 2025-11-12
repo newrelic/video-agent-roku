@@ -90,7 +90,9 @@ function nrSampleProcessor(sampleType as String, endpoint as String, appName as 
                          item = samples[i]
                         if type(item) = "roAssociativeArray"
                             if item["eventType"] = "ConnectedDeviceSystem"
-                                item["appId"]= m.top.dataToken[0]
+                                if m.top.dataToken <> invalid AND Type(m.top.dataToken) = "roArray" AND m.top.dataToken.Count() > 0
+                                    item["appId"]= m.top.dataToken[0]
+                                end if
                                 item["appName"]= appName
                                 ConnectedDeviceSystemSamples.push(item)
                             else    

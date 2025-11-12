@@ -343,7 +343,7 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     end if
 end function
 
-function nrSendErrorEvent(actionName as String, ctx as Dynamic, attr = invalid) as Void
+function nrSendErrorEvent(actionName as String, attr as Dynamic) as Void
     ev = nrCreateEvent("VideoErrorAction", actionName)
     ev = nrAddVideoAttributes(ev)
     ev = nrAddCustomAttributes(ev)
@@ -564,7 +564,7 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             if ctx.errType <> invalid then attr.AddReplace("adErrorType", ctx.errType)
             if ctx.errCode <> invalid then attr.AddReplace("errorCode", ctx.errCode)
             if ctx.errMsg <> invalid then attr.AddReplace("errorMessage", ctx.errMsg)
-            nrSendErrorEvent("AD_ERROR", ctx, attr) 
+            nrSendErrorEvent("AD_ERROR", attr)
         end if
     else if ctx <> invalid and ctx.time <> invalid and ctx.duration <> invalid
         'Time progress event
