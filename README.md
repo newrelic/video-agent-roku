@@ -948,6 +948,10 @@ Network proxying is supported using URL re-write (see [App Level Proxying](https
 
 <a name="open-source"></a>
 
+# Pricing
+
+Important: Ingesting video telemetry data via this video agent requires a subscription to an Advanced Compute. Contact your New Relic account representative for more details on pricing and entitlement.
+
 # Open source license
 
 This project is distributed under the [Apache 2 license](LICENSE).
