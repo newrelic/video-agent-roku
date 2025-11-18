@@ -9,12 +9,16 @@ sub RunUserInterface(args)
             TestSuite__Main
             TestSuite__Logs
             TestSuite__Metrics
+            TestSuite__VideoEvents
+            TestSuite__IMATracker
+            TestSuite__VideoAdvanced
+            TestSuite__AttributeCoverage
         ])
 
         Runner.Logger.SetVerbosity(3)
         Runner.Logger.SetEcho(false)
         Runner.Logger.SetJUnit(false)
-        Runner.SetFailFast(true)
+        Runner.SetFailFast(false)
         
         Runner.Run()
     else
@@ -31,10 +35,11 @@ sub Main(aa as Object)
     screen.show()
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID, API_KEY, APP_NAME and APP_TOKEN)
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true)
-    
+    ' m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true)
+        m.nr = NewRelic("1", "a02cf2178955c3fed44f026f64b5289fFFFFNRAL", "test-datatoken", "AAde2c77d45138126ff3466228f47920d82cffee9c-NRMA", "US", true)
+
     'Set custom harvest time
-    nrSetHarvestTime(m.nr, 60)
+    nrSetHarvestTime(m.nr, 5)
     'Version 3.0.0 (or above) disables HttpEvents by default
     nrEnableHttpEvents(m.nr)
     'Send APP_STARTED event
