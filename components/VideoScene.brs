@@ -31,13 +31,13 @@ function nrRefUpdated()
     'NOTE: Uncomment ONE of the following setup calls
     
     'Setup the video player with a single video
-    setupSingleVideo()
+    ' setupSingleVideo()
     
     'Setup the video player with a playlist
     ' setupVideoPlaylist(true)
     
     'Setup the video player with a single video and ads
-    ' setupVideoWithAds()
+    setupVideoWithAds()
     
     'Setup the video player with a single video and Google IMA ads
     ' setupVideoWithIMA()
