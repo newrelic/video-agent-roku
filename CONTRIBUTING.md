@@ -20,7 +20,12 @@ Before submitting an Issue, please search for similar ones in the
    - `CHANGELOG.md` - Add a new version entry documenting your changes
    - `package.json` - Update the version field
    - `components/NewRelicAgent/NRAgent.xml` - Update the version in the interface definition
-4. You may merge the Pull Request in once you have the sign-off of two other developers, or if you do not have permission to do that, you may request the second reviewer to merge it for you.
+4. **📺 Roku Device Testing Required**: Since Roku tests cannot be automated in GitHub Actions, all Pull Requests must include manual testing on a physical Roku device:
+   - Run all relevant tests on an actual Roku device
+   - Verify video playback events are tracked correctly
+   - Provide evidence (screenshots, logs, or detailed test descriptions) in the PR
+   - Check the manual testing boxes in the PR template
+5. You may merge the Pull Request in once you have the sign-off of two other developers, or if you do not have permission to do that, you may request the second reviewer to merge it for you.
 
 ## Contributor License Agreement
 

@@ -3,3 +3,7 @@
 out/
 source/testFramework/
 .DS_Store
+node_modules/
+.idea/
+.husky/_/
+package-lock.json
