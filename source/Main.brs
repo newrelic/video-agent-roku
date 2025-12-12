@@ -31,8 +31,7 @@ sub Main(aa as Object)
     screen.show()
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID, API_KEY, APP_NAME and APP_TOKEN)
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true)
-    
+    ' m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true)
     'Set custom harvest time
     nrSetHarvestTime(m.nr, 60)
     'Version 3.0.0 (or above) disables HttpEvents by default

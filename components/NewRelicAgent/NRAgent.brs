@@ -218,8 +218,76 @@ function nrSetUserId(userId as String) as Void
 end function
 
 function NewRelicVideoStart(videoObject as Object) as Void
-    nrLog("NewRelicVideoStart")
+    nrLog("NewRelicVideoStart called")
+    
+    ' Validate video object exists
+    if videoObject = invalid
+        nrLog("ERROR: videoObject is invalid, cannot start tracking")
+        return
+    end if
+    
+    ' Store video object temporarily for validation
+    m.nrVideoObject = videoObject
+    
+    ' Check if content has valid URL before initializing
+    contentSrc = nrGenerateStreamUrl()
+    
+    if contentSrc = invalid or contentSrc = ""
+        nrLog("WARNING: No valid content URL found - DELAYING tracker initialization")
+        nrLog("Tracker will wait until valid content URL is set")
+        
+        ' Set pending initialization flag
+        m.nrPendingInit = true
+        
+        ' Observe content field changes to initialize when URL becomes available
+        videoObject.observeFieldScoped("content", "nrContentReadyObserver")
+        
+        return  ' EXIT - Don't initialize yet!
+    end if
+    
+    ' If we reach here, content URL is valid - proceed with normal initialization
+    nrLog(["Valid content URL found, initializing tracker: ", contentSrc])
+    m.nrPendingInit = false
+    
+    ' NOW do the full initialization
+    nrInitializeTracker(videoObject)
+end function
 
+function nrContentReadyObserver() as Void
+    nrLog("nrContentReadyObserver: Content field changed")
+    
+    ' Only proceed if we're in pending init state
+    if m.nrPendingInit <> true
+        nrLog("Not in pending init state, ignoring content change")
+        return
+    end if
+    
+    ' Check if video object is still valid
+    if m.nrVideoObject = invalid
+        nrLog("ERROR: Video object became invalid")
+        return
+    end if
+    
+    ' Check if content now has valid URL
+    contentSrc = nrGenerateStreamUrl()
+    
+    if contentSrc <> invalid and contentSrc <> ""
+        nrLog(["Valid URL now available after waiting, initializing tracker: ", contentSrc])
+        
+        ' Stop observing content field (we got what we needed)
+        m.nrVideoObject.unobserveFieldScoped("content")
+        
+        ' Now initialize tracker with valid content
+        nrInitializeTracker(m.nrVideoObject)
+    else
+        nrLog("Content changed but still no valid URL - continuing to wait...")
+        ' Observer remains active, will fire again on next content change
+    end if
+end function
+
+function nrInitializeTracker(videoObject as Object) as Void
+    nrLog("nrInitializeTracker: Starting full tracker initialization")
+    
     'Store video object
     m.nrVideoObject = videoObject
     'Current state
@@ -253,15 +321,17 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Setup event listeners 
     m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
-    m.nrvideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
+    m.nrVideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
 
     'Init heartbeat timer
     m.hbTimer = m.top.findNode("nrHeartbeatTimer")
     m.hbTimer.observeFieldScoped("fire", "nrHeartbeatHandler")
     m.hbTimer.control = "start"
     
-    'Player Ready
+    'Player Ready - NOW with valid content
     nrSendPlayerReady()
+    
+    nrLog("nrInitializeTracker: Tracker initialization complete")
 end function
 
 function NewRelicVideoStop() as Void
@@ -1778,17 +1848,37 @@ function nrGenerateId() as String
 end function
 
 function nrGenerateStreamUrl() as String
+    ' Check if video object exists
+    if m.nrVideoObject = invalid
+        nrLog("nrGenerateStreamUrl: video object is invalid")
+        return ""
+    end if
+    
+    ' Try streamInfo first
     if m.nrVideoObject.streamInfo <> invalid
-        return m.nrVideoObject.streamInfo["streamUrl"]
-    else
-        if m.nrVideoObject.contentIsPlaylist and m.nrVideoObject.content <> invalid
+        streamUrl = m.nrVideoObject.streamInfo["streamUrl"]
+        if streamUrl <> invalid and streamUrl <> ""
+            return streamUrl
+        end if
+    end if
+    
+    ' Try content
+    if m.nrVideoObject.content <> invalid
+        ' Check if playlist
+        if m.nrVideoObject.contentIsPlaylist = true
             currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
-            if currentChild <> invalid
-                'Get url from content child
+            if currentChild <> invalid and currentChild.url <> invalid and currentChild.url <> ""
                 return currentChild.url
+            end if
+        else
+            ' Single video
+            if m.nrVideoObject.content.url <> invalid and m.nrVideoObject.content.url <> ""
+                return m.nrVideoObject.content.url
             end if
         end if
     end if
+    
+    nrLog("nrGenerateStreamUrl: No valid URL found")
     return ""
 end function
 

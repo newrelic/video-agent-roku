@@ -62,32 +62,31 @@ end function
 function setupSingleVideo() as void
     print "Prepare video player with single video"
     
-    singleVideo = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-    
-    videoContent = createObject("RoSGNode", "ContentNode")
-    videoContent.url = singleVideo
-    videoContent.title = "Single Video"
-    
+    ' Initialize video player with null/empty content
     m.video = m.top.findNode("myVideo")
+    videoContent = createObject("RoSGNode", "ContentNode")
+    videoContent.url = ""
     m.video.content = videoContent
     m.video.control = "play"
     
-    ' After 20 seconds, change the video URL to a new one
-    timer20 = createObject("roSGNode", "Timer")
-    timer20.duration = 20
-    timer20.control = "start"
-    timer20.observeField("fire", "onChangeToNewUrl")
-    m.top.appendChild(timer20)
+    ' After 10 seconds, load the initial video content and let it play
+    timer10 = createObject("roSGNode", "Timer")
+    timer10.duration = 10
+    timer10.control = "start"
+    timer10.observeField("fire", "onLoadInitialVideo")
+    m.top.appendChild(timer10)
 end function
 
-' Handler to change video URL after 20 seconds
-sub onChangeToNewUrl()
-    print "[DEBUG] Changing video URL after 20 seconds"
-    newUrl = "https://test-streams.mux.dev/x36xhzz/x36.m3"
+' Handler to load initial video after 10 seconds (let it play continuously)
+sub onLoadInitialVideo()
+    print "[DEBUG] Loading initial video after 10 seconds"
+    initialUrl = "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd"
     m.video = m.top.findNode("myVideo")
     if m.video <> invalid
-        m.video.content.url = newUrl
-        m.video.content.title = "New Video"
+        videoContent = createObject("RoSGNode", "ContentNode")
+        videoContent.url = initialUrl
+        videoContent.title = "Initial Video"
+        m.video.content = videoContent
         m.video.control = "play"
     end if
 end sub
