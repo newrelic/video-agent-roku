@@ -326,7 +326,7 @@ function nrInitializeTracker(videoObject as Object) as Void
     'Init heartbeat timer
     m.hbTimer = m.top.findNode("nrHeartbeatTimer")
     m.hbTimer.observeFieldScoped("fire", "nrHeartbeatHandler")
-    m.hbTimer.control = "start"
+    ' Do not start heartbeat timer here, it will be started on CONTENT_START
     
     'Player Ready - NOW with valid content
     nrSendPlayerReady()
@@ -449,6 +449,11 @@ function nrSendCustomEvent(actionName as String, ctx as Dynamic, attr = invalid)
 end function
 
 function nrSendHttpRequest(attr as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrRequestIdentifiers = invalid or m.num_http_request_counters = invalid
+        return
+    end if
+
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     attr["domain"] = domain
     transId = stri(attr["transferIdentity"])
@@ -477,6 +482,11 @@ function nrSendHttpRequest(attr as Object) as Void
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrRequestIdentifiers = invalid or m.num_http_response_counters = invalid or m.num_http_response_errors = invalid
+        return
+    end if
+
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     attr["domain"] = domain
     transId = stri(attr["transferIdentity"])
@@ -504,7 +514,7 @@ function nrSendHttpResponse(attr as Object) as Void
             m.num_http_response_errors.AddReplace(domain, 1)
         end if
     end if
-    
+
     nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_RESPONSE", attr)
 end function
 
@@ -656,6 +666,11 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
 end function
 
 function nrSendLog(message as String, logtype as String, fields as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrLogArray = invalid or m.nrLogArrayIndex = invalid or m.nrLogArrayK = invalid
+        return
+    end if
+
     lg = CreateObject("roAssociativeArray")
     if message <> invalid and message <> "" then lg["message"] = message
     if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
@@ -670,6 +685,11 @@ end function
 
 'Send a Gauge metric
 function nrSendMetric(name as String, value as dynamic, attr = invalid as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrMetricArray = invalid or m.nrMetricArrayIndex = invalid or m.nrMetricArrayK = invalid
+        return
+    end if
+
     metric = CreateObject("roAssociativeArray")
     metric["type"] = "gauge"
     metric["name"] = name
@@ -694,6 +714,11 @@ end function
 
 'Send Count metric
 function nrSendCountMetric(name as String, value as dynamic, interval as Integer, attr = invalid as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrMetricArray = invalid or m.nrMetricArrayIndex = invalid or m.nrMetricArrayK = invalid
+        return
+    end if
+
     metric = CreateObject("roAssociativeArray")
     metric["type"] = "count"
     metric["name"] = name
@@ -719,6 +744,11 @@ end function
 
 'Send Summary metric
 function nrSendSummaryMetric(name as String, interval as Integer, value as Object, attr = invalid as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrMetricArray = invalid or m.nrMetricArrayIndex = invalid or m.nrMetricArrayK = invalid
+        return
+    end if
+
     metric = CreateObject("roAssociativeArray")
     metric["type"] = "summary"
     metric["name"] = name
@@ -778,6 +808,11 @@ function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
 end function
 
 function nrRecordEvent(event as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrEventArray = invalid or m.nrEventArrayIndex = invalid or m.nrEventArrayK = invalid
+        return
+    end if
+
     nrLog(["RECORD NEW EVENT = ", event])
     m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
 end function
@@ -1040,6 +1075,11 @@ function nrCalculateBufferType(actionName as String) as String
 end function
 
 function nrSendHTTPError(info as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.num_http_error_counters = invalid
+        return
+    end if
+
     attr = nrAddCommonHTTPAttr(info)
     domain = attr["domain"]
 
@@ -1054,6 +1094,11 @@ function nrSendHTTPError(info as Object) as Void
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.num_http_connect_counters = invalid
+        return
+    end if
+
     attr = nrAddCommonHTTPAttr(info)
     domain = attr["domain"]
 
@@ -1069,6 +1114,11 @@ function nrSendHTTPConnect(info as Object) as Void
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.num_http_complete_counters = invalid
+        return
+    end if
+
     attr = {
         "bytesDownloaded": info["BytesDownloaded"],
         "bytesUploaded": info["BytesUploaded"],
@@ -1162,6 +1212,12 @@ end function
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
+    
+    ' Start/Restart heartbeat timer to sync with content start
+    if m.hbTimer <> invalid
+        m.hbTimer.control = "start"
+    end if
+
     nrSendVideoEvent("CONTENT_START")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
@@ -1381,13 +1437,18 @@ function nrAddVideoAttributes(ev as Object) as Object
     end if
     videoContent = m.nrVideoObject.content
     if videoContent <> invalid
-        contentNode = videoContent.getChild(m.nrVideoObject.contentIndex)
-        ' Check if contentNode is valid
-        if contentNode <> invalid
-            contentTitle = contentNode.title
-            if contentTitle <> invalid
-                ev.AddReplace("contentTitle", contentTitle)
-            end if
+        ' For playlists, get title from the child node at current index
+        ' For single videos, get title directly from content node
+        contentNode = invalid
+        if m.nrVideoObject.contentIsPlaylist = true
+            contentNode = videoContent.getChild(m.nrVideoObject.contentIndex)
+        else
+            contentNode = videoContent
+        end if
+        
+        ' Add contentTitle if available
+        if contentNode <> invalid and contentNode.title <> invalid
+            ev.AddReplace("contentTitle", contentNode.title)
         end if
     end if
 return ev
@@ -1824,13 +1885,15 @@ function nrExtractDomainFromUrl(url as String) as String
     if arr[1] = "" then return ""
     domain = arr[1]
 
-    ' Check all patterns in m.domainPatterns
-    for each item in m.domainPatterns.Items()
-        r = CreateObject("roRegex", item.key, "")
-        if r.isMatch(domain)
-            return r.Replace(domain, item.value)
-        end if
-    end for
+    ' Check all patterns in m.domainPatterns (only if initialized)
+    if m.domainPatterns <> invalid
+        for each item in m.domainPatterns.Items()
+            r = CreateObject("roRegex", item.key, "")
+            if r.isMatch(domain)
+                return r.Replace(domain, item.value)
+            end if
+        end for
+    end if
 
     ' If nothing matches, it just returns the whole domain
     return domain
@@ -2138,7 +2201,7 @@ end function
 function nrLicenseStatusObserver(event as Object) as Void
     licenseStatus = event.getData()
     attr = getLicenseStatusAttributes(licenseStatus)
-    nrSendVideoEvent("LICENSE_STATUS", attr)
+    ' nrSendVideoEvent("LICENSE_STATUS", attr)
 end function
 
 function getLicenseStatusAttributes(licenseStatus as Object) as object
@@ -2174,6 +2237,11 @@ function nrHeartbeatHandler() as Void
 end function
 
 function nrSendHttpCountMetrics() as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.http_counters_max_ts = invalid or m.http_counters_min_ts = invalid or m.num_http_request_counters = invalid
+        return
+    end if
+
     'Set final time interval
     m.http_counters_max_ts.Mark()
 
