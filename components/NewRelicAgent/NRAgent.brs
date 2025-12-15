@@ -2201,7 +2201,7 @@ end function
 function nrLicenseStatusObserver(event as Object) as Void
     licenseStatus = event.getData()
     attr = getLicenseStatusAttributes(licenseStatus)
-    ' nrSendVideoEvent("LICENSE_STATUS", attr)
+    nrSendVideoEvent("LICENSE_STATUS", attr)
 end function
 
 function getLicenseStatusAttributes(licenseStatus as Object) as object
