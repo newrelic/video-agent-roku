@@ -249,7 +249,32 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Counters
     m.nrVideoCounter = 0
     m.nrNumberOfErrors = 0
-    
+
+    'QOE (Quality of Experience) tracking fields
+    m.qoePeakBitrate = 0
+    m.qoeHadPlaybackFailure = false
+    m.qoeTotalRebufferingTime = 0
+    m.qoeBitrateSum = 0
+    m.qoeBitrateCount = 0
+    m.qoeLastTrackedBitrate = invalid
+    m.qoeStartupTime = invalid  'Cached startup time, calculated once per view session
+
+    'Startup time calculation fields - capture actual event timestamps
+    m.contentRequestTimestamp = invalid
+    m.contentStartTimestamp = invalid
+    m.contentErrorTimestamp = invalid  'Timestamp when content error occurred (for startup failures)
+    m.startupPeriodAdTime = 0  'Ad time that occurred during startup period
+    m.hasContentStarted = false  'Tracks whether content has successfully started (for buffer classification)
+
+    'Time-weighted bitrate calculation fields
+    m.qoeCurrentBitrate = invalid
+    m.qoeLastRenditionChangeTime = invalid
+    m.qoeTotalBitrateWeightedTime = 0
+    m.qoeTotalActiveTime = 0
+
+    'QOE: Track if VideoAction events occurred in current harvest cycle (for T-4/T-5)
+    m.qoeHasVideoActionThisHarvest = false
+
     'Setup event listeners 
     m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
@@ -314,6 +339,7 @@ function nrAppStarted(aa as Object) as Void
 end function
 
 function nrSceneLoaded(sceneName as String) as Void
+    print "[New Relic] Scene loaded: " + sceneName
     nrSendSystemEvent("ConnectedDeviceSystem", "SCENE_LOADED", {"sceneName": sceneName})
 end function
 
@@ -328,6 +354,7 @@ function nrSendSystemEvent(eventType as String, actionName as String, attr = inv
 end function
 
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
+    print "[New Relic] VideoAction: " + actionName
     ev = nrCreateEvent("VideoAction", actionName)
     ev = nrAddVideoAttributes(ev)
     ev = nrAddCustomAttributes(ev)
@@ -340,6 +367,21 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
     if actionName <> "CONTENT_BUFFER_START" and actionName <> "CONTENT_BUFFER_END"
         m.nrBackupAttributes = {}
         m.nrBackupAttributes.Append(ev)
+    end if
+
+    'QOE: Track that a VideoAction event occurred in this harvest cycle (for T-4/T-5)
+    'Only set flag for non-QOE_AGGREGATE events to prevent circular logic
+    'T-5: Don't set flag during ad breaks (prevents QOE_AGGREGATE during ad-only cycles)
+    'This applies to ALL ad breaks: pre-roll, mid-roll, and post-roll
+    if actionName <> "QOE_AGGREGATE"
+        isInAdBreak = (m.rafState.timeSinceAdBreakBegin <> invalid and m.rafState.timeSinceAdBreakBegin > 0)
+
+        'Only set flag if we're NOT in an ad break (T-5 compliance)
+        if not isInAdBreak
+            m.qoeHasVideoActionThisHarvest = true
+        else
+            print "[QOE] Skipping flag set - in ad break (actionName: "; actionName; ")"
+        end if
     end if
 end function
 
@@ -520,11 +562,20 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             nrResetRAFTimers()
             nrSendRAFEvent("AD_BREAK_START", ctx)
             m.rafState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
+
+            'QOE: Capture CONTENT_REQUEST timestamp for pre-roll ads
+            'When pre-roll ads start, that's when content was actually requested
+            if m.contentRequestTimestamp = invalid
+                m.contentRequestTimestamp = m.rafState.timeSinceAdBreakBegin
+                print "[QOE] REQUEST (captured at AD_BREAK_START): "; m.contentRequestTimestamp
+            end if
         else if evtType = "PodComplete"
             'Calc attributes for Ad break end
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
             nrAddToTotalAdPlaytime(timeSinceAdBreakBegin)
             nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
+            'Reset timer to indicate ad break is complete
+            m.rafState.timeSinceAdBreakBegin = 0
         else if evtType = "Impression"
             nrSendRAFEvent("AD_REQUEST", ctx)
             m.rafState.timeSinceAdRequested = m.nrTimer.TotalMilliseconds()
@@ -556,6 +607,8 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             'Calc attributes for Ad break end
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
             nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
+            'Reset timer to indicate ad break is complete
+            m.rafState.timeSinceAdBreakBegin = 0
         else if evtType = "Error"
             ' Set timestamp for last ad error
             m.nrTimeSinceLastAdError = m.nrTimer.TotalMilliseconds()
@@ -1086,12 +1139,37 @@ end function
 
 function nrSendRequest() as Void
     m.nrTimeSinceRequested = m.nrTimer.TotalMilliseconds()
+    'QOE: Capture CONTENT_REQUEST timestamp for startup time calculation
+    if m.contentRequestTimestamp = invalid
+        m.contentRequestTimestamp = m.nrTimer.TotalMilliseconds()
+        print "[QOE] REQUEST: "; m.contentRequestTimestamp
+    else
+        print "[QOE] REQUEST (already captured): "; m.contentRequestTimestamp; " | Current time: "; m.nrTimer.TotalMilliseconds()
+    end if
     nrSendVideoEvent("CONTENT_REQUEST")
 end function
 
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
+
+    'QOE: Capture CONTENT_START timestamp
+    if m.contentStartTimestamp = invalid
+        m.contentStartTimestamp = m.nrTimer.TotalMilliseconds()
+        if m.contentRequestTimestamp <> invalid
+            rawStartup = m.contentStartTimestamp - m.contentRequestTimestamp
+            print "[QOE] START: "; m.contentStartTimestamp; " | Startup: "; rawStartup; " ms"
+        else
+            print "[QOE] START: "; m.contentStartTimestamp
+        end if
+    end if
+
+    'QOE: Mark that content has successfully started (for buffer type classification)
+    m.hasContentStarted = true
+
+    'QOE: Store ad time for startup calculation (covers pre-roll scenario)
+    m.startupPeriodAdTime = m.nrTotalAdPlaytime
+
     nrSendVideoEvent("CONTENT_START")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
@@ -1102,6 +1180,9 @@ function nrSendEnd() as Void
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
+
+    'QOE: Reset QOE metrics for new view session
+    nrResetQoeMetrics()
 end function
 
 function nrSendPause() as Void
@@ -1119,13 +1200,15 @@ end function
 
 function nrSendBufferStart() as Void
     m.nrTimeSinceBufferBegin = m.nrTimer.TotalMilliseconds()
-    
+
     if m.nrTimeSinceStarted = 0
         m.nrIsInitialBuffering = true
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": nrCalculateBufferType("CONTENT_BUFFER_START")})
+    bufferType = nrCalculateBufferType("CONTENT_BUFFER_START")
+    print "[QOE] BUFFER_START ("; bufferType; ")"
+    nrSendVideoEvent("CONTENT_BUFFER_START", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": bufferType})
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
@@ -1136,7 +1219,17 @@ function nrSendBufferEnd() as Void
     else
         m.nrIsInitialBuffering = false
     end if
-    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": nrCalculateBufferType("CONTENT_BUFFER_END")})
+
+    bufferType = nrCalculateBufferType("CONTENT_BUFFER_END")
+
+    'QOE: Calculate rebuffering time (excludes initial buffering)
+    if m.nrTimeSinceBufferBegin > 0 and bufferType <> "initial"
+        rebufferDuration = m.nrTimer.TotalMilliseconds() - m.nrTimeSinceBufferBegin
+        m.qoeTotalRebufferingTime = m.qoeTotalRebufferingTime + rebufferDuration
+        print "[QOE] BUFFER_END: +"; rebufferDuration; " ms (Total: "; m.qoeTotalRebufferingTime; ")"
+    end if
+
+    nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": bufferType})
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -1165,6 +1258,20 @@ function nrSendError(video as Object) as Void
     end if
     if video.licenseStatus <> Invalid
         attr.append(getLicenseStatusAttributes(video.licenseStatus))
+    end if
+
+    'QOE: Capture CONTENT_ERROR timestamp for startup time calculation
+    if m.contentErrorTimestamp = invalid
+        m.contentErrorTimestamp = m.nrTimer.TotalMilliseconds()
+    end if
+
+    'QOE: Track playback errors for content (errors after CONTENT_START)
+    if m.nrTimeSinceStarted > 0
+        'Error occurred after CONTENT_START, so it's a playback failure
+        m.qoeHadPlaybackFailure = true
+        print "[QOE] ERROR: Playback failure"
+    else
+        print "[QOE] ERROR: Startup failure"
     end if
 
     nrSendErrorEvent("CONTENT_ERROR", attr)
@@ -1320,6 +1427,12 @@ function nrAddVideoAttributes(ev as Object) as Object
             end if
         end if
     end if
+
+    'QOE: Track bitrate after all attributes are processed (including contentBitrate)
+    if ev["actionName"] <> "QOE_AGGREGATE"
+        nrTrackBitrateForQoe(ev["contentBitrate"], ev["actionName"])
+    end if
+
 return ev
 end function
 
@@ -2073,6 +2186,9 @@ function nrHeartbeatHandler() as Void
         m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime * 1000
         nrSendVideoEvent("CONTENT_HEARTBEAT", {"elapsedTime": m.nrHeartbeatElapsedTime})
 
+        'QOE: Send QOE aggregate event with each heartbeat
+        nrSendQoeAggregate()
+
         ' Reset the heartbeatElapsedTime after sending the heartbeat
         m.nrHeartbeatElapsedTime = 0.0
 
@@ -2208,4 +2324,292 @@ function nrLogEventArray() as Void
         nrLog("----------------------------------")
     end for
     nrLog("====================================")
+end function
+
+'=========================='
+' QOE Helper Functions     '
+'=========================='
+
+function nrTrackBitrateForQoe(contentBitrate as Dynamic, actionName as String) as Void
+    'Track bitrate for QOE metrics (peak bitrate and average bitrate)
+    if contentBitrate = invalid or contentBitrate = 0
+        return
+    end if
+
+    'Skip if this is the same bitrate we just tracked (avoid duplicate processing)
+    if m.qoeLastTrackedBitrate <> invalid and m.qoeLastTrackedBitrate = contentBitrate
+        return
+    end if
+
+    'Update cached value to prevent duplicate processing
+    m.qoeLastTrackedBitrate = contentBitrate
+
+    'Update time-weighted bitrate calculation
+    nrUpdateTimeWeightedBitrate(contentBitrate)
+
+    'Update peak bitrate
+    peakChanged = false
+    if m.qoePeakBitrate = invalid or contentBitrate > m.qoePeakBitrate
+        m.qoePeakBitrate = contentBitrate
+        peakChanged = true
+    end if
+
+    'Update simple average (fallback)
+    m.qoeBitrateSum = m.qoeBitrateSum + contentBitrate
+    m.qoeBitrateCount = m.qoeBitrateCount + 1
+
+    'Log bitrate tracking (only when peak changes to reduce log spam)
+    if peakChanged
+        peakKbps = Int(m.qoePeakBitrate / 1000)
+        print "[QOE] BITRATE: NEW PEAK "; peakKbps; " kbps"
+    end if
+end function
+
+function nrUpdateTimeWeightedBitrate(newBitrate as Dynamic) as Void
+    'Update time-weighted bitrate calculation when bitrate changes
+    currentTime = m.nrTimer.TotalMilliseconds()
+
+    'If we have a previous bitrate and timing, accumulate its weighted time
+    if m.qoeCurrentBitrate <> invalid and m.qoeLastRenditionChangeTime <> invalid and m.qoeCurrentBitrate > 0
+        'Ensure valid timestamps
+        if m.qoeLastRenditionChangeTime > 0 and currentTime >= m.qoeLastRenditionChangeTime
+            segmentDuration = currentTime - m.qoeLastRenditionChangeTime
+            if segmentDuration > 0
+                m.qoeTotalBitrateWeightedTime = m.qoeTotalBitrateWeightedTime + (m.qoeCurrentBitrate * segmentDuration)
+                m.qoeTotalActiveTime = m.qoeTotalActiveTime + segmentDuration
+            end if
+        end if
+    end if
+
+    'Update current tracking values
+    m.qoeCurrentBitrate = newBitrate
+    m.qoeLastRenditionChangeTime = currentTime
+end function
+
+function nrCalculateTimeWeightedAverageBitrate() as Dynamic
+    'Finalize time-weighted bitrate calculation by including the current segment
+    'Returns time-weighted average bitrate, or invalid if no data available
+
+    'Include current segment in calculation
+    if m.qoeCurrentBitrate <> invalid and m.qoeLastRenditionChangeTime <> invalid and m.qoeCurrentBitrate > 0
+        currentTime = m.nrTimer.TotalMilliseconds()
+
+        'Safety check: ensure valid timestamp
+        if m.qoeLastRenditionChangeTime > 0 and currentTime >= m.qoeLastRenditionChangeTime
+            currentSegmentDuration = currentTime - m.qoeLastRenditionChangeTime
+
+            'Include current segment if it has meaningful duration
+            if currentSegmentDuration > 0
+                totalWeightedTime = m.qoeTotalBitrateWeightedTime + (m.qoeCurrentBitrate * currentSegmentDuration)
+                totalTime = m.qoeTotalActiveTime + currentSegmentDuration
+
+                if totalTime > 0
+                    return Int(totalWeightedTime / totalTime)
+                end if
+            else if m.qoeTotalActiveTime > 0
+                'If current segment has zero duration, check if we have accumulated data
+                return Int(m.qoeTotalBitrateWeightedTime / m.qoeTotalActiveTime)
+            else if currentSegmentDuration = 0
+                'If we have current bitrate but no accumulated time and zero segment duration,
+                'return current bitrate as the average (single point average)
+                return m.qoeCurrentBitrate
+            end if
+        end if
+    end if
+
+    'Fallback to accumulated data only
+    if m.qoeTotalActiveTime <> invalid and m.qoeTotalActiveTime > 0 and m.qoeTotalBitrateWeightedTime <> invalid
+        return Int(m.qoeTotalBitrateWeightedTime / m.qoeTotalActiveTime)
+    end if
+
+    return invalid  'No time-weighted data available
+end function
+
+function nrCalculateQOEKpiAttributes() as Object
+    'Calculate QoE KPI attributes based on tracked metrics during playback
+    kpiAttributes = CreateObject("roAssociativeArray")
+
+    'startupTime - Calculate once during first QOE_AGGREGATE event and cache for reuse
+    if m.qoeStartupTime = invalid and m.contentRequestTimestamp <> invalid
+        endTimestamp = invalid
+
+        'Determine end timestamp: use contentStartTimestamp (success) or contentErrorTimestamp (failure)
+        if m.contentStartTimestamp <> invalid
+            endTimestamp = m.contentStartTimestamp  'Normal startup success
+        else if m.contentErrorTimestamp <> invalid
+            endTimestamp = m.contentErrorTimestamp  'Startup failure - time to error
+        end if
+
+        if endTimestamp <> invalid
+            rawStartupTime = endTimestamp - m.contentRequestTimestamp
+
+            print "[QOE] Calculating startup time: contentRequest="; m.contentRequestTimestamp; " contentStart="; m.contentStartTimestamp; " rawStartupTime="; rawStartupTime; " adTime="; m.startupPeriodAdTime
+
+            'Exclude ad time from startup calculation
+            if m.startupPeriodAdTime <> invalid and m.startupPeriodAdTime > 0
+                if rawStartupTime >= m.startupPeriodAdTime
+                    m.qoeStartupTime = rawStartupTime - m.startupPeriodAdTime
+                    print "[QOE] Startup time calculated: "; m.qoeStartupTime; "ms (raw: "; rawStartupTime; "ms - ads: "; m.startupPeriodAdTime; "ms)"
+                else
+                    'rawStartupTime < adTime - This shouldn't happen in normal scenarios
+                    'It means ads took longer than the time from request to content start
+                    print "[QOE] WARNING: rawStartupTime ("; rawStartupTime; "ms) < adTime ("; m.startupPeriodAdTime; "ms) - Using 0"
+                    m.qoeStartupTime = 0
+                end if
+            else
+                'No ads - use raw calculation
+                if rawStartupTime > 0
+                    m.qoeStartupTime = rawStartupTime
+                    print "[QOE] Startup time (no ads): "; m.qoeStartupTime; "ms"
+                else
+                    m.qoeStartupTime = 0
+                    print "[QOE] Startup time set to 0 (no valid rawStartupTime)"
+                end if
+            end if
+        else
+            print "[QOE] Cannot calculate startup time - no endTimestamp (contentStart="; m.contentStartTimestamp; " contentError="; m.contentErrorTimestamp; ")"
+        end if
+    else if m.qoeStartupTime <> invalid
+        print "[QOE] Using cached startup time: "; m.qoeStartupTime; "ms"
+    end if
+
+    'T-10: Include startupTime attribute
+    'If startup succeeded or was instant (zero), include the numeric value
+    'If startup failed (error before CONTENT_START), set to empty string per test requirement
+    if m.qoeStartupTime <> invalid and m.qoeStartupTime >= 0
+        kpiAttributes["startupTime"] = m.qoeStartupTime
+    else if m.contentErrorTimestamp <> invalid and m.contentStartTimestamp = invalid
+        'T-10: Error occurred before CONTENT_START, set startupTime to empty string
+        kpiAttributes["startupTime"] = ""
+    end if
+
+    'peakBitrate - Maximum contentBitrate observed during content playback
+    if m.qoePeakBitrate <> invalid and m.qoePeakBitrate > 0
+        kpiAttributes["peakBitrate"] = m.qoePeakBitrate
+    end if
+
+    'hadStartupFailure - Boolean indicating if CONTENT_ERROR occurred before CONTENT_START
+    'T-13/T-14: true if error before start (contentErrorTimestamp exists, contentStartTimestamp does not)
+    'T-15/T-16/T-17: false if CONTENT_START occurred (regardless of later errors)
+    'T-18: false if neither CONTENT_START nor CONTENT_ERROR occurred (network failure case)
+    hadStartupFailure = false
+    if m.contentErrorTimestamp <> invalid and m.contentStartTimestamp = invalid
+        hadStartupFailure = true
+    end if
+    kpiAttributes["hadStartupFailure"] = hadStartupFailure
+
+    'hadPlaybackFailure - Boolean indicating if CONTENT_ERROR occurred during content playback
+    kpiAttributes["hadPlaybackFailure"] = m.qoeHadPlaybackFailure
+
+    'totalRebufferingTime - Total milliseconds spent rebuffering during content playback
+    kpiAttributes["totalRebufferingTime"] = m.qoeTotalRebufferingTime
+
+    'rebufferingRatio - Rebuffering time as a percentage of total playtime
+    totalPlaytime = nrCalculateTotalPlaytime() * 1000  'Convert to milliseconds
+    if totalPlaytime > 0
+        rebufferingRatio = (m.qoeTotalRebufferingTime / totalPlaytime) * 100
+        kpiAttributes["rebufferingRatio"] = rebufferingRatio
+    else
+        kpiAttributes["rebufferingRatio"] = 0.0
+    end if
+
+    'totalPlaytime - Total milliseconds user spent watching content
+    kpiAttributes["totalPlaytime"] = totalPlaytime
+
+    'averageBitrate - Time-weighted average bitrate across all content playback
+    timeWeightedAverage = nrCalculateTimeWeightedAverageBitrate()
+    if timeWeightedAverage <> invalid
+        kpiAttributes["averageBitrate"] = timeWeightedAverage
+    else if m.qoeBitrateCount > 0
+        'Fallback to simple average if time-weighted calculation is not available
+        averageBitrate = Int(m.qoeBitrateSum / m.qoeBitrateCount)
+        kpiAttributes["averageBitrate"] = averageBitrate
+    end if
+
+    'qoeAggregateVersion - Version identifier for QOE calculation algorithm
+    kpiAttributes["qoeAggregateVersion"] = "1.0.0"
+
+    return kpiAttributes
+end function
+
+function nrSendQoeAggregate() as Void
+    'Send QOE aggregate event with calculated KPI attributes
+    'This method sends quality of experience metrics aggregated during each heartbeat
+
+    'T-4/T-5: Only send QOE_AGGREGATE if at least one VideoAction event occurred in this harvest cycle
+    'This prevents QOE_AGGREGATE from being sent during ad-only periods
+    if m.qoeHasVideoActionThisHarvest = false
+        return  'No VideoAction events in this harvest cycle, skip QOE_AGGREGATE
+    end if
+
+    kpiAttributes = nrCalculateQOEKpiAttributes()
+
+    'DEBUG: Log QOE metrics
+    nrLogQoeMetrics(kpiAttributes)
+
+    nrSendVideoEvent("QOE_AGGREGATE", kpiAttributes)
+
+    'Reset flag for next harvest cycle
+    m.qoeHasVideoActionThisHarvest = false
+end function
+
+'========================================
+' QOE DEBUG LOGGING HELPER (Lightweight)
+'========================================
+function nrLogQoeMetrics(kpiAttributes as Object) as Void
+    print "=== QOE_AGGREGATE ==="
+
+    ' Startup Time
+    if kpiAttributes.DoesExist("startupTime")
+        print "startupTime: "; kpiAttributes.startupTime
+    end if
+
+    ' Bitrates
+    if kpiAttributes.DoesExist("peakBitrate")
+        print "peakBitrate: "; Int(kpiAttributes.peakBitrate / 1000); " kbps"
+    end if
+    if kpiAttributes.DoesExist("averageBitrate")
+        print "averageBitrate: "; Int(kpiAttributes.averageBitrate / 1000); " kbps"
+    end if
+
+    ' Failures
+    print "hadStartupFailure: "; kpiAttributes.hadStartupFailure
+    print "hadPlaybackFailure: "; kpiAttributes.hadPlaybackFailure
+
+    ' Rebuffering
+    print "totalRebufferingTime: "; kpiAttributes.totalRebufferingTime; " ms"
+    print "rebufferingRatio: "; kpiAttributes.rebufferingRatio; "%"
+
+    ' Playtime
+    print "totalPlaytime: "; Int(kpiAttributes.totalPlaytime / 1000); " sec"
+
+    print "===================="
+end function
+
+function nrResetQoeMetrics() as Void
+    'Reset QoE metrics when starting a new view session
+    'This ensures that QoE KPIs are isolated per view ID
+    m.qoePeakBitrate = 0
+    m.qoeHadPlaybackFailure = false
+    m.qoeTotalRebufferingTime = 0
+    m.qoeBitrateSum = 0
+    m.qoeBitrateCount = 0
+    m.qoeLastTrackedBitrate = invalid
+    m.qoeStartupTime = invalid  'Reset cached startup time for new view session
+
+    'Reset startup time calculation fields
+    m.contentRequestTimestamp = invalid
+    m.contentStartTimestamp = invalid
+    m.contentErrorTimestamp = invalid
+    m.startupPeriodAdTime = 0
+    m.hasContentStarted = false
+
+    'Reset time-weighted bitrate fields
+    m.qoeCurrentBitrate = invalid
+    m.qoeLastRenditionChangeTime = invalid
+    m.qoeTotalBitrateWeightedTime = 0
+    m.qoeTotalActiveTime = 0
+
+    'Reset harvest cycle tracking flag
+    m.qoeHasVideoActionThisHarvest = false
 end function
