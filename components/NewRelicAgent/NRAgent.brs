@@ -1179,6 +1179,9 @@ function nrSendEnd() as Void
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 
+    'Reset playback state for replay scenarios
+    m.nrTimeSinceStarted = 0.0
+
     'Reset QOE metrics for new view session
     nrResetQoeMetrics()
 end function
@@ -2110,7 +2113,9 @@ end function
 
 function nrStateTransitionBuffering() as Void
     nrLog("nrStateTransitionBuffering")
-    if m.nrLastVideoState = "none"
+    ' Send CONTENT_REQUEST when transitioning from none, stopped, or finished
+    ' This handles initial playback and replay scenarios
+    if m.nrLastVideoState = "none" OR m.nrLastVideoState = "stopped" OR m.nrLastVideoState = "finished"
         nrSendRequest()
     end if
     nrSendBufferStart()
