@@ -65,16 +65,17 @@ function setupSingleVideo() as void
     ' Initialize video player with null/empty content
     m.video = m.top.findNode("myVideo")
     videoContent = createObject("RoSGNode", "ContentNode")
-    videoContent.url = ""
+    videoContent.url = "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd"
     m.video.content = videoContent
     m.video.control = "play"
+    ' videoContent.title = "Rajeev-title"
     
     ' After 10 seconds, load the initial video content and let it play
-    timer10 = createObject("roSGNode", "Timer")
-    timer10.duration = 10
-    timer10.control = "start"
-    timer10.observeField("fire", "onLoadInitialVideo")
-    m.top.appendChild(timer10)
+    ' timer10 = createObject("roSGNode", "Timer")
+    ' timer10.duration = 10
+    ' timer10.control = "start"
+    ' timer10.observeField("fire", "onLoadInitialVideo")
+    ' m.top.appendChild(timer10)
 end function
 
 ' Handler to load initial video after 10 seconds (let it play continuously)
