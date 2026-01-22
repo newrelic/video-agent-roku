@@ -2371,7 +2371,14 @@ function nrUpdateTimeWeightedBitrate(newBitrate as Dynamic) as Void
         if m.qoeLastRenditionChangeTime > 0 and currentTime >= m.qoeLastRenditionChangeTime
             segmentDuration = currentTime - m.qoeLastRenditionChangeTime
             if segmentDuration > 0
-                m.qoeTotalBitrateWeightedTime = m.qoeTotalBitrateWeightedTime + (m.qoeCurrentBitrate * segmentDuration)
+                'Convert to double to prevent integer overflow
+                'BrightScript 32-bit integers overflow at ~2.1 billion
+                'Example: 8,207,000 bps * 240,000 ms = 1.97 trillion (overflows!)
+                bitrateDouble = CDbl(m.qoeCurrentBitrate)
+                durationDouble = CDbl(segmentDuration)
+                weightedContribution = bitrateDouble * durationDouble
+
+                m.qoeTotalBitrateWeightedTime = m.qoeTotalBitrateWeightedTime + weightedContribution
                 m.qoeTotalActiveTime = m.qoeTotalActiveTime + segmentDuration
             end if
         end if
@@ -2390,7 +2397,12 @@ function nrCalculateTimeWeightedAverageBitrate() as Dynamic
 
             'Include current segment if it has meaningful duration
             if currentSegmentDuration > 0
-                totalWeightedTime = m.qoeTotalBitrateWeightedTime + (m.qoeCurrentBitrate * currentSegmentDuration)
+                'Use double precision to prevent overflow in final calculation
+                bitrateDouble = CDbl(m.qoeCurrentBitrate)
+                durationDouble = CDbl(currentSegmentDuration)
+                currentSegmentWeighted = bitrateDouble * durationDouble
+
+                totalWeightedTime = m.qoeTotalBitrateWeightedTime + currentSegmentWeighted
                 totalTime = m.qoeTotalActiveTime + currentSegmentDuration
 
                 if totalTime > 0
