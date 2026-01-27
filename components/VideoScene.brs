@@ -1,7 +1,7 @@
 'NR Video Agent Ex    'NOTE: Uncomment ONE of the following setup calls
 
     'Setup the video player with a single video
-    ' setupSingleVideo()
+     'setupSingleVideo()
 
     'Setup the video player with a playlist
     'setupVideoPlaylist(true)
@@ -31,13 +31,14 @@ function nrRefUpdated()
     'NOTE: Uncomment ONE of the following setup calls
 
     'Setup the video player with a single video
-    setupSingleVideo()
+    'setupSingleVideo()
 
     'Setup the video player with a playlist
     ' setupVideoPlaylist(true)
 
     'Setup the video player with a single video and ads
-    ' setupVideoWithAds()
+    'T-9: Replay with pre-roll ads and successful playback
+    setupVideoWithAds()
 
     'Setup the video player with a single video and Google IMA ads
     ' setupVideoWithIMA()
@@ -197,9 +198,6 @@ sub onVideoStateChange()
         m.video.control = "stop"
         print "[DEBUG] Stopped video - CONTENT_END will be sent"
 
-        ' Small delay to allow CONTENT_END to be processed
-        sleep(50)  ' 50ms minimal delay
-
         ' Reload the same content to trigger replay
         videoUrl = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
         videoContent = createObject("RoSGNode", "ContentNode")
@@ -211,6 +209,44 @@ sub onVideoStateChange()
         m.video.control = "play"
 
         print "[DEBUG] Video reloaded for replay"
+    end if
+end sub
+
+' T-9: Handler for video state changes with ads - Auto replay
+sub onVideoStateChangeT9()
+    videoState = m.video.state
+    print "[T-9] Video state changed to: " + videoState
+
+    if videoState = "finished"
+        print "[T-9] ===== VIDEO FINISHED - Triggering AUTO REPLAY ====="
+        ' Stop the video to trigger CONTENT_END
+        m.video.control = "stop"
+        print "[T-9] Stopped video - CONTENT_END will be sent"
+
+        ' Reload the same content with ads to trigger replay
+        videoUrl = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+        videoContent = createObject("RoSGNode", "ContentNode")
+        videoContent.url = videoUrl
+        videoContent.title = "T-9: Video with Pre-roll Ads (Replay)"
+        videoContent.description = "Replayed video for T-9 testing"
+
+        ' Set content first, but DON'T start playing yet
+        m.video.content = videoContent
+
+        ' Re-initialize ads task for replay - this will handle playback
+        ' AdsTask will show ads first, then start video playback
+        m.adstask = createObject("roSGNode", "AdsTask")
+        m.adstask.setField("videoNode", m.video)
+        m.adstask.setField("nr", m.nr)
+        m.adstask.control = "RUN"
+
+        print "[T-9] Video reloaded with ads for auto replay"
+        print "[T-9] Ads will play first, then content"
+        print "[T-9] New viewId will be generated, startupTime recalculated"
+    else if videoState = "playing"
+        print "[T-9] Video is now playing (content started after ads)"
+    else if videoState = "buffering"
+        print "[T-9] Video is buffering"
     end if
 end sub
 
@@ -241,21 +277,35 @@ function setupVideoPlaylist(loop as boolean) as void
 end function
 
 function setupVideoWithAds() as void
-    print "Prepare video player with ads"
+    print "======================================"
+    print "T-9: Replay with Pre-roll Ads"
+    print "======================================"
+    print "[T-9] Prepare video player with pre-roll ads"
+    print "[T-9] Test: Watch video > Let it finish > Press replay button"
+    print "[T-9] Expected: viewId changes on replay, startupTime recalculated"
+    print "======================================"
 
     singleVideo = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
 
     videoContent = createObject("RoSGNode", "ContentNode")
     videoContent.url = singleVideo
-    videoContent.title = "Single Video"
+    videoContent.title = "T-9: Video with Pre-roll Ads"
 
     m.video = m.top.findNode("myVideo")
+
+    ' Observe video state to track finish/replay
+    m.video.observeField("state", "onVideoStateChangeT9")
+
     m.video.content = videoContent
 
+    ' Setup ads with RAF (Roku Ad Framework)
     m.adstask = createObject("roSGNode", "AdsTask")
     m.adstask.setField("videoNode", m.video)
     m.adstask.setField("nr", m.nr)
     m.adstask.control = "RUN"
+
+    print "[T-9] Video and ad task initialized"
+    print "[T-9] AdsTask will play pre-roll ads before content"
 end function
 
 function setupVideoWithIMA() as Void
@@ -283,6 +333,8 @@ end function
 
 function videoAction(key as String) as Boolean
     if key = "replay"
+        print "[T-9] ===== REPLAY BUTTON PRESSED ====="
+        print "[T-9] Triggering replay - viewId should change"
         m.video.control = "replay"
         return true
     else if key = "play"

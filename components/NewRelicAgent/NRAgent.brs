@@ -246,6 +246,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
     m.nrTotalAdPlaytime = 0
+    m.nrCurrentViewAdPlaytime = 0  'Track ad time for current view only (for startup calculation)
     'Counters
     m.nrVideoCounter = 0
     m.nrNumberOfErrors = 0
@@ -782,6 +783,7 @@ end function
 
 function nrAddToTotalAdPlaytime(adPlaytime as Integer) as Void
     m.nrTotalAdPlaytime = m.nrTotalAdPlaytime + adPlaytime
+    m.nrCurrentViewAdPlaytime = m.nrCurrentViewAdPlaytime + adPlaytime
 end function
 
 function nrReqErrorTooManyReq(sampleType as String) as Void
@@ -1166,7 +1168,8 @@ function nrSendStart() as Void
     m.hasContentStarted = true
 
     'Store ad time for startup calculation (covers pre-roll scenario)
-    m.startupPeriodAdTime = m.nrTotalAdPlaytime
+    'Use current view ad time only, not cumulative total
+    m.startupPeriodAdTime = m.nrCurrentViewAdPlaytime
 
     nrSendVideoEvent("CONTENT_START")
     nrResumePlaytime()
@@ -2588,6 +2591,7 @@ function nrResetQoeMetrics() as Void
     m.contentStartTimestamp = invalid
     m.contentErrorTimestamp = invalid
     m.startupPeriodAdTime = 0
+    m.nrCurrentViewAdPlaytime = 0  'Reset per-view ad time for new view
     m.hasContentStarted = false
 
     'Reset time-weighted bitrate fields
