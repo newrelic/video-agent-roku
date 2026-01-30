@@ -562,6 +562,9 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             nrSendRAFEvent("AD_BREAK_START", ctx)
             m.rafState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
 
+            'Pause content playtime tracking during ad break
+            nrPausePlaytime()
+
             'Capture CONTENT_REQUEST timestamp for pre-roll ads
             'When pre-roll ads start, that's when content was actually requested
             if m.contentRequestTimestamp = invalid
@@ -571,6 +574,10 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
             nrAddToTotalAdPlaytime(timeSinceAdBreakBegin)
             nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
+
+            'Resume content playtime tracking after ad break
+            nrResumePlaytime()
+
             'Reset timer to indicate ad break is complete
             m.rafState.timeSinceAdBreakBegin = 0
         else if evtType = "Impression"
@@ -603,6 +610,10 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             m.rafState.timeSinceAdStarted = 0
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
             nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
+
+            'Resume content playtime tracking after ad break
+            nrResumePlaytime()
+
             'Reset timer to indicate ad break is complete
             m.rafState.timeSinceAdBreakBegin = 0
         else if evtType = "Error"
@@ -2177,9 +2188,6 @@ function nrHeartbeatHandler() as Void
         m.nrHeartbeatElapsedTime = m.nrHeartbeatElapsedTime * 1000
         nrSendVideoEvent("CONTENT_HEARTBEAT", {"elapsedTime": m.nrHeartbeatElapsedTime})
 
-        'Send QOE aggregate event with each heartbeat
-        nrSendQoeAggregate()
-
         ' Reset the heartbeatElapsedTime after sending the heartbeat
         m.nrHeartbeatElapsedTime = 0.0
 
@@ -2231,12 +2239,15 @@ end function
 
 function nrHarvestTimerHandlerEvents() as Void
     nrLog("--- nrHarvestTimerHandlerEvents ---")
-    
+
+    'Send QOE aggregate event with each harvest cycle
+    nrSendQoeAggregate()
+
     if LCase(m.bgTaskEvents.state) = "run"
         nrLog("NRTaskEvents still running, abort")
         return
     end if
-    
+
     m.bgTaskEvents.control = "RUN"
 end function
 
