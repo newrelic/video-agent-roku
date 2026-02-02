@@ -273,7 +273,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.qoeTotalBitrateWeightedTime = 0
     m.qoeTotalActiveTime = 0
 
-    'QOE: Track if VideoAction events occurred in current harvest cycle (for T-4/T-5)
+    'QOE: Track if VideoAction events occurred in current harvest cycle 
     m.qoeHasVideoActionThisHarvest = false
 
     'Setup event listeners 
