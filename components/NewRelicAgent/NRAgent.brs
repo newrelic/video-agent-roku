@@ -1429,8 +1429,12 @@ function nrAddVideoAttributes(ev as Object) as Object
     end if
 
     'Track bitrate after all attributes are processed (including contentBitrate)
+    'Only track bitrate for content playback, not during ad breaks
     if ev["actionName"] <> "QOE_AGGREGATE"
-        nrTrackBitrateForQoe(ev["contentBitrate"], ev["actionName"])
+        isInAdBreak = (m.rafState.timeSinceAdBreakBegin <> invalid and m.rafState.timeSinceAdBreakBegin > 0)
+        if not isInAdBreak
+            nrTrackBitrateForQoe(ev["contentBitrate"], ev["actionName"])
+        end if
     end if
 
 return ev
@@ -2367,8 +2371,6 @@ function nrUpdateTimeWeightedBitrate(newBitrate as Dynamic) as Void
             segmentDuration = currentTime - m.qoeLastRenditionChangeTime
             if segmentDuration > 0
                 'Convert to double to prevent integer overflow
-                'BrightScript 32-bit integers overflow at ~2.1 billion
-                'Example: 8,207,000 bps * 240,000 ms = 1.97 trillion (overflows!)
                 bitrateDouble = CDbl(m.qoeCurrentBitrate)
                 durationDouble = CDbl(segmentDuration)
                 weightedContribution = bitrateDouble * durationDouble
