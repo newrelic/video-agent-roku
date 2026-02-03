@@ -14,10 +14,12 @@
 ' @param appToken Mobile application token
 ' @param region (optional) New Relic API region, EU or US. Default US.
 ' @param activeLogs (optional) Activate logs or not. Default False.
+' @param enableQoe (optional) Enable QOE tracking. Default True.
 ' @return New Relic Agent object.
-function NewRelic(account as String, apikey as String,appName as String, appToken = "" as String , region = "US" as String, activeLogs = false as Boolean) as Object
+function NewRelic(account as String, apikey as String,appName as String, appToken = "" as String , region = "US" as String, activeLogs = false as Boolean, enableQoe = true as Boolean) as Object
     nr = CreateObject("roSGNode", "com.newrelic.NRAgent")
     nr.callFunc("nrActivateLogging", activeLogs)
+    nr.callFunc("nrActivateQoeTracking", enableQoe)
     nr.callFunc("NewRelicInit", account, apikey,appName, region, appToken)
     return nr
 end function
