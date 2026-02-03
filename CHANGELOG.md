@@ -6,8 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ### Add
 
-- QOE tracking toggle via `enableQoe` initialization parameter (default: true)
-- Strategic gates to prevent QOE processing when disabled
+- QOE aggregate metrics tracking (averageBitrate, peakBitrate, startupTime, rebufferingRatio)
+- QOE_AGGREGATE event sent on each harvest cycle
+- Time-weighted bitrate calculation for accurate quality measurement
+- Rebuffering ratio and total rebuffering time tracking
+- Exclusion of ad breaks from QOE metrics calculations
 
 ## [4.0.4] - 2025/11/11
 
