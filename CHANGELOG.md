@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.0-beta] - 2026/02/03
+
+### Add
+
+- QOE aggregate metrics tracking (averageBitrate, peakBitrate, startupTime, rebufferingRatio)
+- QOE_AGGREGATE event sent on each harvest cycle
+- Time-weighted bitrate calculation for accurate quality measurement
+- Rebuffering ratio and total rebuffering time tracking
+- Exclusion of ad breaks from QOE metrics calculations
+
 ## [4.0.4] - 2025/11/11
 
 ### Fix
