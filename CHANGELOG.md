@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.0-beta] - 2026/02/03
+
+### Add
+
+- QOE tracking toggle via `enableQoe` initialization parameter (default: true)
+- Strategic gates to prevent QOE processing when disabled
+
 ## [4.0.4] - 2025/11/11
 
 ### Fix
