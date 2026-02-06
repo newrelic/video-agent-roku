@@ -736,8 +736,44 @@ function nrCheckLoggingState() as Boolean
 end function
 
 function nrActivateQoeTracking(state as Boolean) as Void
+    print "[QOE-DEBUG] nrActivateQoeTracking called with state = " + state.ToStr()
+    timestamp = nrTimestamp()
+    dateTime = CreateObject("roDateTime")
+    dateTime.ToLocalTime()
+    'Format: "February 05, 2026 15:29:54"
+    months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    day = dateTime.GetDayOfMonth()
+    dayStr = day.ToStr()
+    if day < 10 then dayStr = "0" + dayStr
+    hour = dateTime.GetHours()
+    hourStr = hour.ToStr()
+    if hour < 10 then hourStr = "0" + hourStr
+    minute = dateTime.GetMinutes()
+    minuteStr = minute.ToStr()
+    if minute < 10 then minuteStr = "0" + minuteStr
+    second = dateTime.GetSeconds()
+    secondStr = second.ToStr()
+    if second < 10 then secondStr = "0" + secondStr
+    readableTime = months[dateTime.GetMonth() - 1] + " " + dayStr + ", " + dateTime.GetYear().ToStr() + " " + hourStr + ":" + minuteStr + ":" + secondStr
+
     m.qoeTrackingEnabled = state
-    nrLog("QOE tracking " + (if state then "enabled" else "disabled"))
+    if state then
+        print "[QOE-DEBUG] =========================================="
+        print "[QOE-DEBUG] Time: " + readableTime
+        print "[QOE-DEBUG] Timestamp (NRDB): " + timestamp.ToStr()
+        print "[QOE-DEBUG] QOE TRACKING: ENABLED"
+        print "[QOE-DEBUG] QOE_AGGREGATE events WILL BE SENT"
+        print "[QOE-DEBUG] =========================================="
+        nrLog("QOE tracking enabled")
+    else
+        print "[QOE-DEBUG] =========================================="
+        print "[QOE-DEBUG] Time: " + readableTime
+        print "[QOE-DEBUG] Timestamp (NRDB): " + timestamp.ToStr()
+        print "[QOE-DEBUG] QOE TRACKING: DISABLED"
+        print "[QOE-DEBUG] QOE_AGGREGATE events WILL NOT BE SENT"
+        print "[QOE-DEBUG] =========================================="
+        nrLog("QOE tracking disabled")
+    end if
 end function
 
 function nrCheckQoeTrackingState() as Boolean
@@ -2518,17 +2554,39 @@ function nrCalculateQOEKpiAttributes() as Object
 end function
 
 function nrSendQoeAggregate() as Void
+    timestamp = nrTimestamp()
+    dateTime = CreateObject("roDateTime")
+    dateTime.ToLocalTime()
+    'Format: "February 05, 2026 15:29:54"
+    months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    day = dateTime.GetDayOfMonth()
+    dayStr = day.ToStr()
+    if day < 10 then dayStr = "0" + dayStr
+    hour = dateTime.GetHours()
+    hourStr = hour.ToStr()
+    if hour < 10 then hourStr = "0" + hourStr
+    minute = dateTime.GetMinutes()
+    minuteStr = minute.ToStr()
+    if minute < 10 then minuteStr = "0" + minuteStr
+    second = dateTime.GetSeconds()
+    secondStr = second.ToStr()
+    if second < 10 then secondStr = "0" + secondStr
+    readableTime = months[dateTime.GetMonth() - 1] + " " + dayStr + ", " + dateTime.GetYear().ToStr() + " " + hourStr + ":" + minuteStr + ":" + secondStr
+
     'Check if QOE tracking is enabled
     if m.qoeTrackingEnabled = false
+        print "[QOE-DEBUG] [" + readableTime + " | NRDB: " + timestamp.ToStr() + "] Gate : BLOCKED - QOE tracking disabled, NOT sending QOE_AGGREGATE event"
         return
     end if
 
     'Only send QOE_AGGREGATE if at least one VideoAction event occurred in this harvest cycle
     'This prevents QOE_AGGREGATE from being sent during ad-only periods
     if m.qoeHasVideoActionThisHarvest = false
+        print "[QOE-DEBUG] [" + readableTime + " | NRDB: " + timestamp.ToStr() + "] Gate : SKIPPED - No video actions this harvest cycle"
         return
     end if
 
+    print "[QOE-DEBUG] [" + readableTime + " | NRDB: " + timestamp.ToStr() + "] Gate : PASSED - QOE tracking is ENABLED, sending QOE_AGGREGATE event"
     kpiAttributes = nrCalculateQOEKpiAttributes()
 
     nrSendVideoEvent("QOE_AGGREGATE", kpiAttributes)

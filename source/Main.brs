@@ -31,7 +31,9 @@ sub Main(aa as Object)
     screen.show()
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID, API_KEY, APP_NAME and APP_TOKEN)
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true)
+    'm.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true, true)
+    m.nr = NewRelic("1", "<LICENSE_KEY>", "qoe-toggle-testing-arkaza", "AA6b652ac8722fdba5635227a8c853312c961ab027-NRMA", "US", true, false)
+
     
     'Set custom harvest time
     nrSetHarvestTime(m.nr, 60)
