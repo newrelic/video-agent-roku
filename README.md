@@ -837,13 +837,6 @@ Example:
 
 The agent automatically tracks Quality of Experience (QOE) metrics and sends them as `QOE_AGGREGATE` events on each harvest cycle. These metrics provide insights into video playback quality.
 
-#### QOE Metrics Captured
-
-- **averageBitrate**: Time-weighted average bitrate during playback (excluding ad breaks)
-- **peakBitrate**: Highest bitrate reached during playback
-- **startupTime**: Time from content request to first frame (in milliseconds)
-- **rebufferingRatio**: Percentage of playback time spent rebuffering
-
 #### Enabling/Disabling QOE Tracking
 
 QOE tracking is **enabled by default** for backward compatibility. You can control it via the `qoeAggregate` parameter when initializing the agent:
@@ -866,21 +859,6 @@ m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
 - Ad breaks are excluded from QOE calculations to provide accurate content quality metrics
 - When QOE tracking is disabled, no QOE_AGGREGATE events are sent
 
-#### Querying QOE Data
-
-```sql
--- Get average QOE metrics
-SELECT average(averageBitrate), average(peakBitrate), average(startupTime), average(rebufferingRatio)
-FROM VideoAction
-WHERE actionName = 'QOE_AGGREGATE'
-SINCE 1 hour ago
-
--- Track QOE over time
-SELECT average(averageBitrate) as 'Avg Bitrate', average(rebufferingRatio) as 'Rebuffer %'
-FROM VideoAction
-WHERE actionName = 'QOE_AGGREGATE'
-TIMESERIES SINCE 1 day ago
-```
 
 <a name="data-model"></a>
 
