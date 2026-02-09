@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.1-beta] - 2026/02/09
+
+### Add
+
+- Added `qoeAggregate` parameter to `NewRelic()` function to enable/disable QOE tracking
+- Added `nrActivateQoeTracking()` function to control QOE tracking at runtime
+- Added `nrCheckQoeTrackingState()` function to check current QOE tracking state
+- QOE tracking is now configurable with backward compatibility (enabled by default)
+
 ## [4.1.0-beta] - 2026/02/03
 
 ### Add

@@ -31,7 +31,8 @@ sub Main(aa as Object)
     screen.show()
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID, API_KEY, APP_NAME and APP_TOKEN)
-    m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true)
+    'Enable QOE tracking (default): true
+    m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true, true)
     
     'Set custom harvest time
     nrSetHarvestTime(m.nr, 60)
