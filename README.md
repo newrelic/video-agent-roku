@@ -7,11 +7,12 @@ The New Relic Roku Agent tracks the behavior of a Roku App. It contains two part
 Internally, it uses the Event API to send events using the REST interface. It sends five types of events:
 
 - ConnectedDeviceSystem for system events
-- VideoAction for video events.
+- VideoAction for video events (includes QOE_AGGREGATE for Quality of Experience metrics)
 - VideoErrorAction for errors.
 - VideoAdAction for ads.
 - VideoCustomAction for custom actions.
-  After the agent has sent some data it will be accessible in NR One Dashboards with a simple NRQL request like:
+
+After the agent has sent some data it will be accessible in NR One Dashboards with a simple NRQL request like:
 
 ```
 SELECT * FROM ConnectedDeviceSystem, VideoAction, VideoErrorAction, VideoAdAction, VideoCustomAction
@@ -26,6 +27,7 @@ Will result in something like the following:
 - [Requirements & Installation](#requirements)
 - [Usage](#usage)
 - [Agent API](#api)
+- [Quality of Experience (QOE) Tracking](#qoe-tracking)
 - [Data Model](#data-model)
 - [Ad Tracking](#ad-track)
 - [Testing](#testing)
@@ -77,7 +79,7 @@ sub Main(aa as Object)
 	screen.show()
 
 	'Init New Relic Agent
-	m.nr = NewRelic(“ACCOUNT ID“, “API KEY“)
+	m.nr = NewRelic("ACCOUNT ID", "API KEY", "APP NAME", "APP TOKEN")
 
 	'Send APP_STARTED event
 	nrAppStarted(m.nr, aa)
@@ -161,16 +163,19 @@ To interact with the New Relic Agent it provides a set of functions that wrap in
 **NewRelic**
 
 ```
-NewRelic(account as String, apikey as String, region = "US" as String, activeLogs = false as Boolean) as Object
+NewRelic(account as String, apikey as String, appName as String, appToken = "" as String, region = "US" as String, activeLogs = false as Boolean, qoeAggregate = true as Boolean) as Object
 
 Description:
 	Build a New Relic Agent object.
 
 Arguments:
 	account: New Relic account number.
-	apikey: API key.
+	apikey: API key (license key).
+	appName: Application name.
+	appToken: (optional) Mobile application token. Default empty string.
 	region: (optional) New Relic API region, EU or US. Default US.
 	activeLogs: (optional) Activate logs or not. Default False.
+	qoeAggregate: (optional) Enable QOE (Quality of Experience) tracking. Default True.
 
 Return:
 	New Relic Agent object.
@@ -184,7 +189,11 @@ Example:
 		scene = screen.CreateScene("VideoScene")
 		screen.show()
 
-		m.nr = NewRelic("ACCOUNT ID", "API KEY")
+		'Enable QOE tracking (default behavior)
+		m.nr = NewRelic("ACCOUNT ID", "API KEY", "APP NAME", "APP TOKEN")
+
+		'Or explicitly disable QOE tracking
+		'm.nr = NewRelic("ACCOUNT ID", "API KEY", "APP NAME", "APP TOKEN", "US", false, false)
 ```
 
 **NewRelicSystemStart**
@@ -821,6 +830,35 @@ Return:
 Example:
 	nrSetUserId(m.nr, "TEST_USER")
 ```
+
+<a name="qoe-tracking"></a>
+
+### Quality of Experience (QOE) Tracking
+
+The agent automatically tracks Quality of Experience (QOE) metrics and sends them as `QOE_AGGREGATE` events on each harvest cycle. These metrics provide insights into video playback quality.
+
+#### Enabling/Disabling QOE Tracking
+
+QOE tracking is **enabled by default** for backward compatibility. You can control it via the `qoeAggregate` parameter when initializing the agent:
+
+```brightscript
+'QOE tracking enabled (default)
+m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN", "US", false, true)
+
+'QOE tracking disabled
+m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN", "US", false, false)
+
+'Or simply omit the parameter to use the default (enabled)
+m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
+```
+
+#### QOE Event Behavior
+
+- QOE_AGGREGATE events are sent on each harvest cycle (default: 60 seconds)
+- Events are only sent when video playback activity occurred during the harvest cycle
+- Ad breaks are excluded from QOE calculations to provide accurate content quality metrics
+- When QOE tracking is disabled, no QOE_AGGREGATE events are sent
+
 
 <a name="data-model"></a>
 

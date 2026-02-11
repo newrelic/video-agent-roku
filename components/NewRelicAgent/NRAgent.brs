@@ -7,6 +7,7 @@
 
 sub init()
     m.nrLogsState = false
+    m.qoeTrackingEnabled = true  'Default enabled for backward compatibility
     m.nrAgentVersion = m.top.version
     m.eventApiUrl = ""
     m.logApiUrl = ""
@@ -734,6 +735,19 @@ function nrCheckLoggingState() as Boolean
     return m.nrLogsState
 end function
 
+function nrActivateQoeTracking(state as Boolean) as Void
+    m.qoeTrackingEnabled = state
+    if state then
+        nrLog("QOE tracking enabled")
+    else
+        nrLog("QOE tracking disabled")
+    end if
+end function
+
+function nrCheckQoeTrackingState() as Boolean
+    return m.qoeTrackingEnabled
+end function
+
 function nrLog(msg as Dynamic) as Void
     if m.nrLogsState = true
         if type(msg) = "roArray"         
@@ -1429,8 +1443,8 @@ function nrAddVideoAttributes(ev as Object) as Object
     end if
 
     'Track bitrate after all attributes are processed (including contentBitrate)
-    'Only track bitrate for content playback, not during ad breaks
-    if ev["actionName"] <> "QOE_AGGREGATE"
+    'Only track bitrate for content playback, not during ad breaks, and only if QOE is enabled
+    if ev["actionName"] <> "QOE_AGGREGATE" and m.qoeTrackingEnabled = true
         isInAdBreak = (m.rafState.timeSinceAdBreakBegin <> invalid and m.rafState.timeSinceAdBreakBegin > 0)
         if not isInAdBreak
             nrTrackBitrateForQoe(ev["contentBitrate"], ev["actionName"])
@@ -2508,11 +2522,15 @@ function nrCalculateQOEKpiAttributes() as Object
 end function
 
 function nrSendQoeAggregate() as Void
+    'Check if QOE tracking is enabled
+    if m.qoeTrackingEnabled = false
+        return
+    end if
 
     'Only send QOE_AGGREGATE if at least one VideoAction event occurred in this harvest cycle
     'This prevents QOE_AGGREGATE from being sent during ad-only periods
     if m.qoeHasVideoActionThisHarvest = false
-        return  
+        return
     end if
 
     kpiAttributes = nrCalculateQOEKpiAttributes()
