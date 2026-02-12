@@ -77,7 +77,7 @@ sub Main(aa as Object)
 	screen.show()
 
 	'Init New Relic Agent
-	m.nr = NewRelic(“ACCOUNT ID“, “API KEY“)
+	m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
 
 	'Send APP_STARTED event
 	nrAppStarted(m.nr, aa)
@@ -161,7 +161,7 @@ To interact with the New Relic Agent it provides a set of functions that wrap in
 **NewRelic**
 
 ```
-NewRelic(account as String, apikey as String, region = "US" as String, activeLogs = false as Boolean) as Object
+NewRelic(account as String, apikey as String, appName as String, appToken as String, region = "US" as String, activeLogs = false as Boolean) as Object
 
 Description:
 	Build a New Relic Agent object.
@@ -169,6 +169,8 @@ Description:
 Arguments:
 	account: New Relic account number.
 	apikey: API key.
+	appName: Application name.
+	appToken: Mobile Application Token (required for Video Events to flow to NRDB).
 	region: (optional) New Relic API region, EU or US. Default US.
 	activeLogs: (optional) Activate logs or not. Default False.
 
@@ -184,7 +186,7 @@ Example:
 		scene = screen.CreateScene("VideoScene")
 		screen.show()
 
-		m.nr = NewRelic("ACCOUNT ID", "API KEY")
+		m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
 ```
 
 **NewRelicSystemStart**
@@ -848,7 +850,7 @@ source/
 
 #### RAF Usage
 
-First we have to pass the NRAgent object (created with the call to `NewRelic(accountId, apiKey)`) to the Ads Task. This can be achieved using a field. Once done, inside the Ads Task we must do:
+First we have to pass the NRAgent object (created with the call to `NewRelic(accountId, apiKey, appName, appToken)`) to the Ads Task. This can be achieved using a field. Once done, inside the Ads Task we must do:
 
 ```brightscript
 adIface = Roku_Ads()
