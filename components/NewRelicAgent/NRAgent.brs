@@ -218,8 +218,76 @@ function nrSetUserId(userId as String) as Void
 end function
 
 function NewRelicVideoStart(videoObject as Object) as Void
-    nrLog("NewRelicVideoStart")
+    nrLog("NewRelicVideoStart called")
+    
+    ' Validate video object exists
+    if videoObject = invalid
+        nrLog("ERROR: videoObject is invalid, cannot start tracking")
+        return
+    end if
+    
+    ' Store video object temporarily for validation
+    m.nrVideoObject = videoObject
+    
+    ' Check if content has valid URL before initializing
+    contentSrc = nrGenerateStreamUrl()
+    
+    if contentSrc = invalid or contentSrc = ""
+        nrLog("WARNING: No valid content URL found - DELAYING tracker initialization")
+        nrLog("Tracker will wait until valid content URL is set")
+        
+        ' Set pending initialization flag
+        m.nrPendingInit = true
+        
+        ' Observe content field changes to initialize when URL becomes available
+        videoObject.observeFieldScoped("content", "nrContentReadyObserver")
+        
+        return  ' EXIT - Don't initialize yet!
+    end if
+    
+    ' If we reach here, content URL is valid - proceed with normal initialization
+    nrLog(["Valid content URL found, initializing tracker: ", contentSrc])
+    m.nrPendingInit = false
+    
+    ' NOW do the full initialization
+    nrInitializeTracker(videoObject)
+end function
 
+function nrContentReadyObserver() as Void
+    nrLog("nrContentReadyObserver: Content field changed")
+    
+    ' Only proceed if we're in pending init state
+    if m.nrPendingInit <> true
+        nrLog("Not in pending init state, ignoring content change")
+        return
+    end if
+    
+    ' Check if video object is still valid
+    if m.nrVideoObject = invalid
+        nrLog("ERROR: Video object became invalid")
+        return
+    end if
+    
+    ' Check if content now has valid URL
+    contentSrc = nrGenerateStreamUrl()
+    
+    if contentSrc <> invalid and contentSrc <> ""
+        nrLog(["Valid URL now available after waiting, initializing tracker: ", contentSrc])
+        
+        ' Stop observing content field (we got what we needed)
+        m.nrVideoObject.unobserveFieldScoped("content")
+        
+        ' Now initialize tracker with valid content
+        nrInitializeTracker(m.nrVideoObject)
+    else
+        nrLog("Content changed but still no valid URL - continuing to wait...")
+        ' Observer remains active, will fire again on next content change
+    end if
+end function
+
+function nrInitializeTracker(videoObject as Object) as Void
+    nrLog("nrInitializeTracker: Starting full tracker initialization")
+    
     'Store video object
     m.nrVideoObject = videoObject
     'Current state
@@ -253,15 +321,17 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Setup event listeners 
     m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
-    m.nrvideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
+    m.nrVideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
 
     'Init heartbeat timer
     m.hbTimer = m.top.findNode("nrHeartbeatTimer")
     m.hbTimer.observeFieldScoped("fire", "nrHeartbeatHandler")
-    m.hbTimer.control = "start"
+    ' Do not start heartbeat timer here, it will be started on CONTENT_START
     
-    'Player Ready
+    'Player Ready - NOW with valid content
     nrSendPlayerReady()
+    
+    nrLog("nrInitializeTracker: Tracker initialization complete")
 end function
 
 function NewRelicVideoStop() as Void
@@ -379,6 +449,11 @@ function nrSendCustomEvent(actionName as String, ctx as Dynamic, attr = invalid)
 end function
 
 function nrSendHttpRequest(attr as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrRequestIdentifiers = invalid or m.num_http_request_counters = invalid
+        return
+    end if
+
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     attr["domain"] = domain
     transId = stri(attr["transferIdentity"])
@@ -407,6 +482,11 @@ function nrSendHttpRequest(attr as Object) as Void
 end function
 
 function nrSendHttpResponse(attr as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrRequestIdentifiers = invalid or m.num_http_response_counters = invalid or m.num_http_response_errors = invalid
+        return
+    end if
+
     domain = nrExtractDomainFromUrl(attr["origUrl"])
     attr["domain"] = domain
     transId = stri(attr["transferIdentity"])
@@ -434,7 +514,7 @@ function nrSendHttpResponse(attr as Object) as Void
             m.num_http_response_errors.AddReplace(domain, 1)
         end if
     end if
-    
+
     nrSendSystemEvent("ConnectedDeviceSystem", "HTTP_RESPONSE", attr)
 end function
 
@@ -586,6 +666,11 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
 end function
 
 function nrSendLog(message as String, logtype as String, fields as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrLogArray = invalid or m.nrLogArrayIndex = invalid or m.nrLogArrayK = invalid
+        return
+    end if
+
     lg = CreateObject("roAssociativeArray")
     if message <> invalid and message <> "" then lg["message"] = message
     if logtype <> invalid and logtype <> "" then lg["logtype"] = logtype
@@ -600,6 +685,11 @@ end function
 
 'Send a Gauge metric
 function nrSendMetric(name as String, value as dynamic, attr = invalid as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrMetricArray = invalid or m.nrMetricArrayIndex = invalid or m.nrMetricArrayK = invalid
+        return
+    end if
+
     metric = CreateObject("roAssociativeArray")
     metric["type"] = "gauge"
     metric["name"] = name
@@ -624,6 +714,11 @@ end function
 
 'Send Count metric
 function nrSendCountMetric(name as String, value as dynamic, interval as Integer, attr = invalid as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrMetricArray = invalid or m.nrMetricArrayIndex = invalid or m.nrMetricArrayK = invalid
+        return
+    end if
+
     metric = CreateObject("roAssociativeArray")
     metric["type"] = "count"
     metric["name"] = name
@@ -649,6 +744,11 @@ end function
 
 'Send Summary metric
 function nrSendSummaryMetric(name as String, interval as Integer, value as Object, attr = invalid as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrMetricArray = invalid or m.nrMetricArrayIndex = invalid or m.nrMetricArrayK = invalid
+        return
+    end if
+
     metric = CreateObject("roAssociativeArray")
     metric["type"] = "summary"
     metric["name"] = name
@@ -708,6 +808,11 @@ function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
 end function
 
 function nrRecordEvent(event as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.nrEventArray = invalid or m.nrEventArrayIndex = invalid or m.nrEventArrayK = invalid
+        return
+    end if
+
     nrLog(["RECORD NEW EVENT = ", event])
     m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
 end function
@@ -970,6 +1075,11 @@ function nrCalculateBufferType(actionName as String) as String
 end function
 
 function nrSendHTTPError(info as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.num_http_error_counters = invalid
+        return
+    end if
+
     attr = nrAddCommonHTTPAttr(info)
     domain = attr["domain"]
 
@@ -984,6 +1094,11 @@ function nrSendHTTPError(info as Object) as Void
 end function
 
 function nrSendHTTPConnect(info as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.num_http_connect_counters = invalid
+        return
+    end if
+
     attr = nrAddCommonHTTPAttr(info)
     domain = attr["domain"]
 
@@ -999,6 +1114,11 @@ function nrSendHTTPConnect(info as Object) as Void
 end function
 
 function nrSendHTTPComplete(info as Object) as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.num_http_complete_counters = invalid
+        return
+    end if
+
     attr = {
         "bytesDownloaded": info["BytesDownloaded"],
         "bytesUploaded": info["BytesUploaded"],
@@ -1092,6 +1212,12 @@ end function
 function nrSendStart() as Void
     m.nrNumberOfErrors = 0
     m.nrTimeSinceStarted = m.nrTimer.TotalMilliseconds()
+    
+    ' Start/Restart heartbeat timer to sync with content start
+    if m.hbTimer <> invalid
+        m.hbTimer.control = "start"
+    end if
+
     nrSendVideoEvent("CONTENT_START")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
@@ -1311,13 +1437,18 @@ function nrAddVideoAttributes(ev as Object) as Object
     end if
     videoContent = m.nrVideoObject.content
     if videoContent <> invalid
-        contentNode = videoContent.getChild(m.nrVideoObject.contentIndex)
-        ' Check if contentNode is valid
-        if contentNode <> invalid
-            contentTitle = contentNode.title
-            if contentTitle <> invalid
-                ev.AddReplace("contentTitle", contentTitle)
-            end if
+        ' For playlists, get title from the child node at current index
+        ' For single videos, get title directly from content node
+        contentNode = invalid
+        if m.nrVideoObject.contentIsPlaylist = true
+            contentNode = videoContent.getChild(m.nrVideoObject.contentIndex)
+        else
+            contentNode = videoContent
+        end if
+        
+        ' Add contentTitle if available
+        if contentNode <> invalid and contentNode.title <> invalid
+            ev.AddReplace("contentTitle", contentNode.title)
         end if
     end if
 return ev
@@ -1754,13 +1885,15 @@ function nrExtractDomainFromUrl(url as String) as String
     if arr[1] = "" then return ""
     domain = arr[1]
 
-    ' Check all patterns in m.domainPatterns
-    for each item in m.domainPatterns.Items()
-        r = CreateObject("roRegex", item.key, "")
-        if r.isMatch(domain)
-            return r.Replace(domain, item.value)
-        end if
-    end for
+    ' Check all patterns in m.domainPatterns (only if initialized)
+    if m.domainPatterns <> invalid
+        for each item in m.domainPatterns.Items()
+            r = CreateObject("roRegex", item.key, "")
+            if r.isMatch(domain)
+                return r.Replace(domain, item.value)
+            end if
+        end for
+    end if
 
     ' If nothing matches, it just returns the whole domain
     return domain
@@ -1778,17 +1911,37 @@ function nrGenerateId() as String
 end function
 
 function nrGenerateStreamUrl() as String
+    ' Check if video object exists
+    if m.nrVideoObject = invalid
+        nrLog("nrGenerateStreamUrl: video object is invalid")
+        return ""
+    end if
+    
+    ' Try streamInfo first
     if m.nrVideoObject.streamInfo <> invalid
-        return m.nrVideoObject.streamInfo["streamUrl"]
-    else
-        if m.nrVideoObject.contentIsPlaylist and m.nrVideoObject.content <> invalid
+        streamUrl = m.nrVideoObject.streamInfo["streamUrl"]
+        if streamUrl <> invalid and streamUrl <> ""
+            return streamUrl
+        end if
+    end if
+    
+    ' Try content
+    if m.nrVideoObject.content <> invalid
+        ' Check if playlist
+        if m.nrVideoObject.contentIsPlaylist = true
             currentChild = m.nrVideoObject.content.getChild(m.nrVideoObject.contentIndex)
-            if currentChild <> invalid
-                'Get url from content child
+            if currentChild <> invalid and currentChild.url <> invalid and currentChild.url <> ""
                 return currentChild.url
+            end if
+        else
+            ' Single video
+            if m.nrVideoObject.content.url <> invalid and m.nrVideoObject.content.url <> ""
+                return m.nrVideoObject.content.url
             end if
         end if
     end if
+    
+    nrLog("nrGenerateStreamUrl: No valid URL found")
     return ""
 end function
 
@@ -2084,6 +2237,11 @@ function nrHeartbeatHandler() as Void
 end function
 
 function nrSendHttpCountMetrics() as Void
+    ' Guard: Check if agent is initialized before processing
+    if m.http_counters_max_ts = invalid or m.http_counters_min_ts = invalid or m.num_http_request_counters = invalid
+        return
+    end if
+
     'Set final time interval
     m.http_counters_max_ts.Mark()
 

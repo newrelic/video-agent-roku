@@ -48,7 +48,10 @@ function searchTaskMain()
         if type(msg) = "roUrlEvent" then
             'Send HTTP_RESPONSE action
             nrSendHttpResponse(m.nr, _url, msg)
-            nrSendLog(m.nr, "Google Search", "URL Request", { "url": _url, "counter": counter, "bodysize": Len(msg) })
+            responseBody = msg.GetString()
+            bodySize = 0
+            if responseBody <> invalid then bodySize = Len(responseBody)
+            nrSendLog(m.nr, "Google Search", "URL Request", { "url": _url, "counter": counter, "bodysize": bodySize })
 
             ' Update max, min and sum
             if requestTimer.TotalMilliseconds() > m_max then m_max = requestTimer.TotalMilliseconds()
