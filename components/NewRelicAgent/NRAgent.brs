@@ -7,7 +7,7 @@
 
 sub init()
     m.nrLogsState = false
-    m.qoeTrackingEnabled = true  'Default enabled for backward compatibility
+    m.qoeTrackingEnabled = false  'Default disabled - must be explicitly enabled
     m.nrAgentVersion = m.top.version
     m.eventApiUrl = ""
     m.logApiUrl = ""
