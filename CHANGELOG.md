@@ -2,24 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.1.1-beta] - 2026/02/09
+## [4.1.0] - 2026/04/09
 
 ### Add
 
-- Added `qoeAggregate` parameter to `NewRelic()` function to enable/disable QOE tracking
-- Added `nrActivateQoeTracking()` function to control QOE tracking at runtime
-- Added `nrCheckQoeTrackingState()` function to check current QOE tracking state
-- QOE tracking is now configurable with backward compatibility (enabled by default)
-
-## [4.1.0-beta] - 2026/02/03
-
-### Add
-
-- QOE aggregate metrics tracking (averageBitrate, peakBitrate, startupTime, rebufferingRatio)
-- QOE_AGGREGATE event sent on each harvest cycle
-- Time-weighted bitrate calculation for accurate quality measurement
-- Rebuffering ratio and total rebuffering time tracking
-- Exclusion of ad breaks from QOE metrics calculations
+- Added QOE tracking support in the `4.1.0` release.
+- QOE aggregate metrics include `averageBitrate`, `peakBitrate`, `startupTime`, `rebufferingRatio`, and `totalRebufferingTime`.
+- QOE tracking is disabled by default and must be explicitly enabled at runtime with `nrActivateQoeTracking()`.
+- QOE aggregate interval can be configured with `nrSetQoeAggregateIntervalMultiplier()`, and defaults to `1` when not set.
 
 ## [4.0.4] - 2025/11/11
 
