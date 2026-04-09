@@ -8,6 +8,8 @@
 sub init()
     m.nrLogsState = false
     m.qoeTrackingEnabled = false  'Default disabled - must be explicitly enabled
+    m.qoeAggregateIntervalMultiplier = 1
+    m.qoeHarvestCycleCounter = 0
     m.nrAgentVersion = m.top.version
     m.eventApiUrl = ""
     m.logApiUrl = ""
@@ -173,7 +175,7 @@ function NewRelicInit(account as String, apikey as String,appName as String, reg
         end if
     end if
 
-    nrLog(["NewRelicInit, m = ", m])
+    nrLog(["NewRelicInit complete. appName=", m.appName, ", region=", m.nrRegion, ", logging=", m.nrLogsState])
 end function
 
 
@@ -268,14 +270,13 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.startupPeriodAdTime = 0  'Ad time that occurred during startup period
     m.hasContentStarted = false  'Tracks whether content has successfully started (for buffer classification)
 
-    'bitrate tracking for QOE average bitrate calculation
-    m.qoeWeightedSum = 0                     'Running sum of (bitrate × display_duration)
-    m.qoeTotalDisplayTime = 0                'Total milliseconds of actual display time
-    m.qoeCurrentQuality = invalid            'Current segBitrateBps being displayed
-    m.qoeDisplayPeriodStartTime = invalid    'When current display period started
+    m.qoeCurrentBitrate = invalid
+    m.qoeLastRenditionChangeTime = invalid
+    m.qoeTotalBitrateWeightedTime = 0.0
+    m.qoeTotalActiveTime = 0
+    m.qoePlaybackActive = false
 
     'QOE: Harvest multiplier support
-    m.qoeAggregateIntervalMultiplier = 1  'Default: send QOE every harvest cycle
     m.qoeHarvestCycleCounter = 0  'Counter to track harvest cycles for multiplier logic
 
     'QOE: Dirty checking support
@@ -369,9 +370,14 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
        ev.Append(attr)
     end if
 
-    'Track user visual experience for QOE average bitrate calculation
-    if m.qoeTrackingEnabled = true and ev["contentBitrate"] <> invalid
+    'Always process QOE state transitions for video actions.
+    'Some boundary events such as CONTENT_END may not carry contentBitrate,
+    'but they still need to close active playback windows before final QOE generation.
+    if m.qoeTrackingEnabled = true
         nrQoeHandleVideoEvent(actionName, ev["contentBitrate"])
+        if ev["contentBitrate"] <> invalid
+            nrTrackBitrateForQoe(ev["contentBitrate"])
+        end if
     end if
 
     nrRecordEvent(ev)
@@ -516,21 +522,27 @@ function nrSetHarvestTime(seconds as Integer) as Void
 end function
 
 function nrSetHarvestTimeEvents(seconds as Integer) as Void
-    if seconds < 60 then seconds = 60
+    if seconds < 60
+        seconds = 60
+    end if
     m.nrEventHarvestTimeNormal = seconds
     m.nrHarvestTimerEvents.duration = seconds
     nrLog(["Harvest time events = ", seconds])
 end function
 
 function nrSetHarvestTimeLogs(seconds as Integer) as Void
-    if seconds < 60 then seconds = 60
+    if seconds < 60
+        seconds = 60
+    end if
     m.nrLogHarvestTimeNormal = seconds
     m.nrHarvestTimerLogs.duration = seconds
     nrLog(["Harvest time logs = ", seconds])
 end function
 
 function nrSetHarvestTimeMetrics(seconds as Integer) as Void
-    if seconds < 60 then seconds = 60
+    if seconds < 60
+        seconds = 60
+    end if
     m.nrMetricHarvestTimeNormal = seconds
     m.nrHarvestTimerMetrics.duration = seconds
     nrLog(["Harvest time metrics = ", seconds])
@@ -789,14 +801,17 @@ function nrAreQoeKpisEqual(currentKpis as Dynamic, lastSentKpis as Dynamic) as B
     currentTotalRebufferTime = toString(currentKpis.totalRebufferingTime)
     lastTotalRebufferTime = toString(lastSentKpis.totalRebufferingTime)
 
+    currentTotalPlaytime = toString(currentKpis.totalPlaytime)
+    lastTotalPlaytime = toString(lastSentKpis.totalPlaytime)
+
     'Error flags
-    currentStartupError = toString(currentKpis.hadStartupFailure)
-    lastStartupError = toString(lastSentKpis.hadStartupFailure)
+    currentStartupError = toString(currentKpis.hadStartupError)
+    lastStartupError = toString(lastSentKpis.hadStartupError)
 
-    currentPlaybackError = toString(currentKpis.hadPlaybackFailure)
-    lastPlaybackError = toString(lastSentKpis.hadPlaybackFailure)
+    currentPlaybackError = toString(currentKpis.hadPlaybackError)
+    lastPlaybackError = toString(lastSentKpis.hadPlaybackError)
 
-    areEqual = (currentStartupTime = lastStartupTime and currentAvgBitrate = lastAvgBitrate and currentPeakBitrate = lastPeakBitrate and currentRebufferRatio = lastRebufferRatio and currentTotalRebufferTime = lastTotalRebufferTime and currentStartupError = lastStartupError and currentPlaybackError = lastPlaybackError)
+    areEqual = (currentStartupTime = lastStartupTime and currentAvgBitrate = lastAvgBitrate and currentPeakBitrate = lastPeakBitrate and currentRebufferRatio = lastRebufferRatio and currentTotalRebufferTime = lastTotalRebufferTime and currentTotalPlaytime = lastTotalPlaytime and currentStartupError = lastStartupError and currentPlaybackError = lastPlaybackError)
 
     return areEqual
 end function
@@ -1280,6 +1295,10 @@ function nrSendPlayerReady() as Void
 end function
 
 function nrSendRequest() as Void
+    if m.qoeFinalEventSent = true
+        nrResetQoeMetrics()
+    end if
+
     m.nrTimeSinceRequested = m.nrTimer.TotalMilliseconds()
     'Capture CONTENT_REQUEST timestamp for startup time calculation
     if m.contentRequestTimestamp = invalid
@@ -1313,22 +1332,19 @@ function nrSendStart() as Void
 end function
 
 function nrSendEnd() as Void
+    'Generate final QOE before CONTENT_END mutates any QOE bitrate state.
+    'The final aggregate should represent the last rendered playback window,
+    'not any bookkeeping side effects of the end event itself.
+    nrGenerateQoeEvent(true)
+
     nrSendVideoEvent("CONTENT_END")
+
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 
     'Reset playback state for replay scenarios
     m.nrTimeSinceStarted = 0.0
-
-    'FINAL QOE GUARANTEE: Generate final QOE event at CONTENT_END
-    'This ensures QOE is always delivered regardless of harvest cycle timing
-    'matching iOS behavior for guaranteed final QOE delivery
-    'Force send bypasses dirty checking to ensure final metrics are captured
-    nrGenerateQoeEvent(true)
-
-    'Reset QOE metrics for new view session
-    nrResetQoeMetrics()
 end function
 
 function nrSendPause() as Void
@@ -1989,6 +2005,10 @@ end function
 '=================='
 
 function isAction(name as String, action as String) as Boolean
+    if action = invalid or action = ""
+        return false
+    end if
+
     regExp = "(CONTENT|AD)_" + name
     r = CreateObject("roRegex", regExp, "")
     return r.isMatch(action)
@@ -2465,9 +2485,22 @@ end function
 ' QOE Helper Functions     '
 '=========================='
 
-function nrTrackBitrateForQoe(contentBitrate as Dynamic, actionName as String) as Void
+function nrTrackBitrateForQoe(contentBitrate as Dynamic) as Void
     if contentBitrate = invalid or contentBitrate = 0
         return
+    end if
+
+    if m.qoePlaybackActive = false
+        return
+    end if
+
+    'Treat any observed bitrate change during active playback as a rendition boundary.
+    'Many streams expose updated contentBitrate on heartbeats without emitting CONTENT_RENDITION_CHANGE.
+    if m.qoeCurrentBitrate <> invalid and m.qoeCurrentBitrate > 0 and m.qoeCurrentBitrate <> contentBitrate
+        nrQoePauseBitrateTracking()
+        nrQoeResumeBitrateTracking(contentBitrate)
+    else if m.qoeLastRenditionChangeTime = invalid
+        nrQoeResumeBitrateTracking(contentBitrate)
     end if
 
     'Skip if this is the same bitrate we just tracked (avoid duplicate processing)
@@ -2479,10 +2512,8 @@ function nrTrackBitrateForQoe(contentBitrate as Dynamic, actionName as String) a
     m.qoeLastTrackedBitrate = contentBitrate
 
 
-    peakChanged = false
     if m.qoePeakBitrate = invalid or contentBitrate > m.qoePeakBitrate
         m.qoePeakBitrate = contentBitrate
-        peakChanged = true
     end if
 
     m.qoeBitrateSum = m.qoeBitrateSum + contentBitrate
@@ -2490,58 +2521,71 @@ function nrTrackBitrateForQoe(contentBitrate as Dynamic, actionName as String) a
 
 end function
 
-'==================================
-' QOE AVERAGE BITRATE CALCULATION
-'==================================
-
-function nrQoeGetAverageBitrate() as Dynamic
-    'Calculate time-weighted average bitrate using only accumulated display time 
-    if m.qoeTotalDisplayTime > 0
-        return Int(m.qoeWeightedSum / m.qoeTotalDisplayTime)
-    else
-        return invalid  'No display time recorded yet
+function nrQoeResumeBitrateTracking(bitrate as Dynamic) as Void
+    if bitrate = invalid or bitrate <= 0
+        return
     end if
+
+    m.qoeCurrentBitrate = bitrate
+    m.qoeLastRenditionChangeTime = m.nrTimer.TotalMilliseconds()
+end function
+
+function nrQoePauseBitrateTracking() as Void
+    if m.qoeCurrentBitrate = invalid or m.qoeCurrentBitrate <= 0 or m.qoeLastRenditionChangeTime = invalid
+        return
+    end if
+
+    currentTime = m.nrTimer.TotalMilliseconds()
+    if currentTime >= m.qoeLastRenditionChangeTime
+        duration = currentTime - m.qoeLastRenditionChangeTime
+        if duration > 0
+            contribution = CDbl(m.qoeCurrentBitrate) * CDbl(duration)
+            m.qoeTotalBitrateWeightedTime = m.qoeTotalBitrateWeightedTime + contribution
+            m.qoeTotalActiveTime = m.qoeTotalActiveTime + duration
+        end if
+    end if
+
+    m.qoeLastRenditionChangeTime = invalid
+end function
+
+function nrCalculateTimeWeightedAverageBitrate() as Dynamic
+    totalWeightedTime = CDbl(m.qoeTotalBitrateWeightedTime)
+    totalActiveTime = m.qoeTotalActiveTime
+
+    if m.qoeCurrentBitrate <> invalid and m.qoeCurrentBitrate > 0 and m.qoeLastRenditionChangeTime <> invalid
+        currentTime = m.nrTimer.TotalMilliseconds()
+        if currentTime >= m.qoeLastRenditionChangeTime
+            currentSegmentDuration = currentTime - m.qoeLastRenditionChangeTime
+            if currentSegmentDuration > 0
+                totalWeightedTime = totalWeightedTime + (CDbl(m.qoeCurrentBitrate) * CDbl(currentSegmentDuration))
+                totalActiveTime = totalActiveTime + currentSegmentDuration
+            end if
+        end if
+    end if
+
+    if totalActiveTime > 0
+        return Int(totalWeightedTime / CDbl(totalActiveTime))
+    end if
+
+    return invalid
 end function
 
 function nrQoeHandleVideoEvent(actionName as String, bitrate as Dynamic) as Void
-    'Handle all video events for display time tracking - called from nrSendVideoEvent
+    'Handle all video events for active bitrate time tracking - called from nrSendVideoEvent
 
     if actionName = "CONTENT_START" or actionName = "CONTENT_RESUME" or actionName = "CONTENT_BUFFER_END" or actionName = "CONTENT_SEEK_END"
-        'Entering playing state - start display period
-        m.qoeDisplayPeriodStartTime = m.nrTimer.TotalMilliseconds()
-        m.qoeCurrentQuality = bitrate
+        m.qoePlaybackActive = true
+        nrQoeResumeBitrateTracking(bitrate)
 
     else if actionName = "CONTENT_PAUSE" or actionName = "CONTENT_BUFFER_START" or actionName = "CONTENT_ERROR" or actionName = "CONTENT_SEEK_START" or actionName = "CONTENT_END"
-        'Leaving playing state - end current display period and accumulate
-        if m.qoeDisplayPeriodStartTime <> invalid and m.qoeCurrentQuality <> invalid and m.qoeCurrentQuality > 0
-            duration = m.nrTimer.TotalMilliseconds() - m.qoeDisplayPeriodStartTime
-            if duration > 0
-                'Accumulate: quality × time
-                contribution = m.qoeCurrentQuality * duration
-                m.qoeWeightedSum = m.qoeWeightedSum + contribution
-                m.qoeTotalDisplayTime = m.qoeTotalDisplayTime + duration
-            end if
-        end if
-        m.qoeDisplayPeriodStartTime = invalid
+        m.qoePlaybackActive = false
+        nrQoePauseBitrateTracking()
 
     else if actionName = "CONTENT_RENDITION_CHANGE"
-        'Quality change during playback - end current period, start new one
-        if m.qoeDisplayPeriodStartTime <> invalid  'Currently in a display period
-            'End current period
-            if m.qoeCurrentQuality <> invalid and m.qoeCurrentQuality > 0
-                duration = m.nrTimer.TotalMilliseconds() - m.qoeDisplayPeriodStartTime
-                if duration > 0
-                    contribution = m.qoeCurrentQuality * duration
-                    m.qoeWeightedSum = m.qoeWeightedSum + contribution
-                    m.qoeTotalDisplayTime = m.qoeTotalDisplayTime + duration
-                end if
-            end if
-            'Start new period with new quality
-            m.qoeDisplayPeriodStartTime = m.nrTimer.TotalMilliseconds()
-            m.qoeCurrentQuality = bitrate
-        else
-            'Not currently displaying, just update current quality for when playing starts
-            m.qoeCurrentQuality = bitrate
+        'Quality change during playback - close current segment and start a new one
+        if m.qoePlaybackActive and m.qoeLastRenditionChangeTime <> invalid
+            nrQoePauseBitrateTracking()
+            nrQoeResumeBitrateTracking(bitrate)
         end if
     end if
 end function
@@ -2551,15 +2595,14 @@ end function
 
 function nrCalculateQOEKpiAttributes() as Object
     kpiAttributes = CreateObject("roAssociativeArray")
+    hadStartupFailure = (m.contentErrorTimestamp <> invalid and m.contentStartTimestamp = invalid)
 
-    if m.qoeStartupTime = invalid and m.contentRequestTimestamp <> invalid
+    if m.qoeStartupTime = invalid and m.contentRequestTimestamp <> invalid and not hadStartupFailure
         endTimestamp = invalid
 
-        'Determine end timestamp: use contentStartTimestamp (success) or contentErrorTimestamp (failure)
+        'Determine end timestamp for successful startup only
         if m.contentStartTimestamp <> invalid
             endTimestamp = m.contentStartTimestamp  
-        else if m.contentErrorTimestamp <> invalid
-            endTimestamp = m.contentErrorTimestamp  
         end if
 
         if endTimestamp <> invalid
@@ -2587,24 +2630,20 @@ function nrCalculateQOEKpiAttributes() as Object
 
     'If startup succeeded or was instant (zero), include the numeric value
     'If startup failed (error before CONTENT_START), set to empty string per test requirement
-    if m.qoeStartupTime <> invalid and m.qoeStartupTime >= 0
-        kpiAttributes["startupTime"] = m.qoeStartupTime
-    else if m.contentErrorTimestamp <> invalid and m.contentStartTimestamp = invalid
+    if hadStartupFailure
         'Error occurred before CONTENT_START, set startupTime to empty string
         kpiAttributes["startupTime"] = ""
+    else if m.qoeStartupTime <> invalid and m.qoeStartupTime >= 0
+        kpiAttributes["startupTime"] = m.qoeStartupTime
     end if
 
     if m.qoePeakBitrate <> invalid and m.qoePeakBitrate > 0
         kpiAttributes["peakBitrate"] = m.qoePeakBitrate
     end if
 
-    hadStartupFailure = false
-    if m.contentErrorTimestamp <> invalid and m.contentStartTimestamp = invalid
-        hadStartupFailure = true
-    end if
-    kpiAttributes["hadStartupFailure"] = hadStartupFailure
+    kpiAttributes["hadStartupError"] = hadStartupFailure
 
-    kpiAttributes["hadPlaybackFailure"] = m.qoeHadPlaybackFailure
+    kpiAttributes["hadPlaybackError"] = m.qoeHadPlaybackFailure
 
     kpiAttributes["totalRebufferingTime"] = m.qoeTotalRebufferingTime
 
@@ -2619,7 +2658,7 @@ function nrCalculateQOEKpiAttributes() as Object
     kpiAttributes["totalPlaytime"] = totalPlaytime
 
     'Calculate user visual experience average bitrate (time-weighted)
-    averageBitrate = nrQoeGetAverageBitrate()
+    averageBitrate = nrCalculateTimeWeightedAverageBitrate()
     if averageBitrate <> invalid
         kpiAttributes["averageBitrate"] = averageBitrate
     else if m.qoeBitrateCount > 0
@@ -2663,24 +2702,7 @@ function nrGenerateQoeEvent(forceSend = false as Boolean) as Void
         return
     end if
 
-    'SYNCHRONIZATION STEP 1: Close any active display period to capture final state
-    'This ensures all KPIs reflect actual confirmed display time, not speculative time
-    'SAFETY: Only close if period is actually active to avoid double-closing
-    if m.qoeDisplayPeriodStartTime <> invalid and m.qoeCurrentQuality <> invalid and m.qoeCurrentQuality > 0
-        currentTime = m.nrTimer.TotalMilliseconds()
-        activeDuration = currentTime - m.qoeDisplayPeriodStartTime
-        if activeDuration > 0
-            'Accumulate the active period into final totals
-            m.qoeWeightedSum = m.qoeWeightedSum + (m.qoeCurrentQuality * activeDuration)
-            m.qoeTotalDisplayTime = m.qoeTotalDisplayTime + activeDuration
-            nrLog("QOE: Closed active display period - " + Str(activeDuration) + "ms at " + Str(m.qoeCurrentQuality) + " bps")
-        end if
-
-        'Reset active period tracking (will be restarted by next video event if needed)
-        m.qoeDisplayPeriodStartTime = invalid
-    end if
-
-    'SYNCHRONIZATION STEP 2: Calculate KPIs at exact generation moment
+    'Capture KPIs at the exact generation moment.
     kpiAttributes = nrCalculateQOEKpiAttributes()
 
     'DEDUPLICATION: Only send if KPIs have changed or if explicitly forced
@@ -2694,7 +2716,7 @@ function nrGenerateQoeEvent(forceSend = false as Boolean) as Void
         qoeEvent = nrCreateEvent("VideoAction", "QOE_AGGREGATE")
 
         'Add filtered context attributes (iOS compatibility)
-        allVideoAttributes = nrAddVideoAttributes(CreateObject("roAssociativeArray"))
+        allVideoAttributes = nrAddVideoAttributes({"actionName": "QOE_AGGREGATE"})
         filteredContextAttributes = nrFilterQoeContextAttributes(allVideoAttributes)
         qoeEvent.Append(filteredContextAttributes)
 
@@ -2718,8 +2740,6 @@ function nrGenerateQoeEvent(forceSend = false as Boolean) as Void
         else
             nrLog("QOE_AGGREGATE generated with synchronized KPIs - bitrate tracking closed")
         end if
-    else
-        nrLog("QOE_AGGREGATE skipped - KPIs unchanged (dirty checking)")
     end if
 end function
 
@@ -2748,12 +2768,10 @@ function nrResetQoeMetrics() as Void
     m.nrCurrentViewAdPlaytime = 0  'Reset per-view ad time for new view
     m.hasContentStarted = false
 
-    'Reset user visual experience bitrate tracking
-    m.qoeWeightedSum = 0
-    m.qoeTotalDisplayTime = 0
-    m.qoeCurrentQuality = invalid
-    m.qoeDisplayPeriodStartTime = invalid
-
-    'Reset harvest cycle tracking flag
-    m.qoeHasVideoActionThisHarvest = false
+    'Reset active bitrate tracking
+    m.qoeCurrentBitrate = invalid
+    m.qoeLastRenditionChangeTime = invalid
+    m.qoeTotalBitrateWeightedTime = 0.0
+    m.qoeTotalActiveTime = 0
+    m.qoePlaybackActive = false
 end function
