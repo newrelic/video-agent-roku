@@ -14,7 +14,7 @@ curl -sS -d '' http://$ROKU_DEV_TARGET:8060/keypress/Home
 # build. zip _must_ change for Roku to accept re-deploy (grr!)
 cd -- "$(dirname "$0")"
 touch timestamp
-zip -FS -9 -r out/bundle * -x run extras
+zip -FS -9 -r out/bundle * -x run extras "*.log" "*.md" ".git/*" ".DS_Store" "out/*"
 
 # deploy
 curl -f -sS --user rokudev:$2 --anyauth -F "mysubmit=Install" -F "archive=@out/bundle.zip" -F "passwd=" http://$ROKU_DEV_TARGET/plugin_install  \

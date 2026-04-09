@@ -31,10 +31,15 @@ sub Main(aa as Object)
     screen.show()
     
     'Init New Relic Agent (FILL YOUR CREDENTIALS, ACCOUNT_ID, API_KEY, APP_NAME and APP_TOKEN)
+    'Enable QOE tracking (default): true
     m.nr = NewRelic("ACCOUNT_ID", "API_KEY","APP_NAME", "APP_TOKEN" , "US", true)
     
     'Set custom harvest time
-    nrSetHarvestTime(m.nr, 60)
+    nrSetHarvestTime(m.nr, 10)
+    'Enable QOE tracking via runtime API
+    nrActivateQoeTracking(m.nr)
+    'Set custom QoE aggregate interval multiplier (default is 1, set to 2 to aggregate QoE data in 20s intervals instead of 10s)
+    nrSetQoeAggregateIntervalMultiplier(m.nr, 2 )
     'Version 3.0.0 (or above) disables HttpEvents by default
     nrEnableHttpEvents(m.nr)
     'Send APP_STARTED event

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.0] - 2026/04/09
+
+### Add
+
+- Added QOE tracking support in the `4.1.0` release.
+- QOE aggregate metrics include `averageBitrate`, `peakBitrate`, `startupTime`, `rebufferingRatio`, and `totalRebufferingTime`.
+- QOE tracking is disabled by default and must be explicitly enabled at runtime with `nrActivateQoeTracking()`.
+- QOE aggregate interval can be configured with `nrSetQoeAggregateIntervalMultiplier()`, and defaults to `1` when not set.
+
 ## [4.0.4] - 2025/11/11
 
 ### Fix

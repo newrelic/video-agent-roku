@@ -7,11 +7,12 @@ The New Relic Roku Agent tracks the behavior of a Roku App. It contains two part
 Internally, it uses the Event API to send events using the REST interface. It sends five types of events:
 
 - ConnectedDeviceSystem for system events
-- VideoAction for video events.
+- VideoAction for video events (includes QOE_AGGREGATE for Quality of Experience metrics)
 - VideoErrorAction for errors.
 - VideoAdAction for ads.
 - VideoCustomAction for custom actions.
-  After the agent has sent some data it will be accessible in NR One Dashboards with a simple NRQL request like:
+
+After the agent has sent some data it will be accessible in NR One Dashboards with a simple NRQL request like:
 
 ```
 SELECT * FROM ConnectedDeviceSystem, VideoAction, VideoErrorAction, VideoAdAction, VideoCustomAction
@@ -26,6 +27,7 @@ Will result in something like the following:
 - [Requirements & Installation](#requirements)
 - [Usage](#usage)
 - [Agent API](#api)
+- [Quality of Experience (QOE) Tracking](#qoe-tracking)
 - [Data Model](#data-model)
 - [Ad Tracking](#ad-track)
 - [Testing](#testing)
@@ -186,7 +188,11 @@ Example:
 		scene = screen.CreateScene("VideoScene")
 		screen.show()
 
-		m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
+		'Build the agent
+		m.nr = NewRelic("ACCOUNT ID", "API KEY", "APP NAME", "APP TOKEN")
+
+		'Enable QOE tracking explicitly when needed
+		nrActivateQoeTracking(m.nr)
 ```
 
 **NewRelicSystemStart**
@@ -823,6 +829,60 @@ Return:
 Example:
 	nrSetUserId(m.nr, "TEST_USER")
 ```
+
+<a name="qoe-tracking"></a>
+
+### Quality of Experience (QOE) Tracking
+
+The agent can track Quality of Experience (QOE) metrics and send them as `QOE_AGGREGATE` events. These metrics provide insights into video playback quality.
+
+#### Enabling/Disabling QOE Tracking
+
+QOE tracking is **disabled by default**. Enable it explicitly at runtime after creating the agent:
+
+```brightscript
+m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
+nrActivateQoeTracking(m.nr)
+```
+
+Once enabled for a session, QOE tracking remains active for that agent instance.
+
+#### QOE Aggregate Interval Multiplier
+
+The QOE aggregate interval multiplier defaults to `1`.
+
+- If you do not set it, the agent evaluates QOE on every eligible event harvest.
+- If you set it to `2`, QOE is evaluated on every second eligible event harvest.
+- The minimum multiplier is `1`.
+
+```brightscript
+m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
+nrActivateQoeTracking(m.nr)
+
+'Default behavior: multiplier = 1
+'Optional: send QOE every second eligible event harvest
+nrSetQoeAggregateIntervalMultiplier(m.nr, 2)
+```
+
+The effective QOE interval is:
+
+```
+event harvest interval * qoe aggregate interval multiplier
+```
+
+With the default event harvest interval of `60` seconds:
+
+- multiplier `1` evaluates QOE every `60` seconds
+- multiplier `2` evaluates QOE every `120` seconds
+
+#### QOE Event Behavior
+
+- QOE tracking must be explicitly activated with `nrActivateQoeTracking(...)`
+- QOE_AGGREGATE events are evaluated on eligible event harvest cycles
+- Dirty checking suppresses repeated QOE events when KPI values have not changed
+- Ad breaks are excluded from QOE calculations to provide accurate content quality metrics
+- When QOE tracking is disabled, no QOE_AGGREGATE events are sent
+
 
 <a name="data-model"></a>
 

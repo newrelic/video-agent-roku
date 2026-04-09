@@ -81,6 +81,11 @@ end function
 
 function nrSampleProcessor(sampleType as String, endpoint as String, appName as String) as Void
     if m.nr <> invalid
+        'Generate QOE event if qualified before extracting samples (only for event harvests)
+        if sampleType = "event"
+            m.nr.callFunc("nrQoeHarvestHandler")
+        end if
+
         samples = m.nr.callFunc("nrExtractAllSamples", sampleType)
         if samples.Count() > 0
             if(sampleType = "event")
