@@ -14,13 +14,11 @@
 ' @param appToken Mobile application token
 ' @param region (optional) New Relic API region, EU or US. Default US.
 ' @param activeLogs (optional) Activate logs or not. Default False.
-' @param qoeAggregate (optional) Enable QOE tracking. Default True.
 ' @return New Relic Agent object.
-function NewRelic(account as String, apikey as String,appName as String, appToken = "" as String , region = "US" as String, activeLogs = false as Boolean, qoeAggregate = true as Boolean) as Object
+function NewRelic(account as String, apikey as String,appName as String, appToken = "" as String , region = "US" as String, activeLogs = false as Boolean) as Object
     nr = CreateObject("roSGNode", "com.newrelic.NRAgent")
     nr.callFunc("nrActivateLogging", activeLogs)
-    nr.callFunc("nrActivateQoeTracking", qoeAggregate)
-    nr.callFunc("NewRelicInit", account, apikey,appName, region, appToken)
+    nr.callFunc("NewRelicInit", account, apikey, appName, region, appToken)
     return nr
 end function
 
@@ -338,4 +336,21 @@ function nrSendSummaryMetric(nr as Object, name as String, interval as Integer, 
         "min": m_min
     }
     nr.callFunc("nrSendSummaryMetric", name, interval, value, attr)
+end function
+
+' Activate QOE (Quality of Experience) tracking at runtime.
+' Note: Once enabled, QOE tracking cannot be disabled during the session.
+'
+' @param nr New Relic Agent object.
+function nrActivateQoeTracking(nr as Object) as Void
+    nr.callFunc("nrActivateQoeTracking", true)
+end function
+
+' Set the QOE aggregate interval multiplier.
+' QOE events are sent every (harvest_time * multiplier) seconds.
+'
+' @param nr New Relic Agent object.
+' @param multiplier Integer multiplier (min 1). Default 1.
+function nrSetQoeAggregateIntervalMultiplier(nr as Object, multiplier as Integer) as Void
+    nr.callFunc("nrSetQoeAggregateIntervalMultiplier", multiplier)
 end function

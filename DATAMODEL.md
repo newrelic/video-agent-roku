@@ -152,8 +152,8 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | startupTime              | Time from CONTENT_REQUEST to CONTENT_START in milliseconds. Measures video startup performance. Only included if value is not null.               |
 | peakBitrate              | Maximum contentBitrate (in bits per second) observed during content playback. Tracks the highest quality achieved. Only included if value > 0.    |
-| hadStartupFailure        | Boolean indicating if CONTENT_ERROR occurred before CONTENT_START. True if video failed to start due to an error.                                 |
-| hadPlaybackFailure       | Boolean indicating if CONTENT_ERROR occurred at any time during content playback.                                                                  |
+| hadStartupError          | Boolean indicating if CONTENT_ERROR occurred before CONTENT_START. True if video failed to start due to an error.                                 |
+| hadPlaybackError         | Boolean indicating if CONTENT_ERROR occurred at any time during content playback.                                                                  |
 | totalRebufferingTime     | Total milliseconds spent rebuffering during content playback (excludes initial buffering).                                                         |
 | rebufferingRatio         | Rebuffering time as a percentage of total playtime. Calculated as (totalRebufferingTime / totalPlaytime) × 100.                                   |
 | totalPlaytime            | Total milliseconds user spent watching content (excludes pausing, buffering, and ads). Represents actual content viewing time.                    |
