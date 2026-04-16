@@ -37,8 +37,8 @@ Sub MainTestSuite__SetUp()
     ' Create Dummy Video object and start video tracking
     m.videoObject = CreateObject("roSGNode", "com.newrelic.test.DummyVideo")
     videoContent = createObject("RoSGNode", "ContentNode")
-    videoContent.url = "http://fakedomain.com/fakevideo"
-    videoContent.title = "Fake Video"
+    videoContent.url = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+    videoContent.title = "Big Buck Bunny"
     m.videoObject.content = videoContent
 End Sub
 

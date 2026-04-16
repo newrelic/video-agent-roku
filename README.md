@@ -28,6 +28,7 @@ Will result in something like the following:
 - [Usage](#usage)
 - [Agent API](#api)
 - [Quality of Experience (QOE) Tracking](#qoe-tracking)
+- [Obfuscation Rules](#obfuscation-rules)
 - [Data Model](#data-model)
 - [Ad Tracking](#ad-track)
 - [Testing](#testing)
@@ -722,6 +723,34 @@ Example:
 	nrDelDomainSubstitution(nr, "^.+\.my\.domain\.com$")
 ```
 
+**nrSetObfuscationRules**
+
+```
+nrSetObfuscationRules(nr as Object, rules as Object) as Void
+
+Description:
+	Set obfuscation rules to mask sensitive data in all outgoing events before they are
+	buffered. Rules apply to all event types: VideoAction (including QOE_AGGREGATE),
+	VideoErrorAction, VideoAdAction (RAF and IMA), VideoCustomAction, and
+	ConnectedDeviceSystem. Only string attribute values are processed; numeric and boolean
+	values are passed through unchanged. Rules are applied in array order. Call with an
+	empty array to remove all rules.
+
+Arguments:
+	nr: New Relic Agent object.
+	rules: Array of { regex: String, replacement: String } objects.
+
+Return:
+	Nothing
+
+Example:
+	nrSetObfuscationRules(m.nr, [
+		{ regex: "account-[0-9]+",  replacement: "ACCOUNT_ID" },
+		{ regex: "token=[^&]+",     replacement: "token=REDACTED" },
+		{ regex: "/users/[^/]+",    replacement: "/users/USER_ID" }
+	])
+```
+
 **nrSendLog**
 
 ```
@@ -883,6 +912,59 @@ With the default event harvest interval of `60` seconds:
 - Ad breaks are excluded from QOE calculations to provide accurate content quality metrics
 - When QOE tracking is disabled, no QOE_AGGREGATE events are sent
 
+
+<a name="obfuscation-rules"></a>
+
+### Obfuscation Rules
+
+The agent can be configured with regex-based obfuscation rules to mask sensitive data before events are sent to New Relic. This is useful when fields like `contentSrc`, `contentTitle`, `origUrl`, or custom attributes may inadvertently contain user IDs, tokens, or other PII.
+
+Rules are applied to every string attribute in every outgoing event — including video, ad (RAF and IMA), QOE, system, and custom events — before the event enters the internal buffer.
+
+#### Configuration
+
+Call `nrSetObfuscationRules` after creating the agent. Each rule is an associative array with a `regex` string and a `replacement` string:
+
+```brightscript
+m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
+
+nrSetObfuscationRules(m.nr, [
+    { regex: "account-[0-9]+",  replacement: "ACCOUNT_ID" },
+    { regex: "token=[^&]+",     replacement: "token=REDACTED" },
+    { regex: "/users/[^/]+",    replacement: "/users/USER_ID" }
+])
+```
+
+To remove all rules at runtime, call with an empty array:
+
+```brightscript
+nrSetObfuscationRules(m.nr, [])
+```
+
+#### Rule Ordering
+
+Rules are applied in the order they appear in the array. The output of one rule is the input to the next. Order matters when patterns could overlap:
+
+```brightscript
+nrSetObfuscationRules(m.nr, [
+    ' Applied first — masks the specific token format
+    { regex: "auth-token-[a-z0-9]+", replacement: "AUTH_TOKEN" },
+    ' Applied second — masks any remaining bare token references
+    { regex: "token=[^&]+",          replacement: "token=REDACTED" }
+])
+```
+
+#### Behavior and Edge Cases
+
+| Case | Behavior |
+|------|----------|
+| No rules configured | No-op; zero performance overhead |
+| Empty `replacement` string | Matched content is deleted from the value |
+| Invalid regex pattern | Rule is skipped; a warning is written to the agent log |
+| Non-string attribute values (numbers, booleans) | Passed through unchanged |
+| Replacing all rules | Call `nrSetObfuscationRules` again with the new array; previous rules are discarded |
+
+> **Note:** Roku uses `roRegex` for pattern matching. Complex lookahead/lookbehind assertions are not supported. Patterns that are valid in JavaScript or Java regex may need to be simplified for Roku.
 
 <a name="data-model"></a>
 

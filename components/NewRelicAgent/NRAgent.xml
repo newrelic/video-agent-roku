@@ -22,6 +22,7 @@
         <function name="nrSceneLoaded"/>
         <function name="nrAddDomainSubstitution"/>
         <function name="nrDelDomainSubstitution"/>
+        <function name="nrSetObfuscationRules"/>
         <function name="nrAppStarted"/>
         <function name="nrSendSystemEvent"/>
         <function name="nrSendVideoEvent"/>
