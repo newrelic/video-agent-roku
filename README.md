@@ -1,134 +1,159 @@
-[![Community Project header](https://github.com/newrelic/open-source-office/raw/master/examples/categories/images/Community_Project.png)](https://github.com/newrelic/open-source-office/blob/master/examples/categories/index.md#community-project)
+[![Community Project header](https://github.com/newrelic/opensource-website/raw/master/src/images/categories/Community_Project.png)](https://opensource.newrelic.com/oss-category/#community-project)
 
 # New Relic Roku Agent
 
-The New Relic Roku Agent tracks the behavior of a Roku App. It contains two parts, one to monitor general system level events and one to monitor video related events, for apps that use a video player.
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Internally, it uses the Event API to send events using the REST interface. It sends five types of events:
+The New Relic Roku Agent provides comprehensive video and system analytics for Roku applications. Track video playback events, monitor system performance, capture ad interactions, log errors, and gain deep insights into user engagement and streaming quality on Roku devices.
 
-- ConnectedDeviceSystem for system events
-- VideoAction for video events (includes QOE_AGGREGATE for Quality of Experience metrics)
-- VideoErrorAction for errors.
-- VideoAdAction for ads.
-- VideoCustomAction for custom actions.
+## Features
 
-After the agent has sent some data it will be accessible in NR One Dashboards with a simple NRQL request like:
+- 🎯 **Automatic Video Event Detection** — Captures Roku player events automatically without manual instrumentation
+- 📊 **Comprehensive Bitrate Tracking** — Multiple bitrate metrics for complete quality analysis
+- 📈 **QoE Metrics** — Quality of Experience aggregation for startup time, buffering, and playback quality
+- 🎨 **Event Segregation** — Organized event types: `VideoAction`, `VideoAdAction`, `VideoErrorAction`, `VideoCustomAction`, `ConnectedDeviceSystem`
+- 📡 **System Monitoring** — HTTP requests, bandwidth, device info, and app lifecycle events
+- 🎬 **Ad Tracking** — Support for both Roku Advertising Framework (RAF) and Google IMA
+- 📝 **Logs & Metrics API** — Send custom logs, gauge metrics, count metrics, and summary metrics
+- 🔧 **Domain Substitution** — Regex-based URL domain rewriting for cleaner analytics
+- ⚡ **Configurable Harvest** — Separate harvest timing for events, logs, and metrics
 
-```
-SELECT * FROM ConnectedDeviceSystem, VideoAction, VideoErrorAction, VideoAdAction, VideoCustomAction
-```
+## Table of Contents
 
-Will result in something like the following:
-
-![image](https://user-images.githubusercontent.com/8813505/77453470-b2942d00-6dcd-11ea-9d5b-e48b5ae3c9c6.png)
-
-## On This Page
-
-- [Requirements & Installation](#requirements)
+- [Installation](#installation)
+- [Prerequisites](#prerequisites)
 - [Usage](#usage)
-- [Agent API](#api)
-- [Quality of Experience (QOE) Tracking](#qoe-tracking)
+- [Best Practices](#best-practices)
+- [API Reference](#api-reference)
+  - [Initialization](#initialization)
+  - [System Tracking](#system-tracking)
+  - [Video Tracking](#video-tracking)
+  - [Custom Attributes](#custom-attributes)
+  - [Custom Events](#custom-events)
+  - [HTTP Events](#http-events)
+  - [Harvest Control](#harvest-control)
+  - [QoE Tracking](#qoe-tracking)
+  - [Logs](#logs)
+  - [Metrics](#metrics)
+  - [Domain Substitution](#domain-substitution)
+  - [Configuration](#configuration)
+  - [User Identity](#user-identity)
+- [Ad Tracking](#ad-tracking)
+  - [RAF Usage](#raf-usage)
+  - [Google IMA Usage](#google-ima-usage)
+- [Bitrate Metrics](#bitrate-metrics)
 - [Data Model](#data-model)
-- [Ad Tracking](#ad-track)
 - [Testing](#testing)
-- [Open Source License](#open-source)
+- [Debugging](#debugging)
+- [Pricing](#pricing)
 - [Support](#support)
-- [Contributing](#contributing)
+- [Contribute](#contribute)
+- [License](#license)
 
-<a name="requirements"></a>
+## Installation
 
-### Requirements & Installation
+Copy the following files into your Roku project:
 
-To initialize the agent you need an ACCOUNT ID, API KEY, APPLICATION TOKEN and ENDPOINT.
+```
+source/
+    NewRelicAgent.brs
+    IMATrackerInterface.brs          (only if using Google IMA ads)
+components/
+    NewRelicAgent/
+        NRAgent.brs
+        NRAgent.xml
+        NRTask.brs
+        NRTask.xml
+        trackers/
+            IMATracker.brs           (only if using Google IMA ads)
+            IMATracker.xml           (only if using Google IMA ads)
+```
 
-For initializing the agent, please follow the steps:
+Include the agent interface script in any component XML that needs access to the agent:
 
-1. Start by logging into your New Relic account to access the necessary configurations.
-2. Once logged in, go to Integrations & Agents in the dashboard.
-3. Under the Integrations & Agents section, choose Streaming Video & Ads.
-4. Find and click on Roku within the Streaming Video & Ads category.
-5. Complete the onboarding process by following the detailed steps provided in the Roku section.
+```xml
+<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
+```
 
-To configure the agent to use different endpoints based on the environment, you need to modify the `main.brs` file. The default configuration value is `US`, and it can be changed to `EU` or `staging` depending on the environment you want to use.
+## Prerequisites
 
-<a name="usage"></a>
+Before using the agent, ensure you have:
 
-### Usage
+- **New Relic Account** — Active New Relic account with valid credentials (`ACCOUNT_ID`, `API_KEY`, `APP_TOKEN`)
+- **Roku Device** — Firmware 8.1 or higher
+- **Roku Development Environment** — Ability to side-load channels for development
 
-To enable automatic event capture perform the following steps which are detailed below.
+## Usage
 
-1. Call `NewRelic` from Main subroutine and store the returned object.
-2. Right after that, call `nrAppStarted` (optional but recommended).
-3. Call `NewRelicSystemStart` and `NewRelicVideoStart` to start capturing events for system and video (both optional).
-4. Inside the main wait loop, call `nrProcessMessage` (only mandatory to capture system events, otherwise not necessary).
+### Getting Your Configuration
 
-#### Example
+Before initializing the agent, obtain your New Relic configuration:
 
-> Note: For a more complete example, please refer to the sample app included in the present repository. Specifically files Main.brs and files inside components directory.
+1. Log in to [one.newrelic.com](https://one.newrelic.com)
+2. Navigate to **Integrations & Agents** → **Streaming Video & Ads** → **Roku**
+3. Complete the onboarding flow to get your `ACCOUNT_ID`, `API_KEY`, `APP_NAME`, and `APP_TOKEN`
 
-_Main.brs_
+### Basic Setup
+
+Integration requires three steps: initialize the agent, start system and video tracking, and process system messages in your main loop.
+
+**Main.brs**
 
 ```brightscript
 sub Main(aa as Object)
-	screen = CreateObject("roSGScreen")
-	m.port = CreateObject("roMessagePort")
-	screen.setMessagePort(m.port)
+    screen = CreateObject("roSGScreen")
+    m.port = CreateObject("roMessagePort")
+    screen.setMessagePort(m.port)
 
-	'Create the main scene that contains a video player
-	scene = screen.CreateScene("VideoScene")
-	screen.show()
+    scene = screen.CreateScene("VideoScene")
+    screen.show()
 
-	'Init New Relic Agent
-	m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
+    ' Initialize the New Relic Agent
+    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
 
-	'Send APP_STARTED event
-	nrAppStarted(m.nr, aa)
+    ' Send APP_STARTED event
+    nrAppStarted(m.nr, aa)
 
-	'Pass NewRelicAgent object to the main scene
-	scene.setField("nr", m.nr)
+    ' Pass agent to scene
+    scene.setField("nr", m.nr)
 
-	'Activate system tracking
-	m.syslog = NewRelicSystemStart(m.port)
+    ' Start system tracking
+    m.syslog = NewRelicSystemStart(m.port)
 
-	while (true)
-		msg = wait(0, m.port)
-		if nrProcessMessage(m.nr, msg) = false
-			'It is not a system message captured by New Relic Agent
-			if type(msg) = "roPosterScreenEvent"
-				if msg.isScreenClosed()
-					exit while
-				end if
-			end if
-		end if
-	end while
+    ' Main event loop — must call nrProcessMessage for system events
+    while (true)
+        msg = wait(0, m.port)
+        if nrProcessMessage(m.nr, msg) = false
+            ' Handle your own messages here
+            if type(msg) = "roPosterScreenEvent"
+                if msg.isScreenClosed()
+                    exit while
+                end if
+            end if
+        end if
+    end while
 end sub
 ```
 
-_VideoScene.xml_
+**VideoScene.xml**
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="VideoScene" extends="Scene">
-	<interface>
-		<!-- Field used to pass the NewRelicAgent object to the scene -->
-		<field id="nr" type="node" onChange="nrRefUpdated" />
-	</interface>
+    <interface>
+        <field id="nr" type="node" onChange="nrRefUpdated" />
+    </interface>
 
-	<children>
-		<Video
-			id="myVideo"
-			translation="[0,0]"
-		/>
-	</children>
+    <children>
+        <Video id="myVideo" translation="[0,0]" />
+    </children>
 
-	<!-- New Relic Agent Interface -->
-	<script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
-
-	<script type="text/brightscript" uri="pkg:/components/VideoScene.brs"/>
+    <script type="text/brightscript" uri="pkg:/source/NewRelicAgent.brs"/>
+    <script type="text/brightscript" uri="pkg:/components/VideoScene.brs"/>
 </component>
 ```
 
-_VideoScene.brs_
+**VideoScene.brs**
 
 ```brightscript
 sub init()
@@ -139,907 +164,712 @@ end sub
 function nrRefUpdated()
     m.nr = m.top.nr
 
-    'Activate video tracking
+    ' Start video tracking
     NewRelicVideoStart(m.nr, m.video)
 end function
 
 function setupVideoPlayer()
-    videoUrl = "http://..."
     videoContent = createObject("RoSGNode", "ContentNode")
-    videoContent.url = videoUrl
-    videoContent.title = "Any Video"
+    videoContent.url = "https://example.com/stream.m3u8"
+    videoContent.title = "My Video"
+
     m.video = m.top.findNode("myVideo")
     m.video.content = videoContent
     m.video.control = "play"
 end function
 ```
 
-<a name="api"></a>
+## Best Practices
 
-### Agent API
+### 1. Setting `contentTitle`
 
-To interact with the New Relic Agent it provides a set of functions that wrap internal behaviours. All wrappers are implemented inside NewRelicAgent.brs and all include inline documentation.
+The `contentTitle` attribute is populated from your video content metadata. For best results, always set the `title` field on your `ContentNode`:
 
-**NewRelic**
-
-```
-NewRelic(account as String, apikey as String, appName as String, appToken as String, region = "US" as String, activeLogs = false as Boolean) as Object
-
-Description:
-	Build a New Relic Agent object.
-
-Arguments:
-	account: New Relic account number.
-	apikey: API key.
-	appName: Application name.
-	appToken: Mobile Application Token (required for Video Events to flow to NRDB).
-	region: (optional) New Relic API region, EU or US. Default US.
-	activeLogs: (optional) Activate logs or not. Default False.
-
-Return:
-	New Relic Agent object.
-
-Example:
-
-	sub Main(aa as Object)
-		screen = CreateObject("roSGScreen")
-		m.port = CreateObject("roMessagePort")
-		screen.setMessagePort(m.port)
-		scene = screen.CreateScene("VideoScene")
-		screen.show()
-
-		'Build the agent
-		m.nr = NewRelic("ACCOUNT ID", "API KEY", "APP NAME", "APP TOKEN")
-
-		'Enable QOE tracking explicitly when needed
-		nrActivateQoeTracking(m.nr)
+```brightscript
+videoContent = createObject("RoSGNode", "ContentNode")
+videoContent.url = "https://example.com/stream.m3u8"
+videoContent.title = "My Video Title"    ' This becomes contentTitle
+m.video.content = videoContent
 ```
 
-**NewRelicSystemStart**
+### 2. Setting `userId`
 
-```
-NewRelicSystemStart(port as Object) as Object
+Set a user identifier to track video analytics per user:
 
-Description:
-	Start system logging.
-
-Arguments:
-	port: A message port.
-
-Return:
-	The roSystemLog object created.
-
-Example:
-
-	m.syslog = NewRelicSystemStart(m.port)
+```brightscript
+' Set userId after agent initialization
+nrSetUserId(m.nr, "user-12345")
 ```
 
-**NewRelicVideoStart**
+### 3. Adding Custom Attributes for Your Deployment
 
-```
-NewRelicVideoStart(nr as Object, video as Object) as Void
+Add custom attributes unique to your deployment to improve data aggregation and analysis:
 
-Description:
-	Start video logging.
+```brightscript
+' Set attributes for all events
+nrSetCustomAttribute(m.nr, "subscriptionTier", "premium")
+nrSetCustomAttribute(m.nr, "contentProvider", "studio-abc")
+nrSetCustomAttribute(m.nr, "region", "us-west-2")
+nrSetCustomAttribute(m.nr, "cdnProvider", "akamai")
 
-Arguments:
-	nr: New Relic Agent object.
-	video: A video object.
+' Set attributes for specific actions only
+nrSetCustomAttribute(m.nr, "pauseReason", "user-initiated", "CONTENT_PAUSE")
 
-Return:
-	Nothing.
-
-Example:
-
-	NewRelicVideoStart(m.nr, m.video)
-```
-
-**NewRelicVideoStop**
-
-```
-NewRelicVideoStop(nr as Object) as Void
-
-Description:
-	Stop video logging.
-
-Arguments:
-	nr: New Relic Agent object.
-
-Return:
-	Nothing.
-
-Example:
-
-	NewRelicVideoStop(m.nr)
+' Set multiple attributes at once
+attr = {"appVersion": "2.1.0", "campaign": "spring-promo"}
+nrSetCustomAttributeList(m.nr, attr)
 ```
 
-**nrProcessMessage**
+**Use these attributes in New Relic queries:**
 
-```
-nrProcessMessage(nr as Object, msg as Object) as Boolean
+```sql
+-- Analyze by subscription tier
+SELECT count(*) FROM VideoAction WHERE actionName = 'CONTENT_START'
+FACET subscriptionTier SINCE 1 day ago
 
-Description:
-	Check for a system log message, process it and sends the appropriate event.
-
-Arguments:
-	nr: New Relic Agent object.
-	msg: A message of type roSystemLogEvent.
-
-Return:
-	True if msg is a system log message, False otherwise.
-
-Example:
-
-	while (true)
-		msg = wait(0, m.port)
-		if nrProcessMessage(m.nr, msg) = false
-			if type(msg) = "roPosterScreenEvent"
-				if msg.isScreenClosed()
-					exit while
-				end if
-			end if
-		end if
-	end while
+-- Monitor by region
+SELECT average(contentNetworkDownloadBitrate) FROM VideoAction
+FACET region SINCE 1 hour ago
 ```
 
-**nrSetCustomAttribute**
+### 4. Gradual Rollout
 
-```
-nrSetCustomAttribute(nr as Object, key as String, value as Object, actionName = "" as String) as Void
+When deploying to production, consider enabling the agent for a subset of users first:
 
-Description:
-	Set a custom attribute to be included in the events.
+| Phase | Percentage | Duration | Validation |
+|-------|-----------|----------|------------|
+| Initial | 5% | 2–3 days | Verify data flowing to New Relic |
+| Early | 15% | 3–5 days | Check data quality and performance |
+| Expansion | 25% | 5–7 days | Validate across device types |
+| Majority | 50% | 1–2 weeks | Monitor at scale |
+| Full | 100% | Ongoing | Complete deployment |
 
-Arguments:
-	nr: New Relic Agent object.
-	key: Attribute name.
-	value: Attribute value.
-	actionName: (optional) Action where the attribute will be included. Default all actions.
+## API Reference
 
-Return:
-	Nothing.
+### Initialization
 
-Example:
+#### `NewRelic(account, apikey, appName, appToken, region, activeLogs)`
 
-	nrSetCustomAttribute(m.nr, "myNum", 123, "CONTENT_START")
-	nrSetCustomAttribute(m.nr, "myString", "hello")
-```
+Build a New Relic Agent object. Call this once at app startup.
 
-**nrSetCustomAttributeList**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `account` | String | Yes | — | New Relic account number |
+| `apikey` | String | Yes | — | Insights API key |
+| `appName` | String | Yes | — | Application name |
+| `appToken` | String | Yes | — | Mobile Application Token |
+| `region` | String | No | `"US"` | API region: `"US"`, `"EU"`, or `"staging"` |
+| `activeLogs` | Boolean | No | `false` | Enable agent debug logging |
 
-```
-nrSetCustomAttributeList(nr as Object, attr as Object, actionName = "" as String) as Void
+```brightscript
+m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
 
-Description:
-	Set a custom attribute list to be included in the events.
-
-Arguments:
-	nr: New Relic Agent object.
-	attr: Attribute list, as an associative array.
-	actionName: (optional) Action where the attribute will be included. Default all actions.
-
-Return:
-	Nothing.
-
-Example:
-
-	attr = {"key0":"val0", "key1":"val1"}
-	nrSetCustomAttributeList(m.nr, attr, "CONTENT_HEARTBEAT")
+' EU region with logging enabled
+m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN", "EU", true)
 ```
 
-**nrAppStarted**
+---
 
-```
-nrAppStarted(nr as Object, obj as Object) as Void
+### System Tracking
 
-Description:
-	Send an APP_STARTED event of type ConnectedDeviceSystem.
+#### `NewRelicSystemStart(port)`
 
-Arguments:
-	nr: New Relic Agent object.
-	obj: The object sent as argument of Main subroutine.
+Start system logging. Captures HTTP events and bandwidth data via `roSystemLog`.
 
-Return:
-	Nothing.
-
-Example:
-
-	sub Main(aa as Object)
-		...
-		nrAppStarted(m.nr, aa)
+```brightscript
+m.syslog = NewRelicSystemStart(m.port)
 ```
 
-**nrSceneLoaded**
+#### `nrProcessMessage(nr, msg)`
 
-```
-nrSceneLoaded(nr as Object, sceneName as String) as Void
+Process system log messages in your main event loop. Returns `true` if the message was handled.
 
-Description:
-	Send a SCENE_LOADED event of type ConnectedDeviceSystem.
-
-Arguments:
-	nr: New Relic Agent object.
-	sceneName: The scene name.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrSceneLoaded(m.nr, "MyVideoScene")
+```brightscript
+while (true)
+    msg = wait(0, m.port)
+    if nrProcessMessage(m.nr, msg) = false
+        ' Handle your own messages
+    end if
+end while
 ```
 
-**nrSendCustomEvent**
+#### `nrAppStarted(nr, obj)`
 
-```
-nrSendCustomEvent(nr as Object, eventType as String, actionName as String, attr = invalid as Object) as Void
+Send an `APP_STARTED` event of type `ConnectedDeviceSystem`.
 
-Description:
-	Send a custom event.
-
-Arguments:
-	nr: New Relic Agent object.
-	eventType: Event type.
-	actionName: Action name.
-	attr: (optional) Attributes associative array.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrSendCustomEvent(m.nr, "MyEvent", "MY_ACTION")
-	attr = {"key0":"val0", "key1":"val1"}
-	nrSendCustomEvent(m.nr, "MyEvent", "MY_ACTION", attr)
+```brightscript
+nrAppStarted(m.nr, aa)   ' aa is the argument passed to Main
 ```
 
-**nrSendSystemEvent**
+#### `nrSceneLoaded(nr, sceneName)`
 
-```
-nrSendSystemEvent(nr as Object, actionName as String, attr = invalid) as Void
+Send a `SCENE_LOADED` event of type `ConnectedDeviceSystem`.
 
-Description:
-	Send a system event, type ConnectedDeviceSystem.
-
-Arguments:
-	nr: New Relic Agent object.
-	actionName: Action name.
-	attr: (optional) Attributes associative array.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrSendSystemEvent(m.nr, "MY_ACTION")
-	attr = {"key0":"val0", "key1":"val1"}
-	nrSendSystemEvent(m.nr, "MY_ACTION", attr)
+```brightscript
+nrSceneLoaded(m.nr, "MyVideoScene")
 ```
 
-**nrSendVideoEvent**
+---
 
-```
-nrSendVideoEvent(nr as Object, actionName as String, attr = invalid) as Void
+### Video Tracking
 
-Description:
-	Send a video event, type VideoAction.
+#### `NewRelicVideoStart(nr, video)`
 
-Arguments:
-	nr: New Relic Agent object.
-	actionName: Action name.
-	attr: (optional) Attributes associative array.
+Start video event tracking on a Video node. Call this after passing the agent to your scene.
 
-Return:
-	Nothing.
-
-Example:
-
-	nrSendVideoEvent(m.nr, "MY_ACTION")
-	attr = {"key0":"val0", "key1":"val1"}
-	nrSendVideoEvent(m.nr, "MY_ACTION", attr)
+```brightscript
+NewRelicVideoStart(m.nr, m.video)
 ```
 
-**nrSendHttpRequest**
+#### `NewRelicVideoStop(nr)`
 
-```
-nrSendHttpRequest(nr as Object, urlReq as Object) as Void
+Stop video event tracking.
 
-Description:
-	Send an HTTP_REQUEST event of type ConnectedDeviceSystem.
-
-Arguments:
-	nr: New Relic Agent object.
-	urlReq: URL request, roUrlTransfer object.
-
-Return:
-	Nothing.
-
-Example:
-
-	urlReq = CreateObject("roUrlTransfer")
-	urlReq.SetUrl(_url)
-	...
-	nrSendHttpRequest(m.nr, urlReq)
+```brightscript
+NewRelicVideoStop(m.nr)
 ```
 
-**nrSendHttpResponse**
+---
 
-```
-nrSendHttpResponse(nr as Object, _url as String, msg as Object) as Void
+### Custom Attributes
 
-Description:
-	Send an HTTP_RESPONSE event of type ConnectedDeviceSystem.
+#### `nrSetCustomAttribute(nr, key, value, actionName)`
 
-Arguments:
-	nr: New Relic Agent object.
-	_url: Request URL.
-	msg: A message of type roUrlEvent.
+Set a custom attribute included in events. Optionally limit to a specific action.
 
-Return:
-	Nothing.
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `key` | String | Yes | — | Attribute name |
+| `value` | Object | Yes | — | Attribute value |
+| `actionName` | String | No | `""` (all actions) | Limit to a specific action |
 
-Example:
+```brightscript
+' Attribute on all events
+nrSetCustomAttribute(m.nr, "myString", "hello")
 
-	msg = wait(5000, m.port)
-	if type(msg) = "roUrlEvent" then
-		nrSendHttpResponse(m.nr, _url, msg)
-	end if
+' Attribute only on CONTENT_START
+nrSetCustomAttribute(m.nr, "myNum", 123, "CONTENT_START")
 ```
 
-**nrEnableHttpEvents**
+#### `nrSetCustomAttributeList(nr, attr, actionName)`
 
-```
-function nrEnableHttpEvents(nr as Object) as Void
+Set multiple custom attributes at once.
 
-Description:
-	Enable HTTP_CONNECT/HTTP_COMPLETE events.
-
-Arguments:
-	nr: New Relic Agent object.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrEnableHttpEvents(nr)
+```brightscript
+attr = {"key0": "val0", "key1": "val1"}
+nrSetCustomAttributeList(m.nr, attr, "CONTENT_HEARTBEAT")
 ```
 
-**nrDisableHttpEvents**
+#### Custom Attribute Limits
 
-```
-function nrDisableHttpEvents(nr as Object) as Void
+Limits for custom attributes added to default mobile events:
 
-Description:
-	Disable HTTP_CONNECT/HTTP_COMPLETE events.
+- **Attributes:** 128 maximum
+- **String attributes:** 4 KB maximum length (empty string values are not accepted)
 
-Arguments:
-	nr: New Relic Agent object.
+> **Note:** There are special keywords reserved for default attributes documented in [DATAMODEL.md](./DATAMODEL.md). Please do not use these as custom attribute names, as they will be dropped by the agent.
 
-Return:
-	Nothing.
+---
 
-Example:
+### Custom Events
 
-	nrDisableHttpEvents(nr)
-```
+#### `nrSendCustomEvent(nr, actionName, attr)`
 
-**nrSetHarvestTime**
+Send a custom event of type `VideoCustomAction`.
 
-```
-nrSetHarvestTime(nr as Object, time as Integer) as Void
+```brightscript
+nrSendCustomEvent(m.nr, "MY_ACTION")
 
-Description:
-	Set harvest time, the time the samples are buffered before being sent to New Relic for both Events and Logs. Min value is 60.
-
-Arguments:
-	nr: New Relic Agent object.
-	time: Time in seconds.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrSetHarvestTime(m.nr, 60)
+attr = {"key0": "val0", "key1": "val1"}
+nrSendCustomEvent(m.nr, "MY_ACTION", attr)
 ```
 
-**nrSetHarvestTimeEvents**
+#### `nrSendVideoEvent(nr, actionName, attr)`
 
-```
-nrSetHarvestTimeEvents(nr as Object, time as Integer) as Void
+Send a video event of type `VideoAction`.
 
-Description:
-	Set harvest time for Events, the time the events are buffered before being sent to New Relic. Min value is 60.
+```brightscript
+nrSendVideoEvent(m.nr, "MY_ACTION")
 
-Arguments:
-	nr: New Relic Agent object.
-	time: Time in seconds.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrSetHarvestTimeEvents(m.nr, 60)
+attr = {"key0": "val0", "key1": "val1"}
+nrSendVideoEvent(m.nr, "MY_ACTION", attr)
 ```
 
-**nrSetHarvestTimeLogs**
+#### `nrSendSystemEvent(nr, eventType, actionName, attr)`
 
-```
-nrSetHarvestTimeLogs(nr as Object, time as Integer) as Void
+Send a system event of type `ConnectedDeviceSystem`.
 
-Description:
-	Set harvest time for Logs, the time the logs are buffered before being sent to New Relic. Min value is 60.
+```brightscript
+nrSendSystemEvent(m.nr, "ConnectedDeviceSystem", "MY_ACTION")
 
-Arguments:
-	nr: New Relic Agent object.
-	time: Time in seconds.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrSetHarvestTimeLogs(m.nr, 60)
+attr = {"key0": "val0", "key1": "val1"}
+nrSendSystemEvent(m.nr, "ConnectedDeviceSystem", "MY_ACTION", attr)
 ```
 
-**nrSetHarvestTimeMetrics**
+---
 
-```
-nrSetHarvestTimeMetrics(nr as Object, time as Integer) as Void
+### HTTP Events
 
-Description:
-	Set harvest time for Metrics, the time the metrics are buffered before being sent to New Relic. Min value is 60.
+#### `nrEnableHttpEvents(nr)`
 
-Arguments:
-	nr: New Relic Agent object.
-	time: Time in seconds.
+Enable `HTTP_CONNECT` / `HTTP_COMPLETE` events. Disabled by default since v3.0.0.
 
-Return:
-	Nothing.
-
-Example:
-
-	nrSetHarvestTimeMetrics(m.nr, 60)
+```brightscript
+nrEnableHttpEvents(m.nr)
 ```
 
-**nrForceHarvest**
+#### `nrDisableHttpEvents(nr)`
 
-```
-nrForceHarvest(nr as Object) as Void
+Disable `HTTP_CONNECT` / `HTTP_COMPLETE` events.
 
-Description:
-	Do harvest events and logs immediately. It doesn't reset the harvest timer.
-
-Arguments:
-	nr: New Relic Agent object.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrForceHarvest(m.nr)
+```brightscript
+nrDisableHttpEvents(m.nr)
 ```
 
-**nrForceHarvestEvents**
+#### `nrSendHttpRequest(nr, urlReq)`
 
-```
-nrForceHarvestEvents(nr as Object) as Void
+Send an `HTTP_REQUEST` event. Pass an `roUrlTransfer` object.
 
-Description:
-	Do harvest events immediately. It doesn't reset the harvest timer.
-
-Arguments:
-	nr: New Relic Agent object.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrForceHarvestEvents(m.nr)
+```brightscript
+urlReq = CreateObject("roUrlTransfer")
+urlReq.SetUrl("https://api.example.com/data")
+nrSendHttpRequest(m.nr, urlReq)
 ```
 
-**nrForceHarvestLogs**
+#### `nrSendHttpResponse(nr, url, msg)`
 
-```
-nrForceHarvestLogs(nr as Object) as Void
+Send an `HTTP_RESPONSE` event. Pass the request URL and `roUrlEvent` message.
 
-Description:
-	Do harvest logs immediately. It doesn't reset the harvest timer.
-
-Arguments:
-	nr: New Relic Agent object.
-
-Return:
-	Nothing.
-
-Example:
-
-	nrForceHarvestLogs(m.nr)
+```brightscript
+msg = wait(5000, m.port)
+if type(msg) = "roUrlEvent" then
+    nrSendHttpResponse(m.nr, requestUrl, msg)
+end if
 ```
 
-**nrUpdateConfig**
+---
 
-```
-nrUpdateConfig(nr as Object, config as Object) as Void
+### Harvest Control
 
-Description:
-	Updates configuration, such as network proxy URL.
+#### `nrSetHarvestTime(nr, time)`
 
-Arguments:
-	nr: New Relic Agent object
-	config: configuration object
+Set harvest time (in seconds) for both events and logs. Minimum value is `60`.
 
-Return:
-	Nothing
-
-Example:
-	config = { proxyUrl: "http://example.com:8888/;" }
-	nrUpdateConfig(m.nr, config)
+```brightscript
+nrSetHarvestTime(m.nr, 60)
 ```
 
-**nrAddDomainSubstitution**
+#### `nrSetHarvestTimeEvents(nr, time)`
 
-```
-nrAddDomainSubstitution(nr as object, pattern as String, subs as String) as Void
+Set harvest time for events only. Minimum `60` seconds.
 
-Description:
-	Add a matching pattern for the domain attribute and substitute it by another string.
-	Every time an event or metric is generated with a domain attribute, tha agent will check if it matches a regex and will apply the specified substitution. If no pattern is set, it will use the URL domain unchanged.
-	It applies to all events and metrics containing the "domain" attribute.
-
-Arguments:
-	nr: New Relic Agent object
-	pattern: Regex pattern.
-	subs: Substitution string.
-
-Return:
-	Nothing
-
-Example:
-	nrAddDomainSubstitution(nr, "^.+\.my\.domain\.com$", "mydomain.com")
+```brightscript
+nrSetHarvestTimeEvents(m.nr, 90)
 ```
 
-**nrDelDomainSubstitution**
+#### `nrSetHarvestTimeLogs(nr, time)`
 
-```
-nrDelDomainSubstitution(nr as object, pattern as String) as Void
+Set harvest time for logs only. Minimum `60` seconds.
 
-Description:
-	Delete a matching pattern created with `nrAddDomainSubstitution`.
-
-Arguments:
-	nr: New Relic Agent object
-	pattern: Regex pattern.
-
-Return:
-	Nothing
-
-Example:
-	nrDelDomainSubstitution(nr, "^.+\.my\.domain\.com$")
+```brightscript
+nrSetHarvestTimeLogs(m.nr, 120)
 ```
 
-**nrSendLog**
+#### `nrSetHarvestTimeMetrics(nr, time)`
 
-```
-nrSendLog(nr as Object, message as String, logtype as String, fields = invalid as Object) as Void
+Set harvest time for metrics only. Minimum `60` seconds.
 
-Description:
-	Record a log using the New Relic Log API.
-
-Arguments:
-	nr: New Relic Agent object
-	message: Log message.
-	logtype: Log type.
-	fields: (optional) Additonal fields to be included in the log.
-
-Return:
-	Nothing
-
-Example:
-	nrSendLog(m.nr, "This is a log", "console", {"key": "value"})
+```brightscript
+nrSetHarvestTimeMetrics(m.nr, 60)
 ```
 
-**nrSendMetric**
+#### `nrForceHarvest(nr)`
 
-```
-function nrSendMetric(nr as Object, name as String, value as dynamic, attr = invalid as Object) as Void
+Immediately send buffered events and logs. Does not reset the harvest timer.
 
-Description:
-	Record a gauge metric. Represents a value that can increase or decrease with time.
-
-Arguments:
-	nr: New Relic Agent object.
-	name: Metric name
-	value: Metric value. Number.
-	attr: (optional) Metric attributes.
-
-Return:
-	Nothing
-
-Example:
-	nrSendMetric(m.nr, "test", 11.1, {"one": 1})
+```brightscript
+nrForceHarvest(m.nr)
 ```
 
-**nrSendCountMetric**
+#### `nrForceHarvestEvents(nr)`
 
-```
-function nrSendCountMetric(nr as Object, name as String, value as dynamic, interval as Integer, attr = invalid as Object) as Void
+Immediately send buffered events only.
 
-Description:
-	Record a count metric. Measures the number of occurences of an event during a time interval.
-
-Arguments:
-	nr: New Relic Agent object.
-	name: Metric name
-	value: Metric value. Number.
-	interval: Metric time interval in milliseconds.
-	attr: (optional) Metric attributes.
-
-Return:
-	Nothing
-
-Example:
-	nrSendCountMetric(m.nr, "test", 250, 1500, {"one": 1})
+```brightscript
+nrForceHarvestEvents(m.nr)
 ```
 
-**nrSendSummaryMetric**
+#### `nrForceHarvestLogs(nr)`
 
-```
-function nrSendSummaryMetric(nr as Object, name as String, interval as Integer, counter as dynamic, m_sum as dynamic, m_min as dynamic, m_max as dynamic, attr = invalid as Object) as Void
+Immediately send buffered logs only.
 
-Description:
-	Record a summary metric. Used to report pre-aggregated data, or information on aggregated discrete events.
-
-Arguments:
-	nr: New Relic Agent object.
-	name: Metric name
-	interval: Metric time interval in milliseconds.
-	count: Metric count.
-	m_sum: Metric value summation.
-	m_min: Metric minimum value.
-	m_max: Metric maximum value.
-	attr: (optional) Metric attributes.
-
-Return:
-	Nothing.
-
-Example:
-	nrSendSummaryMetric(m.nr, "test", 2000, 5, 1000, 100, 200)
+```brightscript
+nrForceHarvestLogs(m.nr)
 ```
 
-**nrSetUserId**
+---
 
-```
-nrSetUserId(userId as String) as Void
+### QoE Tracking
 
-Description:
-	Sets userId.
+Quality of Experience tracking is **disabled by default**. Once enabled, it cannot be disabled during the session.
 
-Arguments:
-	nr: New Relic Agent object.
-	userId: attribute
+#### `nrActivateQoeTracking(nr)`
 
-Return:
-	Nothing.
-
-Example:
-	nrSetUserId(m.nr, "TEST_USER")
-```
-
-<a name="qoe-tracking"></a>
-
-### Quality of Experience (QOE) Tracking
-
-The agent can track Quality of Experience (QOE) metrics and send them as `QOE_AGGREGATE` events. These metrics provide insights into video playback quality.
-
-#### Enabling/Disabling QOE Tracking
-
-QOE tracking is **disabled by default**. Enable it explicitly at runtime after creating the agent:
+Enable QoE tracking. Sends `QOE_AGGREGATE` events containing startup time, rebuffering, bitrate, and error KPIs.
 
 ```brightscript
 m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
 nrActivateQoeTracking(m.nr)
 ```
 
-Once enabled for a session, QOE tracking remains active for that agent instance.
+#### `nrSetQoeAggregateIntervalMultiplier(nr, multiplier)`
 
-#### QOE Aggregate Interval Multiplier
-
-The QOE aggregate interval multiplier defaults to `1`.
-
-- If you do not set it, the agent evaluates QOE on every eligible event harvest.
-- If you set it to `2`, QOE is evaluated on every second eligible event harvest.
-- The minimum multiplier is `1`.
+Control how often QoE events are sent. A multiplier of `N` sends QoE events every N harvest cycles. Default is `1`, minimum is `1`.
 
 ```brightscript
-m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
-nrActivateQoeTracking(m.nr)
-
-'Default behavior: multiplier = 1
-'Optional: send QOE every second eligible event harvest
+' QoE evaluated every 2 harvest cycles (e.g., every 120s with 60s harvest)
 nrSetQoeAggregateIntervalMultiplier(m.nr, 2)
 ```
 
-The effective QOE interval is:
+**QoE behavior notes:**
+- QoE events use dirty checking — repeated events are suppressed when KPI values haven't changed
+- Ad breaks are automatically excluded from QoE calculations
 
-```
-event harvest interval * qoe aggregate interval multiplier
-```
+---
 
-With the default event harvest interval of `60` seconds:
+### Logs
 
-- multiplier `1` evaluates QOE every `60` seconds
-- multiplier `2` evaluates QOE every `120` seconds
+#### `nrSendLog(nr, message, logtype, fields)`
 
-#### QOE Event Behavior
-
-- QOE tracking must be explicitly activated with `nrActivateQoeTracking(...)`
-- QOE_AGGREGATE events are evaluated on eligible event harvest cycles
-- Dirty checking suppresses repeated QOE events when KPI values have not changed
-- Ad breaks are excluded from QOE calculations to provide accurate content quality metrics
-- When QOE tracking is disabled, no QOE_AGGREGATE events are sent
-
-
-<a name="data-model"></a>
-
-### Data Model
-
-To understand which actions and attributes are captured and emitted by the Dash Player under different event types, see [DataModel.md](./DATAMODEL.md).
-
-<a name="ad-track"></a>
-
-### Ad Tracking
-
-The Roku Video Agent also provides Ad events monitoring. Currently we support two different Ad APIs: [Roku Advertising Framework (RAF)](https://developer.roku.com/en-gb/docs/developer-program/advertising/roku-advertising-framework.md) and [Google IMA](https://developers.google.com/interactive-media-ads/docs/sdks/roku).
-
-#### Installation
-
-For RAF there is no additional steps required, because the tracker is integrated inside the NRAgent, but for IMA, the following files must be included in the project:
-
-```
-components/NewRelicAgent/trackers
-	IMATracker.brs
-	IMATracker.xml
-source/
-	IMATrackerInterface.brs
-```
-
-#### RAF Usage
-
-First we have to pass the NRAgent object (created with the call to `NewRelic(accountId, apiKey, appName, appToken)`) to the Ads Task. This can be achieved using a field. Once done, inside the Ads Task we must do:
+Record a log entry using the New Relic Log API.
 
 ```brightscript
+nrSendLog(m.nr, "User started playback", "info")
+
+' With additional fields
+nrSendLog(m.nr, "Playback error detected", "error", {"errorCode": "500", "videoId": "abc123"})
+```
+
+---
+
+### Metrics
+
+#### `nrSendMetric(nr, name, value, attr)`
+
+Record a gauge metric (a value that can increase or decrease over time).
+
+```brightscript
+nrSendMetric(m.nr, "currentBitrate", 5200000)
+
+' With attributes
+nrSendMetric(m.nr, "currentBitrate", 5200000, {"streamType": "HLS"})
+```
+
+#### `nrSendCountMetric(nr, name, value, interval, attr)`
+
+Record a count metric (number of occurrences in a time interval). Interval is in milliseconds.
+
+```brightscript
+nrSendCountMetric(m.nr, "bufferEvents", 3, 60000)
+
+' With attributes
+nrSendCountMetric(m.nr, "bufferEvents", 3, 60000, {"contentType": "live"})
+```
+
+#### `nrSendSummaryMetric(nr, name, interval, count, sum, min, max, attr)`
+
+Record a summary metric (pre-aggregated data). Interval is in milliseconds.
+
+```brightscript
+nrSendSummaryMetric(m.nr, "downloadSpeed", 2000, 5, 1000, 100, 200)
+```
+
+---
+
+### Domain Substitution
+
+#### `nrAddDomainSubstitution(nr, pattern, subs)`
+
+Add a regex pattern to match and replace the `domain` attribute on events and metrics.
+
+```brightscript
+nrAddDomainSubstitution(m.nr, "^.+\.akamaihd\.net$", "Akamai")
+nrAddDomainSubstitution(m.nr, "^.+\.googleapis\.com$", "Google APIs")
+```
+
+#### `nrDelDomainSubstitution(nr, pattern)`
+
+Remove a domain substitution pattern.
+
+```brightscript
+nrDelDomainSubstitution(m.nr, "^.+\.akamaihd\.net$")
+```
+
+---
+
+### Configuration
+
+#### `nrUpdateConfig(nr, config)`
+
+Update agent configuration, such as network proxy URL.
+
+```brightscript
+config = { proxyUrl: "http://proxy.example.com:8888/;" }
+nrUpdateConfig(m.nr, config)
+```
+
+---
+
+### User Identity
+
+#### `nrSetUserId(nr, userId)`
+
+Set a user identifier included as `enduser.id` on all events.
+
+```brightscript
+nrSetUserId(m.nr, "user-12345")
+```
+
+---
+
+### Example: Complete Integration
+
+```brightscript
+' Main.brs
+sub Main(aa as Object)
+    screen = CreateObject("roSGScreen")
+    m.port = CreateObject("roMessagePort")
+    screen.setMessagePort(m.port)
+    scene = screen.CreateScene("VideoScene")
+    screen.show()
+
+    ' Initialize agent
+    m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
+
+    ' Configure harvest time
+    nrSetHarvestTime(m.nr, 60)
+
+    ' Enable QoE tracking
+    nrActivateQoeTracking(m.nr)
+    nrSetQoeAggregateIntervalMultiplier(m.nr, 2)
+
+    ' Enable HTTP event tracking
+    nrEnableHttpEvents(m.nr)
+
+    ' Set user identity
+    nrSetUserId(m.nr, "user-12345")
+
+    ' Set custom attributes
+    nrSetCustomAttribute(m.nr, "subscriptionTier", "premium")
+    nrSetCustomAttribute(m.nr, "appVersion", "2.1.0")
+
+    ' Domain substitutions for cleaner analytics
+    nrAddDomainSubstitution(m.nr, "^.+\.akamaihd\.net$", "Akamai")
+    nrAddDomainSubstitution(m.nr, "^.+\.googleapis\.com$", "Google APIs")
+
+    ' Send APP_STARTED
+    nrAppStarted(m.nr, aa)
+
+    ' Pass agent to scene
+    scene.setField("nr", m.nr)
+
+    ' Start system tracking
+    m.syslog = NewRelicSystemStart(m.port)
+
+    while (true)
+        msg = wait(0, m.port)
+        if nrProcessMessage(m.nr, msg) = false
+            if type(msg) = "roPosterScreenEvent"
+                if msg.isScreenClosed()
+                    exit while
+                end if
+            end if
+        end if
+    end while
+end sub
+```
+
+## Ad Tracking
+
+The agent supports two ad tracking APIs: [Roku Advertising Framework (RAF)](https://developer.roku.com/en-gb/docs/developer-program/advertising/roku-advertising-framework.md) and [Google IMA](https://developers.google.com/interactive-media-ads/docs/sdks/roku).
+
+### RAF Usage
+
+No additional files needed — the RAF tracker is built into the agent. Pass the agent object to your Ads Task and call `nrTrackRAF`:
+
+```brightscript
+' In your Ads Task
 adIface = Roku_Ads()
 
-' Ad Iface setup code...
+' Setup ads...
 
 logFunc = Function(obj = Invalid as Dynamic, evtType = invalid as Dynamic, ctx = invalid as Dynamic)
-    'Call RAF tracker, passing the event and context
     nrTrackRAF(obj, evtType, ctx)
 End Function
 
-' m.top.nr is the reference to the field where we have the NRAgent object
+' m.top.nr is the NRAgent object passed via a field
 adIface.setTrackingCallback(logFunc, m.top.nr)
 ```
 
-For a complete usage example, checkout files `VideoScene.brs` (function `setupVideoWithAds()`) and `AdsTask.brs` in the present repo.
+### Google IMA Usage
 
-#### IMA Usage
+**Additional files required:**
 
-First we have to create the IMA Tracker object:
-
-```brightscript
-tracker = IMATracker(m.nr)
+```
+components/NewRelicAgent/trackers/IMATracker.brs
+components/NewRelicAgent/trackers/IMATracker.xml
+source/IMATrackerInterface.brs
 ```
 
-Where `m.nr` is the NRAgent object.
-
-Then we need to pass the tracker object to the IMA SDK Task, using a field. And include the script `IMATrackerInterface.brs` in the task XML.
-
-Once done, inside the task we must do:
+Include `IMATrackerInterface.brs` in your IMA task XML, then use the tracker functions:
 
 ```brightscript
+' Create the IMA tracker
+tracker = IMATracker(m.nr)
+
+' Pass tracker to IMA task via field, then in the task:
 m.player.adBreakStarted = Function(adBreakInfo as Object)
-	'Ad break start code...
-
-	'Send AD_BREAK_START
-	nrSendIMAAdBreakStart(m.top.tracker, adBreakInfo)
+    nrSendIMAAdBreakStart(m.top.tracker, adBreakInfo)
 End Function
-m.player.adBreakEnded = Function(adBreakInfo as Object)
-	'Ad break end code...
 
-    'Send AD_BREAK_END
+m.player.adBreakEnded = Function(adBreakInfo as Object)
     nrSendIMAAdBreakEnd(m.top.tracker, adBreakInfo)
 End Function
 
-'...
+' Register ad event callbacks
+m.streamManager.addEventListener(m.sdk.AdEvent.START, Function(ad as Object)
+    nrSendIMAAdStart(m.top.tracker, ad)
+End Function)
 
-m.streamManager.addEventListener(m.sdk.AdEvent.START, startCallback)
-m.streamManager.addEventListener(m.sdk.AdEvent.FIRST_QUARTILE, firstQuartileCallback)
-m.streamManager.addEventListener(m.sdk.AdEvent.MIDPOINT, midpointCallback)
-m.streamManager.addEventListener(m.sdk.AdEvent.THIRD_QUARTILE, thirdQuartileCallback)
-m.streamManager.addEventListener(m.sdk.AdEvent.COMPLETE, completeCallback)
+m.streamManager.addEventListener(m.sdk.AdEvent.FIRST_QUARTILE, Function(ad as Object)
+    nrSendIMAAdFirstQuartile(m.top.tracker, ad)
+End Function)
 
-Function startCallback(ad as Object) as Void
-	'Send AD_START
-	nrSendIMAAdStart(m.top.tracker, ad)
-End Function
+m.streamManager.addEventListener(m.sdk.AdEvent.MIDPOINT, Function(ad as Object)
+    nrSendIMAAdMidpoint(m.top.tracker, ad)
+End Function)
 
-Function firstQuartileCallback(ad as Object) as Void
-	'Send AD_QUARTILE (first)
-	nrSendIMAAdFirstQuartile(m.top.tracker, ad)
-End Function
+m.streamManager.addEventListener(m.sdk.AdEvent.THIRD_QUARTILE, Function(ad as Object)
+    nrSendIMAAdThirdQuartile(m.top.tracker, ad)
+End Function)
 
-Function midpointCallback(ad as Object) as Void
-	'Send AD_QUARTILE (midpoint)
-	nrSendIMAAdMidpoint(m.top.tracker, ad)
-End Function
-
-Function thirdQuartileCallback(ad as Object) as Void
-	'Send AD_QUARTILE (third)
-	nrSendIMAAdThirdQuartile(m.top.tracker, ad)
-End Function
-
-Function completeCallback(ad as Object) as Void
-	'Send AD_END
-	nrSendIMAAdEnd(m.top.tracker, ad)
-End Function
+m.streamManager.addEventListener(m.sdk.AdEvent.COMPLETE, Function(ad as Object)
+    nrSendIMAAdEnd(m.top.tracker, ad)
+End Function)
 ```
 
-Where `m.top.tracker` is the tracker object passed to the task.
+#### IMA Tracker API
 
-For a complete usage example, checkout files `VideoScene.brs` (function `setupVideoWithIMA()`) and `imasdk.brs` in the present repo.
+| Function | Description |
+|----------|-------------|
+| `IMATracker(nr)` | Create a Google IMA Tracker object |
+| `nrSendIMAAdBreakStart(tracker, adBreakInfo)` | Send `AD_BREAK_START` event |
+| `nrSendIMAAdBreakEnd(tracker, adBreakInfo)` | Send `AD_BREAK_END` event |
+| `nrSendIMAAdStart(tracker, ad)` | Send `AD_START` event |
+| `nrSendIMAAdEnd(tracker, ad)` | Send `AD_END` event |
+| `nrSendIMAAdFirstQuartile(tracker, ad)` | Send `AD_QUARTILE` (first) event |
+| `nrSendIMAAdMidpoint(tracker, ad)` | Send `AD_QUARTILE` (midpoint) event |
+| `nrSendIMAAdThirdQuartile(tracker, ad)` | Send `AD_QUARTILE` (third) event |
+| `nrSendIMAAdError(tracker, error)` | Send `AD_ERROR` event |
 
-### Testing
+## Bitrate Metrics
 
-To run the unit tests, first copy the file `UnitTestFramework.brs` from [unit-testing-framework](https://github.com/rokudev/unit-testing-framework) to `source/testFramework/`. Then install the demo channel provided in the present repo and from a terminal run:
+The agent captures three distinct bitrate metrics providing complete quality analysis:
+
+| Attribute | Description | Use Case |
+|-----------|-------------|----------|
+| `contentBitrate` | Actual encoding bitrate (bps) of the currently playing rendition | Monitor video quality being delivered |
+| `contentSegmentDownloadBitrate` | Bandwidth estimate (bps) used by the ABR algorithm | Analyze ABR decision-making |
+| `contentNetworkDownloadBitrate` | Raw network download speed (bps) from the most recent segment | Monitor real-time network performance |
+
+```sql
+-- NRQL Query Examples
+SELECT average(contentNetworkDownloadBitrate) FROM VideoAction
+WHERE actionName = 'CONTENT_HEARTBEAT' SINCE 1 hour ago
+
+SELECT contentBitrate, contentSegmentDownloadBitrate FROM VideoAction
+WHERE actionName = 'CONTENT_HEARTBEAT' FACET contentTitle SINCE 1 day ago
+```
+
+## Data Model
+
+The agent captures comprehensive analytics across five event types:
+
+| Event Type | Description |
+|------------|-------------|
+| **ConnectedDeviceSystem** | System events — app lifecycle, HTTP requests, bandwidth, device info |
+| **VideoAction** | Playback events — play, pause, buffer, seek, heartbeats, QoE aggregates |
+| **VideoAdAction** | Ad events — ad start/end, quartiles, break start/end |
+| **VideoErrorAction** | Error events — content errors, ad errors, HTTP errors |
+| **VideoCustomAction** | Custom events defined by your application |
+
+```sql
+SELECT * FROM ConnectedDeviceSystem, VideoAction, VideoErrorAction, VideoAdAction, VideoCustomAction
+```
+
+**Full Documentation:** See [DATAMODEL.md](./DATAMODEL.md) for complete event and attribute reference.
+
+## Testing
+
+To run unit tests:
+
+1. Copy `UnitTestFramework.brs` from [roku unit-testing-framework](https://github.com/rokudev/unit-testing-framework) to `source/testFramework/`
+2. Install the demo channel on your Roku device
+3. Run:
 
 ```bash
 ./test.sh ROKU_IP
 ```
 
-Where `ROKU_IP` is the address of the Roku device where the channel is installed. Connect to the debug terminal (port 8085) to see test results. You can also provide the dev password as a second argument if you want to compile and deploy before running tests.
+Where `ROKU_IP` is the address of the Roku device. Connect to the debug terminal (port 8085) to see results. Optionally provide the dev password as a second argument to compile and deploy before running tests.
 
-### Debugging
+## Debugging
 
-Network proxying is supported using URL re-write (see [App Level Proxying](https://rokulikeahurricane.io/proxying_network_requests)). To send all network requests via a proxy call `nrUpdateConfig()` function with the `proxyUrl` parameter object property. Be sure to specify the same URL delimiter as your proxy re-write rule.
+Network proxying is supported using URL re-write (see [App Level Proxying](https://rokulikeahurricane.io/proxying_network_requests)). To send all network requests via a proxy:
 
-<a name="open-source"></a>
+```brightscript
+config = { proxyUrl: "http://proxy.example.com:8888/;" }
+nrUpdateConfig(m.nr, config)
+```
 
-# Pricing
+## Pricing
 
-Important: Ingesting video telemetry data via this video agent requires a subscription to an Advanced Compute. Contact your New Relic account representative for more details on pricing and entitlement.
+> **Important:** Ingesting video telemetry data via this agent requires a subscription to Advanced Compute. Contact your New Relic account representative for details on pricing and entitlement.
 
-# Open source license
+## Support
 
-This project is distributed under the [Apache 2 license](LICENSE).
+Should you need assistance with New Relic products, you are in good hands with several support channels.
 
-<a name="support"></a>
+If the issue has been confirmed as a bug or is a feature request, please file a GitHub issue.
 
-# Support
+### Support Channels
 
-New Relic has open-sourced this project. This project is provided AS-IS WITHOUT WARRANTY OR DEDICATED SUPPORT. Issues and contributions should be reported to the project here on GitHub.
+- [New Relic Documentation](https://docs.newrelic.com): Comprehensive guidance for using our platform
+- [New Relic Community](https://discuss.newrelic.com): The best place to engage in troubleshooting questions
+- [New Relic University](https://learn.newrelic.com): A range of online training for New Relic users of every level
+- [New Relic Technical Support](https://support.newrelic.com): 24/7/365 ticketed support. Read more about our [Technical Support Offerings](https://docs.newrelic.com/docs/licenses/license-information/general-usage-licenses/support-plan)
+- [Community Forum Thread](https://discuss.newrelic.com/t/new-relic-open-source-roku-agent/97802)
 
-We encourage you to bring your experiences and questions to the [Explorers Hub](https://discuss.newrelic.com) where our community members collaborate on solutions and new ideas.
+## Contribute
 
-## Community
+We encourage your contributions to improve the Roku Agent! Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. You only have to sign the CLA one time per project.
 
-New Relic hosts and moderates an online forum where customers can interact with New Relic employees as well as other customers to get help and share best practices. Like all official New Relic open source projects, there's a related Community topic in the New Relic Explorers Hub. You can find this project's topic/threads here:
+If you have any questions, or to execute our corporate CLA (which is required if your contribution is on behalf of a company), drop us an email at opensource+videoagent@newrelic.com.
 
-https://discuss.newrelic.com/t/new-relic-open-source-roku-agent/97802
+For more details on how best to contribute, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-## Issues / enhancement requests
+### A note about vulnerabilities
 
-Issues and enhancement requests can be submitted in the [Issues tab of this repository](https://github.com/newrelic/video-agent-roku/issues). Please search for and review the existing open issues before submitting a new issue.
+As noted in our [security policy](../../security/policy), New Relic is committed to the privacy and security of our customers and their data. We believe that providing coordinated disclosure by security researchers and engaging with the security community are important means to achieve our security goals.
 
-<a name="contributing"></a>
+If you believe you have found a security vulnerability in this project or any of New Relic's products or websites, we welcome and greatly appreciate you reporting it to New Relic through our [bug bounty program](https://docs.newrelic.com/docs/security/security-privacy/information-security/report-security-vulnerabilities/).
 
-# Contributing
+If you would like to contribute to this project, review [these guidelines](./CONTRIBUTING.md).
 
-Contributions are encouraged! If you submit an enhancement request, we'll invite you to contribute the change yourself. Please review our [Contributors Guide](CONTRIBUTING.md).
+To all contributors, we thank you! Without your contribution, this project would not be what it is today.
 
-Keep in mind that when you submit your pull request, you'll need to sign the CLA via the click-through using CLA-Assistant. If you'd like to execute our corporate CLA, or if you have any questions, please drop us an email at opensource+videoagent@newrelic.com.
+## License
+
+The Roku Agent is licensed under the [Apache 2.0](http://apache.org/licenses/LICENSE-2.0.txt) License.
+
+The Roku Agent also uses source code from third-party libraries. Full details on which libraries are used and the terms under which they are licensed can be found in the [third-party notices document](./THIRD_PARTY_NOTICES.md).
