@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## ## [4.1.1] - 2026/04/10
+
+### Changed
+
+- Renamed `contentMeasuredBitrate` to `contentSegmentDownloadBitrate` 
+- Added `contentNetworkDownloadBitrate` attribute to track raw network download speed from recent segments.
+- Updated bitrate metric definitions to match standard definitions across all video tracking agents.
+- Changed `nrCalculateContentNetworkBitrate()` return type from `Integer` to `LongInteger` to prevent overflow with high-bandwidth streams.
+
+### Fixed
+
+- Fixed `contentNetworkDownloadBitrate` tracker initialization by adding reset on `CONTENT_REQUEST` to ensure accurate measurements from video start.
+- Fixed memory leak by properly resetting content bitrate tracker in `NewRelicVideoStop()`.
+- Fixed edge case where `downloadedBytes` decrease (stream restart/seek) could cause incorrect bitrate calculations by gracefully handling byte counter resets.
+
+### Removed
+
+- Removed `contentSegmentBitrate` attribute (consolidated into standard bitrate metrics).
+
 ## [4.1.0] - 2026/04/09
 
 ### Add

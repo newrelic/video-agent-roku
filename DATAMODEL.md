@@ -129,7 +129,9 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | viewId                   | Trackers will generate unique IDs for every new video iteration.                                              |
 | contentId                | The ID of the video.                                                                                          |
 | contentTitle             | The title of the video.                                                                                       |
-| contentBitrate           | Bitrate (in bits) of the video.                                                                               |
+| contentBitrate           | The actual encoding bitrate of the currently playing rendition (in bits per second).                          |
+| contentSegmentDownloadBitrate | Bandwidth estimate used by the ABR (Adaptive Bitrate) algorithm (in bits per second).                   |
+| contentNetworkDownloadBitrate | Raw network download speed from the most recent segment (in bits per second).                           |
 | contentIsFullscreen      | Always "true".                                                                                                |
 | contentRenditionName     | Name of the rendition (e.g., 1080p).                                                                          |
 | contentDuration          | Duration of the video, in ms.                                                                                 |

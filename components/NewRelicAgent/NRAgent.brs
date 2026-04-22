@@ -306,6 +306,8 @@ function NewRelicVideoStop() as Void
         m.nrVideoObject.unobserveFieldScoped("state")
         m.nrVideoObject.unobserveFieldScoped("contentIndex")
         m.nrVideoObject.unobserveFieldScoped("licenseStatus")
+        'Reset content network bitrate tracker before invalidating video object
+        nrResetContentBitrateTracker()
         m.nrVideoObject = Invalid
     end if
     ' Stop heartbeat timer
@@ -1375,6 +1377,8 @@ function nrSendRequest() as Void
     if m.contentRequestTimestamp = invalid
         m.contentRequestTimestamp = m.nrTimer.TotalMilliseconds()
     end if
+    'Reset content network bitrate tracker for new content request
+    nrResetContentBitrateTracker()
     nrSendVideoEvent("CONTENT_REQUEST")
 end function
 
@@ -1397,6 +1401,9 @@ function nrSendStart() as Void
     'Use current view ad time only, not cumulative total
     m.startupPeriodAdTime = m.nrCurrentViewAdPlaytime
 
+    'Reset content network bitrate tracker for new content session
+    nrResetContentBitrateTracker()
+
     nrSendVideoEvent("CONTENT_START")
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
@@ -1416,6 +1423,9 @@ function nrSendEnd() as Void
 
     'Reset playback state for replay scenarios
     m.nrTimeSinceStarted = 0.0
+
+    'Reset content network bitrate tracker for next content session
+    nrResetContentBitrateTracker()
 end function
 
 function nrSendPause() as Void
@@ -1587,13 +1597,14 @@ function nrAddVideoAttributes(ev as Object) as Object
         contentBitrate = m.nrVideoObject.streamInfo["streamBitrate"]
     end if
     ev.AddReplace("contentBitrate", contentBitrate)
-    ' Keep contentMeasuredBitrate as before
+    ' Set contentSegmentDownloadBitrate: bandwidth estimate used by ABR algorithm
     if m.nrVideoObject.streamInfo <> invalid and m.nrVideoObject.streamInfo["measuredBitrate"] <> invalid
-        ev.AddReplace("contentMeasuredBitrate", m.nrVideoObject.streamInfo["measuredBitrate"])
+        ev.AddReplace("contentSegmentDownloadBitrate", m.nrVideoObject.streamInfo["measuredBitrate"])
     end if
-    ' Keep contentSegmentBitrate for segment info
-    if m.nrVideoObject.streamingSegment <> invalid and m.nrVideoObject.streamingSegment["segBitrateBps"] <> invalid
-        ev.AddReplace("contentSegmentBitrate", m.nrVideoObject.streamingSegment["segBitrateBps"])
+    ' Set contentNetworkDownloadBitrate: raw network download speed calculated from downloadedBytes
+    contentNetworkBitrate = nrCalculateContentNetworkBitrate()
+    if contentNetworkBitrate > 0
+        ev.AddReplace("contentNetworkDownloadBitrate", contentNetworkBitrate)
     end if
     ev.AddReplace("playerName", "RokuVideoPlayer")
     dev = CreateObject("roDeviceInfo")
@@ -1935,6 +1946,77 @@ end function
 function nrResetAdBitrateTracker() as Void
     ' Reset bitrate tracking when ad starts/ends
     m.nrAdBitrateTracker = invalid
+end function
+
+function nrCalculateContentNetworkBitrate() as LongInteger
+    ' Calculate content network download bitrate from downloadedBytes
+    ' This measures raw network throughput (instantaneous download speed)
+    if m.nrVideoObject = invalid then return 0
+
+    streamInfo = m.nrVideoObject.streamInfo
+    if streamInfo = invalid then return 0
+
+    ' Check if we have download data available
+    if streamInfo.downloadedBytes = invalid then return 0
+
+    ' Initialize tracking variables if not exists
+    if m.nrContentBitrateTracker = invalid
+        m.nrContentBitrateTracker = {
+            lastBytes: 0,
+            lastTime: 0,
+            samples: []
+        }
+    end if
+
+    currentTime = m.nrTimer.TotalMilliseconds()
+    currentBytes = streamInfo.downloadedBytes
+
+    ' Calculate delta if we have previous measurement
+    if m.nrContentBitrateTracker.lastBytes > 0
+        if currentBytes > m.nrContentBitrateTracker.lastBytes
+            ' Normal case: bytes increased
+            deltaBytes = currentBytes - m.nrContentBitrateTracker.lastBytes
+            deltaTime = (currentTime - m.nrContentBitrateTracker.lastTime) / 1000.0  ' Convert to seconds
+
+            if deltaTime > 0
+                bitrate = (deltaBytes / deltaTime) * 8  ' Convert bytes/sec to bits/sec (LongInteger supports large values)
+
+                ' Store sample for averaging (rolling window)
+                m.nrContentBitrateTracker.samples.Push(bitrate)
+
+                ' Keep only last 5 samples for rolling average
+                if m.nrContentBitrateTracker.samples.Count() > 5
+                    m.nrContentBitrateTracker.samples.Shift()
+                end if
+
+                ' Update tracking values
+                m.nrContentBitrateTracker.lastBytes = currentBytes
+                m.nrContentBitrateTracker.lastTime = currentTime
+
+                ' Return averaged bitrate
+                return nrCalculateAverageBitrate(m.nrContentBitrateTracker.samples)
+            end if
+        else if currentBytes < m.nrContentBitrateTracker.lastBytes
+            ' Bytes decreased - stream restart or seek, reset tracking but keep samples
+            m.nrContentBitrateTracker.lastBytes = currentBytes
+            m.nrContentBitrateTracker.lastTime = currentTime
+            ' Return existing average if we have samples
+            if m.nrContentBitrateTracker.samples.Count() > 0
+                return nrCalculateAverageBitrate(m.nrContentBitrateTracker.samples)
+            end if
+        end if
+    else
+        ' First measurement, just store values
+        m.nrContentBitrateTracker.lastBytes = currentBytes
+        m.nrContentBitrateTracker.lastTime = currentTime
+    end if
+
+    return 0
+end function
+
+function nrResetContentBitrateTracker() as Void
+    ' Reset content bitrate tracking when video starts/ends
+    m.nrContentBitrateTracker = invalid
 end function
 
 function nrParseBitrateFromUrl(url as String) as Integer
