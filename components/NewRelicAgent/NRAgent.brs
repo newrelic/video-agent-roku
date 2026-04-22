@@ -151,7 +151,10 @@ function NewRelicInit(account as String, apikey as String,appName as String, reg
 
     'Domain attribute matching patterns
     m.domainPatterns = CreateObject("roAssociativeArray")
-    
+
+    'Obfuscation rules
+    m.nrObfuscationRules = []
+
     'Ad tracker states
     m.rafState = CreateObject("roAssociativeArray")
     m.rafState.numberOfAds = 0
@@ -336,6 +339,44 @@ end function
 ' Delete a matching pattern created with nrAddDomainSubstitution
 function nrDelDomainSubstitution(pattern as String) as Void
     m.domainPatterns.Delete(pattern)
+end function
+
+' Set obfuscation rules to mask sensitive data in all outgoing events before buffering.
+' Rules are applied in order; each rule is a { regex: String, replacement: String } object.
+' Validates all rules immediately at registration time and rejects the entire set if any are invalid.
+function nrSetObfuscationRules(rules as Object) as Void
+    if type(rules) <> "roArray"
+        nrLog("nrSetObfuscationRules: rules must be an Array, ignoring.")
+        return
+    end if
+
+    validated = []
+    for each rule in rules
+        if type(rule) <> "roAssociativeArray"
+            nrLog(["nrSetObfuscationRules: invalid rule type, expected object"])
+            return
+        end if
+        regexVal = rule.regex
+        replacementVal = rule.replacement
+        if (type(regexVal) <> "String" and type(regexVal) <> "roString") or (type(replacementVal) <> "String" and type(replacementVal) <> "roString")
+            nrLog(["nrSetObfuscationRules: regex and replacement must be Strings"])
+            return
+        end if
+        regexStr = regexVal + ""
+        replacementStr = replacementVal + ""
+        if regexStr = ""
+            nrLog("nrSetObfuscationRules: regex cannot be empty")
+            return
+        end if
+        rx = CreateObject("roRegex", regexStr, "i")
+        if rx = invalid
+            nrLog(["nrSetObfuscationRules: invalid regex pattern:", regexStr])
+            return
+        end if
+        validated.Push({ pattern: regexStr, replacement: replacementStr })
+    end for
+
+    m.nrObfuscationRules = validated
 end function
 
 function nrAppStarted(aa as Object) as Void
@@ -918,8 +959,38 @@ function nrGetBackAllSamples(sampleType as String, samples as Object) as Void
     end if
 end function
 
+function nrApplyObfuscationToEvent(event as Object) as Void
+    if event = invalid then return
+    rules = m.nrObfuscationRules
+    if rules = invalid or rules.Count() = 0 then return
+
+    keys = []
+    for each key in event
+        keys.Push(key)
+    end for
+
+    for each key in keys
+        value = event[key]
+        if type(value) = "String" or type(value) = "roString"
+            newValue = value + ""
+            for each rule in rules
+                if rule.pattern <> invalid and rule.replacement <> invalid
+                    rx = CreateObject("roRegex", rule.pattern, "i")
+                    if rx <> invalid
+                        newValue = rx.ReplaceAll(newValue, rule.replacement)
+                    end if
+                end if
+            end for
+            if value <> newValue
+                event[key] = newValue
+            end if
+        end if
+    end for
+end function
+
 function nrRecordEvent(event as Object) as Void
     nrLog(["RECORD NEW EVENT = ", event])
+    nrApplyObfuscationToEvent(event)
     m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
 end function
 
