@@ -73,11 +73,11 @@ function setupSingleVideo() as void
     m.video.control = "play"
     
     ' After 20 seconds, change the video URL to a new one
-    timer20 = createObject("roSGNode", "Timer")
-    timer20.duration = 20
-    timer20.control = "start"
-    timer20.observeField("fire", "onChangeToNewUrl")
-    m.top.appendChild(timer20)
+    ' timer20 = createObject("roSGNode", "Timer")
+    ' timer20.duration = 20
+    ' timer20.control = "start"
+    ' timer20.observeField("fire", "onChangeToNewUrl")
+    ' m.top.appendChild(timer20)
 end function
 
 ' Handler to change video URL after 20 seconds

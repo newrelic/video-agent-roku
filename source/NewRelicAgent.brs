@@ -109,6 +109,14 @@ function nrDelDomainSubstitution(nr as object, pattern as String) as Void
     nr.callFunc("nrDelDomainSubstitution", pattern)
 end function
 
+' Set obfuscation rules to mask sensitive data in all outgoing events.
+'
+' @param nr New Relic Agent object
+' @param rules Array of { regex: String, replacement: String } objects
+function nrSetObfuscationRules(nr as Object, rules as Object) as Void
+    nr.callFunc("nrSetObfuscationRules", rules)
+end function
+
 ' Send an APP_STARTED event of type ConnectedDeviceSystem.
 '
 ' @param nr New Relic Agent object.
