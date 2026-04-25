@@ -7,3 +7,6 @@ node_modules/
 .idea/
 .husky/_/
 package-lock.json
+deploys/
+local_credentials.brs
+mediatailor-guide.pdf

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+'**********************************************************
+' MediaTailorTracker.xml
+' New Relic AWS Elemental MediaTailor SSAI Tracker Component.
+'
+' Copyright 2024 New Relic Inc. All Rights Reserved.
+'**********************************************************
+-->
+
+<component name="com.newrelic.trackers.MediaTailorTracker" extends="Node"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="https://devtools.web.roku.com/schema/RokuSceneGraph.xsd">
+    <interface>
+        <!-- Reference to the live NRAgent node -->
+        <field id="nr" type="node"/>
+        <!-- Public Methods -->
+        <function name="nrTrackMediaTailorEvent"/>
+        <function name="nrSetMediaTailorAdMetadata"/>
+    </interface>
+
+    <script type="text/brightscript" uri="MediaTailorTracker.brs" />
+</component>

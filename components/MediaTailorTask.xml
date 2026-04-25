@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+'**********************************************************
+' MediaTailorTask.xml
+' New Relic AWS Elemental MediaTailor SSAI Task Component.
+'
+' Copyright 2024 New Relic Inc. All Rights Reserved.
+'**********************************************************
+-->
+
+<component name="MediaTailorTask" extends="Task">
+    <interface>
+        <!-- Required: Video node to play the stitched stream -->
+        <field id="videoNode"    type="node"/>
+        <!-- Required: New Relic Agent node -->
+        <field id="nr"           type="node"/>
+        <!-- Required: MediaTailorTracker node (from MediaTailorTracker()) -->
+        <field id="tracker"      type="node"/>
+        <!-- Required: MediaTailor session-init or HLS manifest URL -->
+        <field id="streamUrl"    type="string" value=""/>
+        <!-- Optional: pre-resolved MediaTailor tracking URL -->
+        <field id="trackingUrl"  type="string" value=""/>
+        <!-- Optional: ad-targeting params injected into the session POST body -->
+        <field id="adsParams"    type="assocarray"/>
+        <!-- Optional: "VOD" (default) or "LIVE" -->
+        <field id="streamType"   type="string" value="VOD"/>
+    </interface>
+
+    <script type="text/brightscript" uri="pkg:/source/rafxssai.brs"/>
+    <script type="text/brightscript" uri="pkg:/source/MediaTailorTrackerInterface.brs"/>
+    <script type="text/brightscript" uri="pkg:/components/MediaTailorTask.brs"/>
+</component>

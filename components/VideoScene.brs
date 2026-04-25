@@ -29,19 +29,22 @@ function nrRefUpdated()
     nrSceneLoaded(m.nr, "MyVideoScene")
     
     'NOTE: Uncomment ONE of the following setup calls
-    
+
+    'Setup the video player with AWS Elemental MediaTailor SSAI (default)
+    setupMediaTailorVideo()
+
     'Setup the video player with a single video
-    setupSingleVideo()
-    
+    ' setupSingleVideo()
+
     'Setup the video player with a playlist
     ' setupVideoPlaylist(true)
-    
+
     'Setup the video player with a single video and ads
     ' setupVideoWithAds()
-    
+
     'Setup the video player with a single video and Google IMA ads
     ' setupVideoWithIMA()
-    
+
     'Activate video tracking
     NewRelicVideoStart(m.nr, m.video)
 end function
@@ -217,6 +220,69 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         print "Key Release --> " key
         return false
     end if
+end function
+
+'**********************************************************
+' MediaTailor SSAI Example
+'**********************************************************
+
+' Sets up a video player backed by an AWS Elemental MediaTailor
+' SSAI session and enables New Relic VideoAdAction tracking.
+'
+' Replace the placeholder URL with your actual MediaTailor manifest:
+'   https://<account-id>.mediatailor.<region>.amazonaws.com
+'     /v1/master/<config-id>/<origin-id>/playlist.m3u8
+'
+' For LIVE streams change streamType to "LIVE" and point streamUrl
+' at the live manifest returned by your MediaTailor session endpoint.
+function setupMediaTailorVideo() as Void
+    print "VideoScene: setupMediaTailorVideo"
+    print "Prepare video player with MediaTailor SSAI"
+
+    m.video = m.top.findNode("myVideo")
+    m.video.notificationinterval = 1
+
+    '----------------------------------------------------------------
+    ' MediaTailor session-init URL  ← REPLACE with your real URL
+    '----------------------------------------------------------------
+    mediaTailorUrl = "https://YOUR_MEDIATAILOR_ENDPOINT/v1/session/YOUR_HASH/YOUR_CONFIG/hls"
+
+    '----------------------------------------------------------------
+    ' (Optional) If you already have the HLS URL + tracking URL from
+    ' a prior server-side session call, set trackingUrl here so the
+    ' task can skip the requestStream() round-trip:
+    '
+    '   trackingUrl = "https://<account-id>.mediatailor.<region>.amazonaws.com/v1/tracking/<session-id>"
+    '----------------------------------------------------------------
+    trackingUrl = ""   ' leave blank to have the adapter resolve it
+
+    '----------------------------------------------------------------
+    ' Create the MediaTailor tracker and wire it to the NRAgent
+    '----------------------------------------------------------------
+    m.mediaTailorTracker = MediaTailorTracker(m.nr)
+
+    '----------------------------------------------------------------
+    ' (Optional) Push ads_metadata sidecar key/value pairs so they
+    ' are automatically appended to every AD_* event.  Fetch your
+    ' sidecar JSON before this point and pass it here:
+    '
+    '   nrSetMediaTailorAdMetadata(m.mediaTailorTracker, {
+    '       availId:  "<avail-id>",
+    '       originId: "<origin-id>"
+    '   })
+    '----------------------------------------------------------------
+
+    '----------------------------------------------------------------
+    ' Launch the background task that owns the SSAI adapter lifecycle
+    '----------------------------------------------------------------
+    m.mediaTailorTask = createObject("roSGNode", "MediaTailorTask")
+    m.mediaTailorTask.setField("videoNode",   m.video)
+    m.mediaTailorTask.setField("nr",          m.nr)
+    m.mediaTailorTask.setField("tracker",     m.mediaTailorTracker)
+    m.mediaTailorTask.setField("streamUrl",   mediaTailorUrl)
+    m.mediaTailorTask.setField("trackingUrl", trackingUrl)
+    m.mediaTailorTask.setField("streamType",  "VOD")
+    m.mediaTailorTask.control = "RUN"
 end function
 
 'Google IMA functions
