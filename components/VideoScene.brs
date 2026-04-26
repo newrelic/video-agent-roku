@@ -245,7 +245,7 @@ function setupMediaTailorVideo() as Void
     '----------------------------------------------------------------
     ' MediaTailor session-init URL  ← REPLACE with your real URL
     '----------------------------------------------------------------
-    mediaTailorUrl = "https://YOUR_MEDIATAILOR_ENDPOINT/v1/session/YOUR_HASH/YOUR_CONFIG/hls"
+    mediaTailorUrl = "https://<account-id>.mediatailor.<region>.amazonaws.com/v1/session/<hash>/<config>/hls"
 
     '----------------------------------------------------------------
     ' (Optional) If you already have the HLS URL + tracking URL from
@@ -257,28 +257,12 @@ function setupMediaTailorVideo() as Void
     trackingUrl = ""   ' leave blank to have the adapter resolve it
 
     '----------------------------------------------------------------
-    ' Create the MediaTailor tracker and wire it to the NRAgent
-    '----------------------------------------------------------------
-    m.mediaTailorTracker = MediaTailorTracker(m.nr)
-
-    '----------------------------------------------------------------
-    ' (Optional) Push ads_metadata sidecar key/value pairs so they
-    ' are automatically appended to every AD_* event.  Fetch your
-    ' sidecar JSON before this point and pass it here:
-    '
-    '   nrSetMediaTailorAdMetadata(m.mediaTailorTracker, {
-    '       availId:  "<avail-id>",
-    '       originId: "<origin-id>"
-    '   })
-    '----------------------------------------------------------------
-
-    '----------------------------------------------------------------
     ' Launch the background task that owns the SSAI adapter lifecycle
     '----------------------------------------------------------------
     m.mediaTailorTask = createObject("roSGNode", "MediaTailorTask")
     m.mediaTailorTask.setField("videoNode",   m.video)
     m.mediaTailorTask.setField("nr",          m.nr)
-    m.mediaTailorTask.setField("tracker",     m.mediaTailorTracker)
+    m.mediaTailorTask.setField("tracker",     MediaTailorTracker(m.nr))
     m.mediaTailorTask.setField("streamUrl",   mediaTailorUrl)
     m.mediaTailorTask.setField("trackingUrl", trackingUrl)
     m.mediaTailorTask.setField("streamType",  "VOD")
