@@ -245,7 +245,7 @@ function setupMediaTailorVideo() as Void
     '----------------------------------------------------------------
     ' MediaTailor session-init URL  ← REPLACE with your real URL
     '----------------------------------------------------------------
-    mediaTailorUrl = "https://<account-id>.mediatailor.<region>.amazonaws.com/v1/session/<hash>/<config>/hls"
+    mediaTailorUrl = "https://d686b7f4aa05404cabc1b8f4ec64acf6.mediatailor.ap-southeast-2.amazonaws.com/v1/session/8280a41d2c4b30135eefd4faff931c315d543225/lab-hls-vod-roku/hls"
 
     '----------------------------------------------------------------
     ' (Optional) If you already have the HLS URL + tracking URL from
