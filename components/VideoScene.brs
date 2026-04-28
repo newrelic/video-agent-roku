@@ -29,19 +29,22 @@ function nrRefUpdated()
     nrSceneLoaded(m.nr, "MyVideoScene")
     
     'NOTE: Uncomment ONE of the following setup calls
-    
+
+    'Setup the video player with AWS Elemental MediaTailor SSAI (default)
+    setupMediaTailorVideo()
+
     'Setup the video player with a single video
-    setupSingleVideo()
-    
+    ' setupSingleVideo()
+
     'Setup the video player with a playlist
     ' setupVideoPlaylist(true)
-    
+
     'Setup the video player with a single video and ads
     ' setupVideoWithAds()
-    
+
     'Setup the video player with a single video and Google IMA ads
     ' setupVideoWithIMA()
-    
+
     'Activate video tracking
     NewRelicVideoStart(m.nr, m.video)
 end function
@@ -217,6 +220,52 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         print "Key Release --> " key
         return false
     end if
+end function
+
+'**********************************************************
+' MediaTailor SSAI Example
+'**********************************************************
+
+' Sets up a video player backed by an AWS Elemental MediaTailor
+' SSAI session and enables New Relic VideoAdAction tracking.
+'
+' VOD HLS  — streamType="VOD",  streamFormat="hls"
+'   streamUrl: /v1/session/<hash>/<config>/hls
+'
+' VOD DASH — streamType="VOD",  streamFormat="dash"
+'   streamUrl: /v1/session/<hash>/<config>/dash
+'
+' LIVE HLS — streamType="LIVE", streamFormat="hls"
+'   streamUrl: live master playlist URL (no session call needed)
+'
+' LIVE DASH — streamType="LIVE", streamFormat="dash"
+'   streamUrl: live MPD manifest URL (no session call needed)
+function setupMediaTailorVideo() as Void
+    print "VideoScene: setupMediaTailorVideo"
+    print "Prepare video player with MediaTailor SSAI"
+
+    m.video = m.top.findNode("myVideo")
+    m.video.notificationinterval = 1
+
+    '----------------------------------------------------------------
+    ' MediaTailor session-init URL  ← REPLACE with your real URL
+    ' VOD HLS:  /v1/session/<hash>/<config>/hls
+    ' VOD DASH: /v1/session/<hash>/<config>/dash
+    ' LIVE:     use the live manifest URL directly
+    '----------------------------------------------------------------
+    mediaTailorUrl = "https://<account-id>.mediatailor.<region>.amazonaws.com/v1/session/<hash>/<config>/hls"
+
+    '----------------------------------------------------------------
+    ' Launch the background task that owns the SSAI adapter lifecycle
+    '----------------------------------------------------------------
+    m.mediaTailorTask = createObject("roSGNode", "MediaTailorTask")
+    m.mediaTailorTask.setField("videoNode",    m.video)
+    m.mediaTailorTask.setField("nr",           m.nr)
+    m.mediaTailorTask.setField("tracker",      MediaTailorTracker(m.nr))
+    m.mediaTailorTask.setField("streamUrl",    mediaTailorUrl)
+    m.mediaTailorTask.setField("streamType",   "VOD")   ' "VOD" or "LIVE"
+    m.mediaTailorTask.setField("streamFormat", "hls")   ' "hls" or "dash"
+    m.mediaTailorTask.control = "RUN"
 end function
 
 'Google IMA functions
