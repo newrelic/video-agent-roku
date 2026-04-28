@@ -60,6 +60,12 @@ function mediaTailorTaskMain() as Void
     end if
     nrMTTaskLog("streamType = " + streamType)
 
+    streamFormat = "hls"
+    if m.top.streamFormat <> invalid and m.top.streamFormat <> ""
+        streamFormat = LCase(m.top.streamFormat)
+    end if
+    nrMTTaskLog("streamFormat = " + streamFormat)
+
     ' ---------------------------------------------------------------
     ' 2. Initialise RAFX_SSAI with the awsemt (AWS Elemental MediaTailor)
     '    adapter and wire up the New Relic tracking callback.
@@ -123,9 +129,14 @@ function mediaTailorTaskMain() as Void
             streamInfo = adIface.getStreamInfo()
             if streamInfo <> invalid and streamInfo.manifest_url <> invalid and streamInfo.manifest_url <> ""
                 playUrl = streamInfo.manifest_url
-                ' MediaTailor returns manifestUrl ending in /<config>/hls?aws.sessionId=...
-                ' The Roku player needs /<config>/master.m3u8?aws.sessionId=... to get the HLS master playlist
-                playUrl = playUrl.replace("/hls?", "/master.m3u8?")
+                ' MediaTailor session URLs need rewriting to the actual playlist path:
+                '   HLS:  /<config>/hls?aws.sessionId=…  →  /<config>/master.m3u8?aws.sessionId=…
+                '   DASH: /<config>/dash?aws.sessionId=… →  /<config>/manifest.mpd?aws.sessionId=…
+                if streamFormat = "dash"
+                    playUrl = playUrl.replace("/dash?", "/manifest.mpd?")
+                else
+                    playUrl = playUrl.replace("/hls?", "/master.m3u8?")
+                end if
                 nrMTTaskLog("RAFX_SSAI manifest_url = " + playUrl)
 
                 ' Push tracking URL as sidecar metadata so it appears on every AD_* event
@@ -153,14 +164,14 @@ function mediaTailorTaskMain() as Void
     end if
 
     ' ---------------------------------------------------------------
-    ' 4. Load the stitched HLS stream into the Video node
+    ' 4. Load the stitched stream into the Video node
     ' ---------------------------------------------------------------
     port = CreateObject("roMessagePort")
 
     vidContent = createObject("RoSGNode", "ContentNode")
     vidContent.url          = playUrl
     vidContent.title        = "MediaTailor Stream"
-    vidContent.streamformat = "hls"
+    vidContent.streamformat = streamFormat
 
     m.top.videoNode.content = vidContent
     m.top.videoNode.visible = true

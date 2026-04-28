@@ -229,12 +229,17 @@ end function
 ' Sets up a video player backed by an AWS Elemental MediaTailor
 ' SSAI session and enables New Relic VideoAdAction tracking.
 '
-' Replace the placeholder URL with your actual MediaTailor manifest:
-'   https://<account-id>.mediatailor.<region>.amazonaws.com
-'     /v1/master/<config-id>/<origin-id>/playlist.m3u8
+' VOD HLS  — streamType="VOD",  streamFormat="hls"
+'   streamUrl: /v1/session/<hash>/<config>/hls
 '
-' For LIVE streams change streamType to "LIVE" and point streamUrl
-' at the live manifest returned by your MediaTailor session endpoint.
+' VOD DASH — streamType="VOD",  streamFormat="dash"
+'   streamUrl: /v1/session/<hash>/<config>/dash
+'
+' LIVE HLS — streamType="LIVE", streamFormat="hls"
+'   streamUrl: live master playlist URL (no session call needed)
+'
+' LIVE DASH — streamType="LIVE", streamFormat="dash"
+'   streamUrl: live MPD manifest URL (no session call needed)
 function setupMediaTailorVideo() as Void
     print "VideoScene: setupMediaTailorVideo"
     print "Prepare video player with MediaTailor SSAI"
@@ -244,28 +249,22 @@ function setupMediaTailorVideo() as Void
 
     '----------------------------------------------------------------
     ' MediaTailor session-init URL  ← REPLACE with your real URL
+    ' VOD HLS:  /v1/session/<hash>/<config>/hls
+    ' VOD DASH: /v1/session/<hash>/<config>/dash
+    ' LIVE:     use the live manifest URL directly
     '----------------------------------------------------------------
     mediaTailorUrl = "https://<account-id>.mediatailor.<region>.amazonaws.com/v1/session/<hash>/<config>/hls"
-
-    '----------------------------------------------------------------
-    ' (Optional) If you already have the HLS URL + tracking URL from
-    ' a prior server-side session call, set trackingUrl here so the
-    ' task can skip the requestStream() round-trip:
-    '
-    '   trackingUrl = "https://<account-id>.mediatailor.<region>.amazonaws.com/v1/tracking/<session-id>"
-    '----------------------------------------------------------------
-    trackingUrl = ""   ' leave blank to have the adapter resolve it
 
     '----------------------------------------------------------------
     ' Launch the background task that owns the SSAI adapter lifecycle
     '----------------------------------------------------------------
     m.mediaTailorTask = createObject("roSGNode", "MediaTailorTask")
-    m.mediaTailorTask.setField("videoNode",   m.video)
-    m.mediaTailorTask.setField("nr",          m.nr)
-    m.mediaTailorTask.setField("tracker",     MediaTailorTracker(m.nr))
-    m.mediaTailorTask.setField("streamUrl",   mediaTailorUrl)
-    m.mediaTailorTask.setField("trackingUrl", trackingUrl)
-    m.mediaTailorTask.setField("streamType",  "VOD")
+    m.mediaTailorTask.setField("videoNode",    m.video)
+    m.mediaTailorTask.setField("nr",           m.nr)
+    m.mediaTailorTask.setField("tracker",      MediaTailorTracker(m.nr))
+    m.mediaTailorTask.setField("streamUrl",    mediaTailorUrl)
+    m.mediaTailorTask.setField("streamType",   "VOD")   ' "VOD" or "LIVE"
+    m.mediaTailorTask.setField("streamFormat", "hls")   ' "hls" or "dash"
     m.mediaTailorTask.control = "RUN"
 end function
 

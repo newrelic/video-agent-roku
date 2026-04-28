@@ -25,6 +25,8 @@
         <field id="adsParams"    type="assocarray"/>
         <!-- Optional: "VOD" (default) or "LIVE" -->
         <field id="streamType"   type="string" value="VOD"/>
+        <!-- Optional: "hls" (default) or "dash" -->
+        <field id="streamFormat" type="string" value="hls"/>
     </interface>
 
     <script type="text/brightscript" uri="pkg:/source/rafxssai.brs"/>
