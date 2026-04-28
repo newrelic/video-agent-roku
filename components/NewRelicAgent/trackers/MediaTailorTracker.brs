@@ -70,6 +70,7 @@ function nrTrackMediaTailorEvent(evtType as String, ctx as Object) as Void
     ' so "Start" is never fired separately. Synthesize AD_START after AD_REQUEST.
     if evtType = "Impression"
         m.top.nr.callFunc("nrTrackRAF", "Start", ctx)
+        m.adState.numberOfAds = m.adState.numberOfAds + 1
     end if
 
     ' 4. Clear ad-level metadata after AD_END / AD_SKIP so stale values
