@@ -28,30 +28,29 @@
 Library "Roku_Ads.brs"
 
 sub init()
-    print "MediaTailorTask: init"
     m.top.functionName = "mediaTailorTaskMain"
 end sub
 
 function mediaTailorTaskMain() as Void
-    print "MediaTailorTask: main started"
+    nrMTTaskLog("main started")
 
     ' ---------------------------------------------------------------
     ' 1. Validate required fields
     ' ---------------------------------------------------------------
     if m.top.videoNode = invalid
-        print "MediaTailorTask: ERROR – videoNode not set"
+        nrMTTaskLog("ERROR - videoNode not set")
         return
     end if
     if m.top.nr = invalid
-        print "MediaTailorTask: ERROR – nr (NRAgent) not set"
+        nrMTTaskLog("ERROR - nr (NRAgent) not set")
         return
     end if
     if m.top.tracker = invalid
-        print "MediaTailorTask: ERROR – tracker (MediaTailorTracker) not set"
+        nrMTTaskLog("ERROR - tracker (MediaTailorTracker) not set")
         return
     end if
     if m.top.streamUrl = invalid or m.top.streamUrl = ""
-        print "MediaTailorTask: ERROR – streamUrl not set"
+        nrMTTaskLog("ERROR - streamUrl not set")
         return
     end if
 
@@ -59,7 +58,7 @@ function mediaTailorTaskMain() as Void
     if m.top.streamType <> invalid and m.top.streamType <> ""
         streamType = UCase(m.top.streamType)
     end if
-    print "MediaTailorTask: streamType = "; streamType
+    nrMTTaskLog("streamType = " + streamType)
 
     ' ---------------------------------------------------------------
     ' 2. Initialise RAFX_SSAI with the awsemt (AWS Elemental MediaTailor)
@@ -71,7 +70,7 @@ function mediaTailorTaskMain() as Void
     '    nrTrackMediaTailorEvent → nrTrackRAF → nrSendRAFEvent which
     '    records VideoAdAction events in New Relic.
     ' ---------------------------------------------------------------
-    print "MediaTailorTask: initialising RAFX_SSAI awsemt adapter"
+    nrMTTaskLog("initialising RAFX_SSAI awsemt adapter")
     adIface = RAFX_SSAI({name: "awsemt"})
     adIface.init()
 
@@ -98,10 +97,10 @@ function mediaTailorTaskMain() as Void
     '    For LIVE: skip requestStream – use streamUrl as playUrl directly.
     ' ---------------------------------------------------------------
     playUrl = m.top.streamUrl
-    print "MediaTailorTask: initial playUrl = "; playUrl
+    nrMTTaskLog("initial playUrl = " + playUrl)
 
     if streamType = "VOD"
-        print "MediaTailorTask: requesting stream via RAFX_SSAI awsemt"
+        nrMTTaskLog("requesting stream via RAFX_SSAI awsemt")
 
         streamRequest = {
             type: adIface.StreamType.VOD,
@@ -125,7 +124,7 @@ function mediaTailorTaskMain() as Void
                 ' MediaTailor returns manifestUrl ending in /<config>/hls?aws.sessionId=...
                 ' The Roku player needs /<config>/master.m3u8?aws.sessionId=... to get the HLS master playlist
                 playUrl = playUrl.replace("/hls?", "/master.m3u8?")
-                print "MediaTailorTask: RAFX_SSAI manifest_url = "; playUrl
+                nrMTTaskLog("RAFX_SSAI manifest_url = " + playUrl)
 
                 ' Push tracking URL as sidecar metadata so it appears on every AD_* event
                 sidecar = {}
@@ -133,14 +132,14 @@ function mediaTailorTaskMain() as Void
                     sidecar.AddReplace("adTrackingUrl", streamInfo.tracking_url)
                 end if
                 if sidecar.Count() > 0
-                    print "MediaTailorTask: setting sidecar metadata"
+                    nrMTTaskLog("setting sidecar metadata")
                     nrSetMediaTailorAdMetadata(m.top.tracker, sidecar)
                 end if
             else
-                print "MediaTailorTask: getStreamInfo returned no manifest_url – playing streamUrl directly"
+                nrMTTaskLog("getStreamInfo returned no manifest_url - playing streamUrl directly")
             end if
         else
-            print "MediaTailorTask: RAFX_SSAI requestStream failed – "; formatjson(result)
+            nrMTTaskLog("RAFX_SSAI requestStream failed - " + formatjson(result))
         end if
     end if
 
@@ -161,7 +160,7 @@ function mediaTailorTaskMain() as Void
     m.top.videoNode.control = "play"
     m.top.videoNode.setFocus(true)
 
-    print "MediaTailorTask: playback started – "; playUrl
+    nrMTTaskLog("playback started - " + playUrl)
 
     ' ---------------------------------------------------------------
     ' 5. Enable ads via RAFX_SSAI
@@ -187,9 +186,9 @@ function mediaTailorTaskMain() as Void
             if type(msg) = "roSGNodeEvent"
                 if msg.getField() = "state"
                     state = msg.getData()
-                    print "MediaTailorTask: video state changed to '"; state; "'"
+                    nrMTTaskLog("video state changed to '" + state + "'")
                     if state = "finished" or state = "error"
-                        print "MediaTailorTask: video ended – state="; state
+                        nrMTTaskLog("video ended - state=" + state)
                         exit while
                     end if
                 end if
@@ -199,7 +198,7 @@ function mediaTailorTaskMain() as Void
         end if
     end while
 
-    print "MediaTailorTask: main finished"
+    nrMTTaskLog("main finished")
 end function
 
 ' Named callback for RAFX_SSAI addEventListener – called for every ad event.
@@ -209,6 +208,14 @@ function nrMTAdListener(adInfo as Object) as Void
     if adInfo = invalid then return
     evtType = ""
     if adInfo.event <> invalid then evtType = adInfo.event
-    print "MediaTailorTask: ad event – "; evtType
+    nrMTTaskLog("ad event - " + evtType)
     m.nrTracker.callFunc("nrTrackMediaTailorEvent", evtType, adInfo)
+end function
+
+' Gate all debug output behind the NRAgent logging state.
+' Only prints when the app has explicitly enabled NR logging via nrActivateLogging().
+function nrMTTaskLog(msg as String) as Void
+    if m.top.nr <> invalid and m.top.nr.callFunc("nrCheckLoggingState", {}) = true
+        print "MediaTailorTask: " + msg
+    end if
 end function

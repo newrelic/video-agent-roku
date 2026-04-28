@@ -44,7 +44,7 @@ end sub
 ' @param evtType  RAF event-type string ("PodStart", "Start", "Complete", …)
 ' @param ctx      RAF context AA for this event (may contain ctx.ad, ctx.rendersequence, …)
 function nrTrackMediaTailorEvent(evtType as String, ctx as Object) as Void
-    print "MediaTailorTracker: nrTrackMediaTailorEvent, evtType = "; evtType
+    nrMTLog("nrTrackMediaTailorEvent, evtType = " + evtType)
 
     ' Ad-related RAF event types that warrant metadata enrichment
     adEvents = ["PodStart", "PodComplete", "Impression", "Start",
@@ -75,7 +75,7 @@ function nrTrackMediaTailorEvent(evtType as String, ctx as Object) as Void
     ' 4. Clear ad-level metadata after AD_END / AD_SKIP so stale values
     '    from a previous ad are never carried into the next one.
     if evtType = "Complete" or evtType = "Close"
-        print "MediaTailorTracker: clearing ad-level metadata"
+        nrMTLog("clearing ad-level metadata")
         nrMTClearAdLevelMetadata()
     end if
 end function
@@ -88,7 +88,7 @@ end function
 '
 ' @param metadata  roAssociativeArray of key→value pairs from the sidecar URL
 function nrSetMediaTailorAdMetadata(metadata as Object) as Void
-    print "MediaTailorTracker: nrSetMediaTailorAdMetadata"
+    nrMTLog("nrSetMediaTailorAdMetadata")
     if type(metadata) = "roAssociativeArray"
         m.customAdMetadata.Append(metadata)
     end if
@@ -169,4 +169,12 @@ end function
 
 function nrMTResetAdState() as Void
     m.adState.numberOfAds = 0
+end function
+
+' Gate all debug output behind the NRAgent logging state (nrActivateLogging / nrEnableLogging).
+' Only prints when the app has explicitly enabled NR logging.
+function nrMTLog(msg as String) as Void
+    if m.top.nr <> invalid and m.top.nr.callFunc("nrCheckLoggingState", {}) = true
+        print "MediaTailorTracker: " + msg
+    end if
 end function
