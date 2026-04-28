@@ -85,6 +85,8 @@ function mediaTailorTaskMain() as Void
     adIface.addEventListener(adIface.AdEvent.THIRD_QUARTILE, nrMTAdListener)
     adIface.addEventListener(adIface.AdEvent.COMPLETE,       nrMTAdListener)
     adIface.addEventListener(adIface.AdEvent.POD_END,        nrMTAdListener)
+    adIface.addEventListener(adIface.AdEvent.PAUSE,          nrMTAdListener)
+    adIface.addEventListener(adIface.AdEvent.RESUME,         nrMTAdListener)
     adIface.addEventListener(adIface.AdEvent.ERROR,          nrMTAdListener)
 
     ' ---------------------------------------------------------------
@@ -139,7 +141,14 @@ function mediaTailorTaskMain() as Void
                 nrMTTaskLog("getStreamInfo returned no manifest_url - playing streamUrl directly")
             end if
         else
-            nrMTTaskLog("RAFX_SSAI requestStream failed - " + formatjson(result))
+            errMsg = "RAFX_SSAI requestStream failed"
+            if result <> invalid and result.error <> invalid
+                errMsg = errMsg + " - " + formatjson(result.error)
+            end if
+            nrMTTaskLog(errMsg)
+            ' Surface the session-init failure as an AD_ERROR so New Relic captures it
+            errorCtx = {event: "Error", adErrorMsg: errMsg, adErrorType: "session_init"}
+            m.nrTracker.callFunc("nrTrackMediaTailorEvent", "Error", errorCtx)
         end if
     end if
 

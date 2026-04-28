@@ -48,7 +48,8 @@ function nrTrackMediaTailorEvent(evtType as String, ctx as Object) as Void
 
     ' Ad-related RAF event types that warrant metadata enrichment
     adEvents = ["PodStart", "PodComplete", "Impression", "Start",
-                "FirstQuartile", "Midpoint", "ThirdQuartile", "Complete", "Close", "Error"]
+                "FirstQuartile", "Midpoint", "ThirdQuartile", "Complete", "Close", "Error",
+                "Pause", "Resume"]
     isAdEvent = false
     for each e in adEvents
         if evtType = e then isAdEvent = true
@@ -63,7 +64,12 @@ function nrTrackMediaTailorEvent(evtType as String, ctx as Object) as Void
         nrMTFlushCustomAdAttributes()
     end if
 
-    ' 3. Hand off to the standard RAF event handler in NRAgent
+    ' 3. Record pod-start timestamp for timeSinceAdBreakBegin
+    if evtType = "PodStart"
+        m.adState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
+    end if
+
+    ' 4. Hand off to the standard RAF event handler in NRAgent
     m.top.nr.callFunc("nrTrackRAF", evtType, ctx)
 
     ' awsemt maps both MediaTailor "start" and "impression" to AdEvent.IMPRESSION,
@@ -71,13 +77,36 @@ function nrTrackMediaTailorEvent(evtType as String, ctx as Object) as Void
     if evtType = "Impression"
         m.top.nr.callFunc("nrTrackRAF", "Start", ctx)
         m.adState.numberOfAds = m.adState.numberOfAds + 1
+        m.adState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
     end if
 
-    ' 4. Clear ad-level metadata after AD_END / AD_SKIP so stale values
-    '    from a previous ad are never carried into the next one.
+    ' 5. Attach timing attributes to AD_END / AD_BREAK_END events
     if evtType = "Complete" or evtType = "Close"
+        timingAttr = {}
+        if m.adState.timeSinceAdStarted > 0
+            timingAttr.AddReplace("timeSinceAdStarted", m.nrTimer.TotalMilliseconds() - m.adState.timeSinceAdStarted)
+        end if
+        timingAttr.AddReplace("numberOfAds", m.adState.numberOfAds)
+        if timingAttr.Count() > 0
+            m.top.nr.callFunc("nrSetCustomAttributeList", timingAttr, "")
+        end if
+        m.adState.timeSinceAdStarted = 0
         nrMTLog("clearing ad-level metadata")
         nrMTClearAdLevelMetadata()
+    end if
+
+    if evtType = "PodComplete"
+        timingAttr = {}
+        if m.adState.timeSinceAdBreakBegin > 0
+            timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.adState.timeSinceAdBreakBegin
+            timingAttr.AddReplace("timeSinceAdBreakBegin", timeSinceAdBreakBegin)
+            m.top.nr.callFunc("nrAddToTotalAdPlaytime", timeSinceAdBreakBegin)
+        end if
+        timingAttr.AddReplace("numberOfAds", m.adState.numberOfAds)
+        if timingAttr.Count() > 0
+            m.top.nr.callFunc("nrSetCustomAttributeList", timingAttr, "")
+        end if
+        m.adState.timeSinceAdBreakBegin = 0
     end if
 end function
 
@@ -145,6 +174,12 @@ function nrMTExtractAdMetadata(evtType as String, ctx as Object) as Void
         if ad.bitrate <> invalid then m.customAdMetadata.AddReplace("adBitrate", ad.bitrate)
     end if
 
+    ' --- Error fields (available on Error ctx synthesized by the task) ---
+    if evtType = "Error"
+        if ctx.adErrorMsg <> invalid  then m.customAdMetadata.AddReplace("adErrorMsg",  ctx.adErrorMsg)
+        if ctx.adErrorType <> invalid then m.customAdMetadata.AddReplace("adErrorType", ctx.adErrorType)
+    end if
+
     ' Tag the event as coming from the MediaTailor SSAI path
     m.customAdMetadata.AddReplace("adPartner", "mediatailor")
 end function
@@ -170,6 +205,8 @@ end function
 
 function nrMTResetAdState() as Void
     m.adState.numberOfAds = 0
+    m.adState.timeSinceAdBreakBegin = 0
+    m.adState.timeSinceAdStarted = 0
 end function
 
 ' Gate all debug output behind the NRAgent logging state (nrActivateLogging / nrEnableLogging).
