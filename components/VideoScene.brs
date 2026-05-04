@@ -229,17 +229,10 @@ end function
 ' Sets up a video player backed by an AWS Elemental MediaTailor
 ' SSAI session and enables New Relic VideoAdAction tracking.
 '
-' VOD HLS  — streamType="VOD",  streamFormat="hls"
-'   streamUrl: /v1/session/<hash>/<config>/hls
-'
-' VOD DASH — streamType="VOD",  streamFormat="dash"
-'   streamUrl: /v1/session/<hash>/<config>/dash
-'
-' LIVE HLS — streamType="LIVE", streamFormat="hls"
-'   streamUrl: live master playlist URL (no session call needed)
-'
-' LIVE DASH — streamType="LIVE", streamFormat="dash"
-'   streamUrl: live MPD manifest URL (no session call needed)
+' Supported in this sample: VOD HLS.
+'   streamType   = "VOD"
+'   streamFormat = "hls"
+'   streamUrl    = /v1/session/<hash>/<config>/hls
 function setupMediaTailorVideo() as Void
     print "VideoScene: setupMediaTailorVideo"
     print "Prepare video player with MediaTailor SSAI"
@@ -249,22 +242,21 @@ function setupMediaTailorVideo() as Void
 
     '----------------------------------------------------------------
     ' MediaTailor session-init URL  ← REPLACE with your real URL
-    ' VOD HLS:  /v1/session/<hash>/<config>/hls
-    ' VOD DASH: /v1/session/<hash>/<config>/dash
-    ' LIVE:     use the live manifest URL directly
+    ' VOD HLS: /v1/session/<hash>/<config>/hls
     '----------------------------------------------------------------
     mediaTailorUrl = "https://<account-id>.mediatailor.<region>.amazonaws.com/v1/session/<hash>/<config>/hls"
 
     '----------------------------------------------------------------
-    ' Launch the background task that owns the SSAI adapter lifecycle
+    ' Launch the background task that owns the SSAI adapter lifecycle.
+    ' The task internally calls nrEnableMediaTailorTracking(nr, adIface),
+    ' which creates and registers the MediaTailorTracker node.
     '----------------------------------------------------------------
     m.mediaTailorTask = createObject("roSGNode", "MediaTailorTask")
     m.mediaTailorTask.setField("videoNode",    m.video)
     m.mediaTailorTask.setField("nr",           m.nr)
-    m.mediaTailorTask.setField("tracker",      MediaTailorTracker(m.nr))
     m.mediaTailorTask.setField("streamUrl",    mediaTailorUrl)
-    m.mediaTailorTask.setField("streamType",   "VOD")   ' "VOD" or "LIVE"
-    m.mediaTailorTask.setField("streamFormat", "hls")   ' "hls" or "dash"
+    m.mediaTailorTask.setField("streamType",   "VOD")
+    m.mediaTailorTask.setField("streamFormat", "hls")
     m.mediaTailorTask.control = "RUN"
 end function
 
