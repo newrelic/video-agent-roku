@@ -906,8 +906,10 @@ If you have additional metadata from an `ads_metadata` sidecar response (e.g. ta
 
 ```brightscript
 metadata = {adTrackingUrl: "https://...", availId: "avail-123"}
-nrSetMediaTailorAdMetadata(m.nrTracker, metadata)
+nrSetMediaTailorAdMetadata(m.nrMTTracker, metadata)
 ```
+
+`nrEnableMediaTailorTracking` creates a `MediaTailorTracker` node internally and stores it on the caller scope as `m.nrMTTracker`, so the sidecar-metadata call in the same task can reference it directly.
 
 These attributes are appended to every subsequent `VideoAdAction` event for the duration of the session.
 

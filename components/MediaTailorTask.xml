@@ -15,8 +15,6 @@
         <field id="videoNode"    type="node"/>
         <!-- Required: New Relic Agent node -->
         <field id="nr"           type="node"/>
-        <!-- Required: MediaTailorTracker node (from MediaTailorTracker()) -->
-        <field id="tracker"      type="node"/>
         <!-- Required: MediaTailor session-init or HLS manifest URL -->
         <field id="streamUrl"    type="string" value=""/>
         <!-- Optional: pre-resolved MediaTailor tracking URL -->

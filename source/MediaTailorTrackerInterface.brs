@@ -27,8 +27,6 @@ function nrEnableMediaTailorTracking(nr as Object, adIface as Object) as Void
     adIface.addEventListener(adIface.AdEvent.THIRD_QUARTILE, nrMTEventListener)
     adIface.addEventListener(adIface.AdEvent.COMPLETE,       nrMTEventListener)
     adIface.addEventListener(adIface.AdEvent.POD_END,        nrMTEventListener)
-    adIface.addEventListener(adIface.AdEvent.PAUSE,          nrMTEventListener)
-    adIface.addEventListener(adIface.AdEvent.RESUME,         nrMTEventListener)
     adIface.addEventListener(adIface.AdEvent.ERROR,          nrMTEventListener)
 end function
 
