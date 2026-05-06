@@ -262,7 +262,7 @@ Build a New Relic Agent object. Call this once at app startup.
 | `apikey` | String | Yes | — | Insights API key |
 | `appName` | String | Yes | — | Application name |
 | `appToken` | String | Yes | — | Mobile Application Token |
-| `region` | String | No | `"US"` | API region: `"US"`, `"EU"`, or `"staging"` |
+| `region` | String | No | `"US"` | API region: `"US"`, `"EU"`, `"staging"`, or `"JP"` |
 | `activeLogs` | Boolean | No | `false` | Enable agent debug logging |
 
 ```brightscript

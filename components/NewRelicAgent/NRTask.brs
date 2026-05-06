@@ -154,8 +154,10 @@ function nrMobileCollectorApiUrl() as String
     else if region = "staging"
         'NOTE: set address hosting the test server
         return "https://staging-mobile-collector.newrelic.com/mobile/v3/data"
+    else if(region = "JP" OR region = "jp")
+       urlReq.SetUrl("https://mobile-collector.jp.nr-data.net/mobile/v3/data")
     else
-        return "https://mobile-collector.newrelic.com/mobile/v3/data"
+       return "https://mobile-collector.newrelic.com/mobile/v3/data"
     end if
 end function
 
@@ -165,10 +167,11 @@ function nrData(videoSamples)
     jsonRequestBody = FormatJSON(body)
     urlReq = CreateObject("roUrlTransfer")    
     rport = CreateObject("roMessagePort")
-
-    url = box(nrMobileCollectorApiUrl())
-    urlReq.SetUrl(url)
-
+    if(m.region = "staging")
+        urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v3/data")
+    else 
+        urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v3/data")
+    end if
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
