@@ -41,6 +41,7 @@ The New Relic Roku Agent provides comprehensive video and system analytics for R
 - [Ad Tracking](#ad-tracking)
   - [RAF Usage](#raf-usage)
   - [Google IMA Usage](#google-ima-usage)
+  - [AWS Elemental MediaTailor SSAI](#aws-elemental-mediatailor-ssai)
 - [Bitrate Metrics](#bitrate-metrics)
 - [Data Model](#data-model)
 - [Testing](#testing)
@@ -57,7 +58,8 @@ Copy the following files into your Roku project:
 ```
 source/
     NewRelicAgent.brs
-    IMATrackerInterface.brs          (only if using Google IMA ads)
+    IMATrackerInterface.brs               (only if using Google IMA ads)
+    MediaTailorTrackerInterface.brs       (only if using MediaTailor SSAI)
 components/
     NewRelicAgent/
         NRAgent.brs
@@ -65,8 +67,10 @@ components/
         NRTask.brs
         NRTask.xml
         trackers/
-            IMATracker.brs           (only if using Google IMA ads)
-            IMATracker.xml           (only if using Google IMA ads)
+            IMATracker.brs                (only if using Google IMA ads)
+            IMATracker.xml                (only if using Google IMA ads)
+            MediaTailorTracker.brs        (only if using MediaTailor SSAI)
+            MediaTailorTracker.xml        (only if using MediaTailor SSAI)
 ```
 
 Include the agent interface script in any component XML that needs access to the agent:
@@ -858,6 +862,65 @@ End Function)
 | `nrSendIMAAdMidpoint(tracker, ad)` | Send `AD_QUARTILE` (midpoint) event |
 | `nrSendIMAAdThirdQuartile(tracker, ad)` | Send `AD_QUARTILE` (third) event |
 | `nrSendIMAAdError(tracker, error)` | Send `AD_ERROR` event |
+
+### AWS Elemental MediaTailor SSAI
+
+New Relic provides a tracker component for [AWS Elemental MediaTailor](https://aws.amazon.com/mediatailor/) Server-Side Ad Insertion (SSAI). The tracker integrates with Roku's RAFX_SSAI `awsemt` adapter and records `VideoAdAction` events automatically for every ad lifecycle event in both VOD and LIVE streams (HLS and DASH).
+
+#### Prerequisite: rafxssai.brs
+
+The RAFX_SSAI library (`rafxssai.brs`) is **owned and distributed by Roku**, not by New Relic. You must obtain it from Roku and include it in your channel package:
+
+1. Download `rafxssai.brs` from the [Roku Advertising Framework](https://developer.roku.com/en-gb/docs/developer-program/advertising/roku-advertising-framework.md)
+2. Place it at `pkg:/source/rafxssai.brs` in your project
+
+New Relic does not bundle this file. Because Roku owns and updates it, bundling it would risk version conflicts and certification issues.
+
+#### Additional files required
+
+```
+source/
+    MediaTailorTrackerInterface.brs
+components/
+    NewRelicAgent/trackers/
+        MediaTailorTracker.brs
+        MediaTailorTracker.xml
+```
+
+#### Integration steps
+
+In your existing task where you initialise the RAFX_SSAI adapter, add one line after `adIface.init()`:
+
+```brightscript
+adIface = RAFX_SSAI({name: "awsemt"})
+adIface.init()
+
+nrEnableMediaTailorTracking(m.top.nr, adIface)   ' ← this is all NR needs
+```
+
+That's it. New Relic registers its own listeners on your adapter and handles everything else — metadata extraction, timing, and recording `VideoAdAction` events. Your existing adapter setup and listeners are untouched.
+
+#### Optional: inject sidecar metadata
+
+If you have additional metadata from an `ads_metadata` sidecar response (e.g. targeting parameters, avail ID), inject it before the first ad plays:
+
+```brightscript
+metadata = {adTrackingUrl: "https://...", availId: "avail-123"}
+nrSetMediaTailorAdMetadata(m.nrMTTracker, metadata)
+```
+
+`nrEnableMediaTailorTracking` creates a `MediaTailorTracker` node internally and stores it on the caller scope as `m.nrMTTracker`, so the sidecar-metadata call in the same task can reference it directly.
+
+These attributes are appended to every subsequent `VideoAdAction` event for the duration of the session.
+
+#### MediaTailor Tracker API
+
+| Function | Description |
+|----------|-------------|
+| `nrEnableMediaTailorTracking(nr, adIface)` | Register NR listeners on your RAFX_SSAI adapter — one call, no forwarding needed |
+| `nrSetMediaTailorAdMetadata(tracker, metadata)` | Inject sidecar key/value metadata before ads play |
+
+---
 
 ## Bitrate Metrics
 
