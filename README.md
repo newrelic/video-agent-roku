@@ -889,16 +889,42 @@ components/
 
 #### Integration steps
 
-In your existing task where you initialise the RAFX_SSAI adapter, add one line after `adIface.init()`:
+MediaTailor integration takes three small pieces of plumbing — one in your scene, two in your task.
+
+**1. Create the tracker in the scene thread** and hand it to your task via a node field. The tracker MUST be created on the render thread — RAFX dispatches ad-event listeners via `callFunctionInGlobalNamespace`, which cannot reach a tracker stashed on the task's local `m`.
+
+```brightscript
+' In your scene (render thread)
+m.myTask = createObject("roSGNode", "MyTask")
+m.myTask.setField("tracker", MediaTailorTracker(m.nr))
+m.myTask.control = "RUN"
+```
+
+Expose a matching `tracker` field on your task's `.xml`:
+
+```xml
+<field id="tracker" type="node"/>
+```
+
+**2. Enable tracking after `adIface.init()`** in your task:
 
 ```brightscript
 adIface = RAFX_SSAI({name: "awsemt"})
 adIface.init()
 
-nrEnableMediaTailorTracking(m.top.nr, adIface)   ' ← this is all NR needs
+nrEnableMediaTailorTracking(m.top.nr, adIface)
 ```
 
-That's it. New Relic registers its own listeners on your adapter and handles everything else — metadata extraction, timing, and recording `VideoAdAction` events. Your existing adapter setup and listeners are untouched.
+`nrEnableMediaTailorTracking` picks up the tracker you set on `m.top.tracker` and registers its own listeners on every ad lifecycle event. Your existing adapter setup and listeners are untouched.
+
+**3. Observe `position` on the Video node** in your task's event loop:
+
+```brightscript
+m.top.videoNode.observeField("state",    port)
+m.top.videoNode.observeField("position", port)
+```
+
+RAFX's `onMessage(POSITION)` is what drives ad-break resolution. Without this observe, `PodStart` / `Impression` / `Complete` never fire.
 
 #### Optional: inject sidecar metadata
 
@@ -909,7 +935,7 @@ metadata = {adTrackingUrl: "https://...", availId: "avail-123"}
 nrSetMediaTailorAdMetadata(m.nrMTTracker, metadata)
 ```
 
-`nrEnableMediaTailorTracking` creates a `MediaTailorTracker` node internally and stores it on the caller scope as `m.nrMTTracker`, so the sidecar-metadata call in the same task can reference it directly.
+After `nrEnableMediaTailorTracking`, the tracker is also accessible in the task scope as `m.nrMTTracker` (mirrored from `m.top.tracker`), so the sidecar call in the same task can reference it directly.
 
 These attributes are appended to every subsequent `VideoAdAction` event for the duration of the session.
 
