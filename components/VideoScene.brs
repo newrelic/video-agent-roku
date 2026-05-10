@@ -242,18 +242,19 @@ function setupMediaTailorVideo() as Void
 
     '----------------------------------------------------------------
     ' MediaTailor session-init URL  ← REPLACE with your real URL
-    ' VOD HLS: /v1/session/<hash>/<config>/hls
+    ' VOD HLS: /v1/session/<hash>/<config>/hls  or  /v1/master/<hash>/<config>
     '----------------------------------------------------------------
     mediaTailorUrl = "https://<account-id>.mediatailor.<region>.amazonaws.com/v1/session/<hash>/<config>/hls"
 
     '----------------------------------------------------------------
     ' Launch the background task that owns the SSAI adapter lifecycle.
-    ' The task internally calls nrEnableMediaTailorTracking(nr, adIface),
-    ' which creates and registers the MediaTailorTracker node.
+    ' Tracker is created HERE (scene thread) and passed in as a node
+    ' field — RAFX's listener dispatch can't reach a task-local tracker.
     '----------------------------------------------------------------
     m.mediaTailorTask = createObject("roSGNode", "MediaTailorTask")
     m.mediaTailorTask.setField("videoNode",    m.video)
     m.mediaTailorTask.setField("nr",           m.nr)
+    m.mediaTailorTask.setField("tracker",      MediaTailorTracker(m.nr))
     m.mediaTailorTask.setField("streamUrl",    mediaTailorUrl)
     m.mediaTailorTask.setField("streamType",   "VOD")
     m.mediaTailorTask.setField("streamFormat", "hls")

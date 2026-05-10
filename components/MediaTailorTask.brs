@@ -10,18 +10,13 @@
 '     nrTrackRAF can record VideoAdAction events in New Relic
 '
 ' Required node fields (set before control = "RUN"):
-'   videoNode  – the Video SceneGraph node that will play the stream
-'   nr         – the New Relic Agent node (from NewRelic())
-'   streamUrl  – MediaTailor session-init URL (POST target)
-'                  VOD HLS: /v1/session/<hash>/<config>/hls
-'                Both the session-init POST body carries
-'                {"adSignaling":{"enabled":true}} so MediaTailor emits
-'                the HLS DATERANGE / DASH EventStream markers that the
-'                rafxssai awsemt adapter needs.
+'   videoNode    – the Video SceneGraph node that will play the stream
+'   nr           – the New Relic Agent node (from NewRelic())
+'   tracker      – a MediaTailorTracker node created in the scene thread
+'   streamUrl    – MediaTailor session-init URL (VOD HLS POST target)
 '
 ' Optional node fields:
-'   adsParams  – roAssociativeArray of ad-targeting key/value pairs
-'   streamType – "VOD" (default). LIVE is reserved for future use.
+'   streamType   – "VOD" (default). LIVE is reserved for future use.
 '   streamFormat – "hls" (default).
 '
 ' Copyright 2024 New Relic Inc. All Rights Reserved.
@@ -86,28 +81,10 @@ function mediaTailorTaskMain() as Void
     if streamType = "VOD"
         nrMTTaskLog("requesting stream via RAFX_SSAI awsemt")
 
-        ' adSignaling.enabled is required for MediaTailor to emit the
-        ' HLS DATERANGE / DASH EventStream markers that rafxssai parses.
-        ' Without it, ads stitch into the stream but no ad events fire.
-        '
-        ' BrightScript associative arrays are case-INSENSITIVE by default,
-        ' and formatjson lowercases keys. MediaTailor's API is case-sensitive
-        ' and expects "adSignaling" (camelCase). Use setModeCaseSensitive()
-        ' so the key casing survives JSON serialisation.
-        sessionBody = {}
-        sessionBody.setModeCaseSensitive()
-        adSignalingObj = {}
-        adSignalingObj.setModeCaseSensitive()
-        adSignalingObj.enabled = true
-        sessionBody["adSignaling"] = adSignalingObj
-        if type(m.top.adsParams) = "roAssociativeArray" and m.top.adsParams.Count() > 0
-            sessionBody["adsParams"] = m.top.adsParams
-        end if
-
         streamRequest = {
             type: adIface.StreamType.VOD,
             url:  m.top.streamUrl,
-            body: formatjson(sessionBody)
+            body: "{}"
         }
 
         ' requestStream returns {} on success, {error:...} on failure
@@ -159,6 +136,7 @@ function mediaTailorTaskMain() as Void
     m.top.videoNode.content = vidContent
     m.top.videoNode.visible = true
     m.top.videoNode.observeField("state", port)
+    m.top.videoNode.observeField("position", port)
 
     ' ---------------------------------------------------------------
     ' 5. Enable ads via RAFX_SSAI (must be called BEFORE play so the

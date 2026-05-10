@@ -11,15 +11,21 @@
 
 ' One-call integration for customers who manage their own RAFX_SSAI adapter.
 '
-' Call this once after adIface.init() and NR will register its own listeners
-' on the adapter directly — no manual event forwarding required.
-' The tracker is stored as m.nrMTTracker in the calling task's scope so
-' that the internal listener function can reach it.
+' Call once after adIface.init(). NR registers listeners on the adapter
+' directly — no manual event forwarding needed.
+'
+' The calling task must expose a `tracker` node field populated by the scene
+' thread (MediaTailorTracker() must be created there, not in the task —
+' RAFX's listener dispatch can't reach a task-local tracker).
 '
 ' @param nr      New Relic Agent node (returned by NewRelic()).
 ' @param adIface RAFX_SSAI adapter object (from RAFX_SSAI({name:"awsemt"})).
 function nrEnableMediaTailorTracking(nr as Object, adIface as Object) as Void
-    m.nrMTTracker = MediaTailorTracker(nr)
+    if m.top <> invalid and m.top.tracker <> invalid
+        m.nrMTTracker = m.top.tracker
+    else
+        m.nrMTTracker = MediaTailorTracker(nr)
+    end if
     adIface.addEventListener(adIface.AdEvent.POD_START,      nrMTEventListener)
     adIface.addEventListener(adIface.AdEvent.IMPRESSION,     nrMTEventListener)
     adIface.addEventListener(adIface.AdEvent.FIRST_QUARTILE, nrMTEventListener)

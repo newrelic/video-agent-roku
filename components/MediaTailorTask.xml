@@ -15,12 +15,11 @@
         <field id="videoNode"    type="node"/>
         <!-- Required: New Relic Agent node -->
         <field id="nr"           type="node"/>
+        <!-- Required: MediaTailorTracker node. Must be created in the scene
+             thread so RAFX's listener dispatch can reach it. -->
+        <field id="tracker"      type="node"/>
         <!-- Required: MediaTailor session-init or HLS manifest URL -->
         <field id="streamUrl"    type="string" value=""/>
-        <!-- Optional: pre-resolved MediaTailor tracking URL -->
-        <field id="trackingUrl"  type="string" value=""/>
-        <!-- Optional: ad-targeting params injected into the session POST body -->
-        <field id="adsParams"    type="assocarray"/>
         <!-- Optional: "VOD" (default) or "LIVE" -->
         <field id="streamType"   type="string" value="VOD"/>
         <!-- Optional: "hls" (default) or "dash" -->
