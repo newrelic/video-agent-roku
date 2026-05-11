@@ -26,6 +26,7 @@
         <function name="nrAppStarted"/>
         <function name="nrSendSystemEvent"/>
         <function name="nrSendVideoEvent"/>
+        <function name="nrSendVideoAdEvent"/>
         <function name="nrSendErrorEvent"/>
         <function name="nrSendCustomEvent"/>
         <function name="nrSendHttpRequest"/>
