@@ -395,7 +395,7 @@ function nrSceneLoaded(sceneName as String) as Void
 end function
 
 function nrSendSystemEvent(eventType as String, actionName as String, attr = invalid as Object) as Void
-    ' nrLog("nrSendSystemEvent")
+    nrLog("nrSendSystemEvent")
     ev = nrCreateEvent(eventType, actionName)
     ev = nrAddCustomAttributes(ev)
     if attr <> invalid
@@ -405,11 +405,6 @@ function nrSendSystemEvent(eventType as String, actionName as String, attr = inv
 end function
 
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
-    if attr <> invalid then
-        print "[New Relic] Event: " + actionName + " " + FormatJSON(attr)
-    else
-        print "[New Relic] Event: " + actionName + " "
-    end if
     ev = nrCreateEvent("VideoAction", actionName)
     ev = nrAddVideoAttributes(ev)
     ev = nrAddCustomAttributes(ev)
@@ -767,7 +762,7 @@ function nrSendCountMetric(name as String, value as dynamic, interval as Integer
     end if
     if attr <> invalid then metric["attributes"] = attr
 
-    ' nrLog(["RECORD NEW COUNT METRIC = ", metric])
+    nrLog(["RECORD NEW COUNT METRIC = ", metric])
 
     m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
 end function
@@ -999,7 +994,7 @@ function nrApplyObfuscationToEvent(event as Object) as Void
 end function
 
 function nrRecordEvent(event as Object) as Void
-    ' nrLog(["RECORD NEW EVENT = ", event])
+    nrLog(["RECORD NEW EVENT = ", event])
     nrApplyObfuscationToEvent(event)
     m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
 end function
@@ -2285,7 +2280,7 @@ end function
 function nrAddSample(sample as Object, buffer as Object, i as Integer, k as Integer) as Integer
     if i < k
         buffer.Push(sample)
-        ' nrLog(["RESERVOIR BUFFER SIZE AFTER PUSH = ", buffer.Count()])
+        nrLog(["RESERVOIR BUFFER SIZE AFTER PUSH = ", buffer.Count()])
     else
         j = Rnd(i) - 1
         if j < k
