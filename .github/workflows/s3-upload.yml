@@ -1,0 +1,122 @@
+name: Build and Publish to S3
+
+on:
+  workflow_dispatch:  # Manual trigger
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+jobs:
+  # Build the New Relic Agent zip file
+  build:
+    # Only run if manually triggered OR if PR was merged (not just closed)
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify required files exist
+        run: |
+          echo "Checking for required files..."
+
+          if [ ! -d "components/NewRelicAgent" ]; then
+            echo "Error: components/NewRelicAgent directory not found"
+            exit 1
+          fi
+
+          if [ ! -f "source/NewRelicAgent.brs" ]; then
+            echo "Error: source/NewRelicAgent.brs file not found"
+            exit 1
+          fi
+
+          echo "✓ All required files found"
+
+          # List files to be included
+          echo ""
+          echo "Files to be included in zip:"
+          find components/NewRelicAgent -type f
+          echo "source/NewRelicAgent.brs"
+
+      - name: Create output directory
+        run: mkdir -p out
+
+      - name: Build New Relic Agent zip
+        run: |
+          echo "Creating NewRelicAgent.zip..."
+
+          # Create the zip file with maximum compression
+          zip -9 -r out/NewRelicAgent.zip \
+            components/NewRelicAgent \
+            source/NewRelicAgent.brs
+
+          echo "✓ Zip file created"
+
+      - name: Validate zip file
+        run: |
+          echo "Validating zip file..."
+
+          if [ ! -f out/NewRelicAgent.zip ]; then
+            echo "Error: out/NewRelicAgent.zip was not created"
+            exit 1
+          fi
+
+          # Display file info
+          echo ""
+          echo "Zip file information:"
+          ls -lh out/NewRelicAgent.zip
+
+          # Display contents
+          echo ""
+          echo "Zip file contents:"
+          unzip -l out/NewRelicAgent.zip
+
+          # Check file size
+          FILE_SIZE=$(stat -f%z out/NewRelicAgent.zip 2>/dev/null || stat -c%s out/NewRelicAgent.zip)
+          if [ "$FILE_SIZE" -lt 1000 ]; then
+            echo "Warning: Zip file seems too small ($FILE_SIZE bytes)"
+            exit 1
+          fi
+
+          echo ""
+          echo "✓ Zip file validation passed"
+
+      - name: Upload artifact for publishing
+        uses: actions/upload-artifact@v4
+        with:
+          name: newrelic-agent
+          path: out/NewRelicAgent.zip
+          retention-days: 1
+
+  # Upload to S3 directly
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: newrelic-agent
+          path: out
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Upload to S3
+        run: |
+          echo "Uploading NewRelicAgent.zip to S3..."
+
+          # Upload to S3
+          aws s3 cp out/NewRelicAgent.zip \
+            s3://${{ secrets.S3_BUCKET_NAME }}/media-streaming/roku/NewRelicAgent.zip \
+            --content-type application/zip
+
+          echo "✓ Upload complete!"
+          echo "S3 Location: s3://${{ secrets.S3_BUCKET_NAME }}/media-streaming/roku/NewRelicAgent.zip"
