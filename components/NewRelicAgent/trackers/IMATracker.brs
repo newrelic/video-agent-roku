@@ -23,7 +23,7 @@ end sub
 '=========================='
 
 function nrSendIMAAdBreakStart(adBreakInfo as Object) as Void
-    m.top.nr.callFunc("nrSendVideoEvent", "AD_BREAK_START", nrIMAAttributes(adBreakInfo, invalid))
+    m.top.nr.callFunc("nrSendVideoAdEvent", "AD_BREAK_START", nrIMAAttributes(adBreakInfo, invalid))
     m.adState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
 end function
 
@@ -32,17 +32,17 @@ function nrSendIMAAdBreakEnd(adBreakInfo as Object) as Void
     timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.adState.timeSinceAdBreakBegin
     m.top.nr.callFunc("nrAddToTotalAdPlaytime", timeSinceAdBreakBegin)
     attr.AddReplace("timeSinceAdBreakBegin", timeSinceAdBreakBegin)
-    m.top.nr.callFunc("nrSendVideoEvent", "AD_BREAK_END", attr)
+    m.top.nr.callFunc("nrSendVideoAdEvent", "AD_BREAK_END", attr)
 end function
 
 function nrSendIMAAdStart(ad as Object) as Void
     m.adState.numberOfAds = m.adState.numberOfAds + 1
-    m.top.nr.callFunc("nrSendVideoEvent", "AD_START", nrIMAAttributes(ad.adBreakInfo, ad))
+    m.top.nr.callFunc("nrSendVideoAdEvent", "AD_START", nrIMAAttributes(ad.adBreakInfo, ad))
     m.adState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
 end function
 
 function nrSendIMAAdEnd(ad as Object) as Void
-    m.top.nr.callFunc("nrSendVideoEvent", "AD_END", nrIMAAttributes(ad.adBreakInfo, ad))
+    m.top.nr.callFunc("nrSendVideoAdEvent", "AD_END", nrIMAAttributes(ad.adBreakInfo, ad))
     m.adState.timeSinceAdStarted = 0
 end function
 
@@ -63,7 +63,7 @@ function nrSendIMAAdError(error as Object) as Void
     if error.id <> invalid then attr.AddReplace("adErrorCode", error.id)
     if error.info <> invalid then attr.AddReplace("adErrorMsg", error.info)
     if error.type <> invalid then attr.AddReplace("adErrorType", error.type)
-    m.top.nr.callFunc("nrSendVideoEvent", "AD_ERROR", attr)
+    m.top.nr.callFunc("nrSendVideoAdEvent", "AD_ERROR", attr)
 end function
 
 '==================='
@@ -73,7 +73,7 @@ end function
 function nrSendIMAAdQuartile(ad as Object, quartile as Integer) as Void
     attr = nrIMAAttributes(ad.adBreakInfo, ad)
     attr.AddReplace("adQuartile", quartile)
-    m.top.nr.callFunc("nrSendVideoEvent", "AD_QUARTILE", attr)
+    m.top.nr.callFunc("nrSendVideoAdEvent", "AD_QUARTILE", attr)
 end function
 
 'TODO: totalAdPlaytime

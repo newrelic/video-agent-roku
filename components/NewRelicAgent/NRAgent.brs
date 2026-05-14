@@ -405,7 +405,6 @@ function nrSendSystemEvent(eventType as String, actionName as String, attr = inv
 end function
 
 function nrSendVideoEvent(actionName as String, attr = invalid) as Void
-    print "[New Relic] VideoAction: " + actionName
     ev = nrCreateEvent("VideoAction", actionName)
     ev = nrAddVideoAttributes(ev)
     ev = nrAddCustomAttributes(ev)
@@ -431,6 +430,24 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
         m.nrBackupAttributes.Append(ev)
     end if
 
+end function
+
+' Send an ad event, type VideoAdAction. Mirrors nrSendVideoEvent but routes
+' AD_* actions to the VideoAdAction data model. No QoE bookkeeping —
+' ad-scoped events must not be folded into content-scoped QoE windows.
+function nrSendVideoAdEvent(actionName as String, attr = invalid) as Void
+    if attr <> invalid then
+        print "[New Relic] Ad Event: " + actionName + " " + FormatJSON(attr)
+    else
+        print "[New Relic] Ad Event: " + actionName + " "
+    end if
+    ev = nrCreateEvent("VideoAdAction", actionName)
+    ev = nrAddVideoAttributes(ev)
+    ev = nrAddCustomAttributes(ev)
+    if type(attr) = "roAssociativeArray"
+       ev.Append(attr)
+    end if
+    nrRecordEvent(ev)
 end function
 
 function nrSendErrorEvent(actionName as String, attr as Dynamic) as Void
@@ -671,6 +688,12 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
 
             'Reset timer to indicate ad break is complete
             m.rafState.timeSinceAdBreakBegin = 0
+        else if evtType = "FirstQuartile"
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 1})
+        else if evtType = "Midpoint"
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 2})
+        else if evtType = "ThirdQuartile"
+            nrSendRAFEvent("AD_QUARTILE", ctx, {"adQuartile": 3})
         else if evtType = "Error"
             ' Set timestamp for last ad error
             m.nrTimeSinceLastAdError = m.nrTimer.TotalMilliseconds()

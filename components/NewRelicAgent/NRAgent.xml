@@ -13,7 +13,7 @@
 
 	<interface>
 		<!-- Properties -->
-        <field id="version" type="string" value="4.1.2"/>
+        <field id="version" type="string" value="4.2.0"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
         <function name="NewRelicVideoStart"/>
@@ -26,6 +26,7 @@
         <function name="nrAppStarted"/>
         <function name="nrSendSystemEvent"/>
         <function name="nrSendVideoEvent"/>
+        <function name="nrSendVideoAdEvent"/>
         <function name="nrSendErrorEvent"/>
         <function name="nrSendCustomEvent"/>
         <function name="nrSendHttpRequest"/>
