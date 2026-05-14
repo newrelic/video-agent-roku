@@ -433,6 +433,24 @@ function nrSendVideoEvent(actionName as String, attr = invalid) as Void
 
 end function
 
+' Send an ad event, type VideoAdAction. Mirrors nrSendVideoEvent but routes
+' AD_* actions to the VideoAdAction data model. No QoE bookkeeping —
+' ad-scoped events must not be folded into content-scoped QoE windows.
+function nrSendVideoAdEvent(actionName as String, attr = invalid) as Void
+    if attr <> invalid then
+        print "[New Relic] Ad Event: " + actionName + " " + FormatJSON(attr)
+    else
+        print "[New Relic] Ad Event: " + actionName + " "
+    end if
+    ev = nrCreateEvent("VideoAdAction", actionName)
+    ev = nrAddVideoAttributes(ev)
+    ev = nrAddCustomAttributes(ev)
+    if type(attr) = "roAssociativeArray"
+       ev.Append(attr)
+    end if
+    nrRecordEvent(ev)
+end function
+
 function nrSendErrorEvent(actionName as String, attr as Dynamic) as Void
     ev = nrCreateEvent("VideoErrorAction", actionName)
     ev = nrAddVideoAttributes(ev)

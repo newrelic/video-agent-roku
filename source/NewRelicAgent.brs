@@ -161,6 +161,16 @@ function nrSendVideoEvent(nr as Object, actionName as String, attr = invalid) as
     nr.callFunc("nrSendVideoEvent", actionName, attr)
 end function
 
+' Send an ad event, type VideoAdAction.
+'
+' @param nr New Relic Agent object.
+' @param actionName Action name (typically AD_BREAK_START / AD_START /
+'                   AD_QUARTILE / AD_END / AD_BREAK_END / AD_ERROR).
+' @param attr (optional) Attributes associative array.
+function nrSendVideoAdEvent(nr as Object, actionName as String, attr = invalid) as Void
+    nr.callFunc("nrSendVideoAdEvent", actionName, attr)
+end function
+
 ' Send an HTTP_REQUEST event of type ConnectedDeviceSystem.
 '
 ' @param nr New Relic Agent object.
