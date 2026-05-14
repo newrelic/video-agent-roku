@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.0] - 2026/05/14
+
+### Added
+
+- AWS Elemental MediaTailor SSAI integration via Roku's RAFX_SSAI `awsemt` adapter. Each ad lifecycle event is recorded as a `VideoAdAction` (`AD_BREAK_START` / `AD_REQUEST` / `AD_START` / `AD_QUARTILE` / `AD_END` / `AD_BREAK_END` / `AD_ERROR`).
+- New public API `nrEnableMediaTailorTracking(nr, adIface)` to register New Relic listeners on a RAFX_SSAI adapter in one call, with no manual event forwarding required.
+- New public API `nrSetMediaTailorAdMetadata(tracker, metadata)` to inject sidecar key/value metadata that is appended to every subsequent `VideoAdAction`.
+- New public API `nrSendVideoAdEvent(nr, actionName, attr)` to record a `VideoAdAction` event directly. Companion to `nrSendVideoEvent` for ad-scoped events.
+- Sample MediaTailor integration (`components/MediaTailorTask.brs`, `components/VideoScene.brs`) demonstrating the recommended pattern: tracker created in the scene thread, session POST via `RAFX_SSAI.requestStream()`, and `position` field observe for ad-break resolution.
+
+### Fixed
+
+- Google IMA ad events (`AD_BREAK_START` / `AD_BREAK_END` / `AD_START` / `AD_END` / `AD_QUARTILE` / `AD_ERROR`) are now recorded as `VideoAdAction` instead of `VideoAction`. Previously, `IMATracker` routed all ad events through `nrSendVideoEvent`, hard-coding them to the content-video event type and making them invisible to NRQL queries on the ad data model.
+
 ## [4.1.2] - 2026/04/22
 
 ### Added
