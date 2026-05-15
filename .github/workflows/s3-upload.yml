@@ -114,8 +114,8 @@ jobs:
 
           # Upload to S3
           aws s3 cp out/NewRelicAgent.zip \
-            s3://${{ secrets.S3_BUCKET_NAME }}/media-streaming/roku/NewRelicAgent.zip \
+            s3://${{ secrets.S3_BUCKET_NAME }}/media-agents/roku/NewRelicAgent.zip \
             --content-type application/zip
 
           echo "✓ Upload complete!"
-          echo "S3 Location: s3://${{ secrets.S3_BUCKET_NAME }}/media-streaming/roku/NewRelicAgent.zip"
+          echo "S3 Location: s3://${{ secrets.S3_BUCKET_NAME }}/media-agents/roku/NewRelicAgent.zip"
