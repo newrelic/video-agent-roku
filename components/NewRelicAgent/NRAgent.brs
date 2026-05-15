@@ -1349,9 +1349,9 @@ end function
 '       We could even pass an object containing different endpoints for events, metrics and logs.
 
 function nrEventApiUrl() as String
-    if m.nrRegion = "US"
+    if m.nrRegion = "US" OR m.nrRegion = "us"
         return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
-    else if m.nrRegion = "EU"
+    else if m.nrRegion = "EU" OR m.nrRegion = "eu"
         return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
@@ -1360,9 +1360,9 @@ function nrEventApiUrl() as String
 end function
 
 function nrLogApiUrl() as String
-    if m.nrRegion = "US"
+    if m.nrRegion = "US" OR m.nrRegion = "us"
         return "https://log-api.newrelic.com/log/v1"
-    else if m.nrRegion = "EU"
+    else if m.nrRegion = "EU" OR m.nrRegion = "eu"
         return "https://log-api.eu.newrelic.com/log/v1"
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
@@ -1371,9 +1371,9 @@ function nrLogApiUrl() as String
 end function
 
 function nrMetricApiUrl() as String
-    if m.nrRegion = "US"
+    if m.nrRegion = "US" OR m.nrRegion = "us"
         return "https://metric-api.newrelic.com/metric/v1"
-    else if m.nrRegion = "EU"
+    else if m.nrRegion = "EU" OR m.nrRegion = "eu"
         return "https://metric-api.eu.newrelic.com/metric/v1"
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
