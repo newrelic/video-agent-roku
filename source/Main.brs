@@ -75,7 +75,11 @@ sub Main(aa as Object)
             if type(msg) = "roSGNodeEvent"
                 if msg.getField() = "moteButton"
                     print "moteButton, data = ", msg.getData()
-                    if msg.getData() = "back" 
+                    if msg.getData() = "back"
+                        'Force the view-end QoE flush before exit so the final
+                        'QOE_AGGREGATE is emitted (otherwise Back skips state="finished"
+                        'and nrSendEnd never fires).
+                        m.nr.callFunc("nrSendEnd")
                         exit while
                     end if
                     if msg.getData() = "OK"
