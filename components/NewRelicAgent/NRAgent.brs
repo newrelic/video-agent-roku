@@ -181,6 +181,18 @@ function NewRelicInit(account as String, apikey as String,appName as String, reg
     nrLog(["NewRelicInit complete. appName=", m.appName, ", region=", m.nrRegion, ", logging=", m.nrLogsState])
 end function
 
+function nrMobileCollectorApiUrl() as String
+    if m.nrRegion = "US" OR m.nrRegion = "us"
+        return "https://mobile-collector.newrelic.com/mobile/v4/connect"
+    else if m.nrRegion = "EU" OR m.nrRegion = "eu"
+        return "https://mobile-collector.eu01.nr-data.net/mobile/v4/connect"
+    else if(m.nrRegion = "JP" OR m.nrRegion = "jp")
+         return  "https://mobile-collector.jp.nr-data.net/mobile/v4/connect"
+    else if m.nrRegion = "staging"
+     'NOTE: set address hosting the test server
+     return "https://staging-mobile-collector.newrelic.com/mobile/v4/connect"
+     end if
+end function
 
 function nrConnect(appToken as string, body as object)
     jsonRequestBody = FormatJSON(body)
@@ -1349,35 +1361,41 @@ end function
 '       We could even pass an object containing different endpoints for events, metrics and logs.
 
 function nrEventApiUrl() as String
-    if m.nrRegion = "US"
+    if m.nrRegion = "US" OR m.nrRegion = "us"
         return "https://insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
-    else if m.nrRegion = "EU"
+    else if m.nrRegion = "EU" OR m.nrRegion = "eu"
         return "https://insights-collector.eu01.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
         return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
+    else if m.nrRegion = "JP"
+        return "https://insights-collector.jp.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
     end if
 end function
 
 function nrLogApiUrl() as String
-    if m.nrRegion = "US"
+    if m.nrRegion = "US" OR m.nrRegion = "us"
         return "https://log-api.newrelic.com/log/v1"
-    else if m.nrRegion = "EU"
+    else if m.nrRegion = "EU" OR m.nrRegion = "eu"
         return "https://log-api.eu.newrelic.com/log/v1"
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
-        return "https://staging-log-api.newrelic.com/log/v1" 
+        return "https://staging-log-api.newrelic.com/log/v1"
+    else if m.nrRegion = "JP"
+        return "https://log-api.jp.newrelic.com/log/v1"
     end if
 end function
 
 function nrMetricApiUrl() as String
-    if m.nrRegion = "US"
+    if m.nrRegion = "US" OR m.nrRegion = "us"
         return "https://metric-api.newrelic.com/metric/v1"
-    else if m.nrRegion = "EU"
+    else if m.nrRegion = "EU" OR m.nrRegion = "eu"
         return "https://metric-api.eu.newrelic.com/metric/v1"
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
         return "https://staging-metric-api.newrelic.com/metric/v1"
+    else if m.nrRegion = "JP"
+        return "https://metric-api.jp.newrelic.com/metric/v1"
     end if
 end function
 

@@ -145,6 +145,22 @@ function getV3ReqBody(dataToken,videoSamples,appInfo)
 return [dataToken,appInfo,0,[],[],[],[],[],{},videoSamples]
 end function
 
+function nrMobileCollectorApiUrl() as String
+    region = m.region
+    if region = invalid then region = m.top.region
+    if region = invalid then region = "US"
+    if region = "EU" OR region = "eu"
+        return "https://mobile-collector.eu01.nr-data.net/mobile/v3/data"
+    else if region = "staging"
+        'NOTE: set address hosting the test server
+        return "https://staging-mobile-collector.newrelic.com/mobile/v3/data"
+    else if(region = "JP" OR region = "jp")
+       return "https://mobile-collector.jp.nr-data.net/mobile/v3/data"
+    else
+       return "https://mobile-collector.newrelic.com/mobile/v3/data"
+    end if
+end function
+
 function nrData(videoSamples)
     
     body = getV3ReqBody(m.top.dataToken,videoSamples, m.top.appInfo)
