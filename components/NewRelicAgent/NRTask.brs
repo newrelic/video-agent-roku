@@ -146,14 +146,17 @@ return [dataToken,appInfo,0,[],[],[],[],[],{},videoSamples]
 end function
 
 function nrMobileCollectorApiUrl() as String
-    if m.nrRegion = "US" OR m.nrRegion = "us"
+    region = m.region
+    if region = invalid then region = m.top.region
+    if region = invalid then region = "US"
+    if region = "EU" OR region = "eu"
+        return "https://mobile-collector.eu01.nr-data.net/mobile/v3/data"
+    else if region = "staging"
+        'NOTE: set address hosting the test server
+        return "https://staging-mobile-collector.newrelic.com/mobile/v3/data"
+    else
         return "https://mobile-collector.newrelic.com/mobile/v3/data"
-    else if m.nrRegion = "EU" OR m.nrRegion = "eu"
-        return "https://mobile-collector.eu.newrelic.com/mobile/v3/data"
-    else if m.nrRegion = "staging"
-            'NOTE: set address hosting the test server
-            return "https://staging-mobile-collector.newrelic.com/mobile/v3/data"
-        end if
+    end if
 end function
 
 function nrData(videoSamples)
