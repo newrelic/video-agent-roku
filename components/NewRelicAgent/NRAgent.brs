@@ -183,12 +183,12 @@ end function
 
 function nrMobileCollectorApiUrl() as String
     if m.nrRegion = "US" OR m.nrRegion = "us"
-        return "https://mobile-collector.newrelic.com/mobile/v3/data"
+        return "https://mobile-collector.newrelic.com/mobile/v4/connect"
     else if m.nrRegion = "EU" OR m.nrRegion = "eu"
-        return "https://mobile-collector.eu.newrelic.com/mobile/v3/data"
+        return "https://mobile-collector.eu01.nr-data.net/mobile/v4/connect"
     else if m.nrRegion = "staging"
             'NOTE: set address hosting the test server
-            return "https://staging-mobile-collector.newrelic.com/mobile/v3/data"
+            return "https://staging-mobile-collector.newrelic.com/mobile/v4/connect"
         end if
 end function
 
@@ -1394,7 +1394,7 @@ function nrLogApiUrl() as String
         return "https://log-api.eu.newrelic.com/log/v1"
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
-        return "https://staging-log-api.newrelic.com/log/v1" 
+        return "https://staging-log-api.newrelic.com/log/v1"
     end if
 end function
 
