@@ -186,7 +186,7 @@ function nrMobileCollectorApiUrl() as String
         return "https://mobile-collector.newrelic.com/mobile/v3/data"
     else if m.nrRegion = "EU" OR m.nrRegion = "eu"
         return "https://mobile-collector.eu.newrelic.com/mobile/v3/data"
-    else if(m.nrRegion = "JP")
+    else if(m.nrRegion = "JP" OR m.nrRegion = "jp")
             urlReq.SetUrl("https://mobile-collector.jp.nr-data.net/mobile/v4/connect")
     else if m.nrRegion = "staging"
      'NOTE: set address hosting the test server
