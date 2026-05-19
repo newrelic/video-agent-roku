@@ -185,7 +185,7 @@ function nrMobileCollectorApiUrl() as String
     if m.nrRegion = "US" OR m.nrRegion = "us"
         return "https://mobile-collector.newrelic.com/mobile/v4/connect"
     else if m.nrRegion = "EU" OR m.nrRegion = "eu"
-        return "https://mobile-collector.eu.newrelic.com/mobile/v4/connect"
+        return "https://mobile-collector.eu01.nr-data.net/mobile/v4/connect"
     else if(m.nrRegion = "JP" OR m.nrRegion = "jp")
          return  "https://mobile-collector.jp.nr-data.net/mobile/v4/connect"
     else if m.nrRegion = "staging"
