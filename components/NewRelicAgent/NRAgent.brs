@@ -181,16 +181,23 @@ function NewRelicInit(account as String, apikey as String,appName as String, reg
     nrLog(["NewRelicInit complete. appName=", m.appName, ", region=", m.nrRegion, ", logging=", m.nrLogsState])
 end function
 
+function nrMobileCollectorApiUrl() as String
+    if m.nrRegion = "US" OR m.nrRegion = "us"
+        return "https://mobile-collector.newrelic.com/mobile/v3/data"
+    else if m.nrRegion = "EU" OR m.nrRegion = "eu"
+        return "https://mobile-collector.eu.newrelic.com/mobile/v3/data"
+    else if m.nrRegion = "staging"
+            'NOTE: set address hosting the test server
+            return "https://staging-mobile-collector.newrelic.com/mobile/v3/data"
+        end if
+end function
 
 function nrConnect(appToken as string, body as object)
     jsonRequestBody = FormatJSON(body)
     urlReq = CreateObject("roUrlTransfer")    
     rport = CreateObject("roMessagePort")
-    if(m.nrRegion = "staging")
-        urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
-    else
-        urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v4/connect")
-    end if
+    url = box(nrMobileCollectorApiUrl())
+    urlReq.SetUrl(url)
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
