@@ -3062,7 +3062,7 @@ function nrCalculateQOEKpiAttributes() as Object
     'Group F — distinct variants
     kpiAttributes["totalRenditions"] = m.qoePlayedRenditions.Count()
 
-    kpiAttributes["qoeAggregateVersion"] = "1.0.0"
+    kpiAttributes["qoeAggregateVersion"] = "1.1.0"
 
     return kpiAttributes
 end function
