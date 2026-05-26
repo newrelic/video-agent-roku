@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.1] - 2026/05/26
+
+### Added
+
+- Eight new KPIs on the `QOE_AGGREGATE` event: `avgDownloadRate`, `minDownloadRate`, `maxDownloadRate` (network download bitrate stats in bps; omitted when no sample was observed), `totalSwitchUps`, `totalSwitchDowns` (rendition switch counts), `totalTimeSwitchedDown` (ms spent below the session's peak rendition), `totalPauseTime` (ms in user-initiated pause), and `totalRenditions` (count of distinct rendition bitrates selected).
+
+### Changed
+
+- Bumped `qoeAggregateVersion` from `1.0.0` to `1.1.0` to reflect the expanded KPI set.
+
 ## [4.2.0] - 2026/05/14
 
 ### Added
