@@ -538,6 +538,7 @@ nrSetQoeAggregateIntervalMultiplier(m.nr, 2)
 **QoE behavior notes:**
 - QoE events use dirty checking — repeated events are suppressed when KPI values haven't changed
 - Ad breaks are automatically excluded from QoE calculations
+- KPI availability and accuracy depend on the underlying Roku Video node and the stream itself. Some attributes (e.g. `avgDownloadRate` / `minDownloadRate` / `maxDownloadRate`, rendition-switch counts, bitrate-derived metrics) are sourced from `streamingSegment`, `downloadedSegment`, and bitrate fields the player exposes — if the player does not surface them for a given stream (DRM-protected content, certain SSAI inserts, non-segmented streams, older Roku firmware), those KPIs may be omitted from the event or report values that diverge from the actual playback. Treat QoE values as best-effort signals rather than exact measurements.
 
 ---
 

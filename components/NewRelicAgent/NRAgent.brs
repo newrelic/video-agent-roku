@@ -279,6 +279,25 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.qoeTotalActiveTime = 0
     m.qoePlaybackActive = false
 
+    'QOE_AGGREGATE extension state
+    m.qoeDownloadRateSum = 0&
+    m.qoeDownloadRateCount = 0
+    m.qoeDownloadRateMin = invalid
+    m.qoeDownloadRateMax = 0&
+    'switch counters
+    m.qoeSwitchUps = 0
+    m.qoeSwitchDowns = 0
+    'Internal — anchors "switched-down"; not emitted
+    m.qoeMaxRendition = 0&
+    'time-weighted rendition state (ms timestamps)
+    m.qoeTimeSwitchedDown = 0&
+    m.qoeSwitchedDownSinceMs = invalid
+    'pause accumulator (ms timestamps)
+    m.qoeTotalPauseTime = 0&
+    m.qoePauseStartMs = invalid
+    'distinct rendition variants
+    m.qoePlayedRenditions = {}
+
     'QOE: Harvest multiplier support
     m.qoeHarvestCycleCounter = 0  'Counter to track harvest cycles for multiplier logic
 
@@ -290,6 +309,7 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
     m.nrvideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
+    m.nrVideoObject.observeFieldScoped("downloadedSegment", "nrDownloadedSegmentObserver")
 
     'Init heartbeat timer
     m.hbTimer = m.top.findNode("nrHeartbeatTimer")
@@ -306,6 +326,7 @@ function NewRelicVideoStop() as Void
         m.nrVideoObject.unobserveFieldScoped("state")
         m.nrVideoObject.unobserveFieldScoped("contentIndex")
         m.nrVideoObject.unobserveFieldScoped("licenseStatus")
+        m.nrVideoObject.unobserveFieldScoped("downloadedSegment")
         'Reset content network bitrate tracker before invalidating video object
         nrResetContentBitrateTracker()
         m.nrVideoObject = Invalid
@@ -1428,11 +1449,27 @@ function nrSendStart() as Void
     nrResetContentBitrateTracker()
 
     nrSendVideoEvent("CONTENT_START")
+
+    if m.qoeTrackingEnabled = true
+        initialBitrate = invalid
+        if m.nrVideoObject <> invalid
+            if m.nrVideoObject.streamingSegment <> invalid and m.nrVideoObject.streamingSegment["segBitrateBps"] <> invalid
+                initialBitrate = m.nrVideoObject.streamingSegment["segBitrateBps"]
+            else if m.nrVideoObject.streamInfo <> invalid and m.nrVideoObject.streamInfo["streamBitrate"] <> invalid
+                initialBitrate = m.nrVideoObject.streamInfo["streamBitrate"]
+            end if
+        end if
+        nrQoeOnContentStart(initialBitrate)
+    end if
+
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
 
 function nrSendEnd() as Void
+    'Flush running QOE intervals before emit.
+    nrQoeOnViewEnd()
+
     'Generate final QOE before CONTENT_END mutates any QOE bitrate state.
     'The final aggregate should represent the last rendered playback window,
     'not any bookkeeping side effects of the end event itself.
@@ -1454,12 +1491,14 @@ end function
 function nrSendPause() as Void
     m.nrTimeSincePaused = m.nrTimer.TotalMilliseconds()
     nrSendVideoEvent("CONTENT_PAUSE")
+    nrQoeOnPause()
     nrPausePlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
 end function
 
 function nrSendResume() as Void
     nrSendVideoEvent("CONTENT_RESUME")
+    nrQoeOnResume()
     nrResumePlaytime()
     m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
 end function
@@ -1591,6 +1630,14 @@ function nrSendBackupVideoEvent(actionName as String, attr = invalid) as Void
 end function
 
 function nrSendBackupVideoEnd() as Void
+    'Flush running QOE intervals and generate the final QOE for the ending
+    'playlist item BEFORE the backup CONTENT_END mutates QOE state. Without
+    'this, qoeFinalEventSent stays false, the next item's nrSendRequest skips
+    'nrResetQoeMetrics(), and every m.qoe* accumulator (totalPauseTime,
+    'totalSwitchUps/Downs, totalTimeSwitchedDown, qoeMaxRendition,
+    'qoePlayedRenditions, etc.) carries across the playlist boundary.
+    nrQoeOnViewEnd()
+    nrGenerateQoeEvent(true)
     nrSendBackupVideoEvent("CONTENT_END")
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -2684,6 +2731,17 @@ function nrTrackBitrateForQoe(contentBitrate as Dynamic) as Void
         return
     end if
 
+    'synthesize tri-state shift per mapping.
+    prevBitrate = m.qoeLastTrackedBitrate
+    shift = "none"
+    if prevBitrate <> invalid
+        if contentBitrate > prevBitrate
+            shift = "up"
+        else if contentBitrate < prevBitrate
+            shift = "down"
+        end if
+    end if
+
     'Update cached value to prevent duplicate processing
     m.qoeLastTrackedBitrate = contentBitrate
 
@@ -2695,6 +2753,7 @@ function nrTrackBitrateForQoe(contentBitrate as Dynamic) as Void
     m.qoeBitrateSum = m.qoeBitrateSum + contentBitrate
     m.qoeBitrateCount = m.qoeBitrateCount + 1
 
+    nrQoeOnRenditionChange(shift, contentBitrate)
 end function
 
 function nrQoeResumeBitrateTracking(bitrate as Dynamic) as Void
@@ -2763,6 +2822,136 @@ function nrQoeHandleVideoEvent(actionName as String, bitrate as Dynamic) as Void
             nrQoePauseBitrateTracking()
             nrQoeResumeBitrateTracking(bitrate)
         end if
+    end if
+end function
+
+'=========================================='
+' QOE_AGGREGATE extension hooks            '
+'=========================================='
+
+' True iff currently inside an ad break (proxy for isAd()).
+' Roku content events route through nrSendVideoEvent and ad events through
+' nrSendVideoAdEvent, so the QoE accumulators are inherently content-only.
+' This helper exists to gate hooks driven by polling sources where the same
+' video object may carry ad-stream data during a break.
+function nrQoeIsInAdBreak() as Boolean
+    if m.rafState = invalid then return false
+    if m.rafState.timeSinceAdBreakBegin = invalid then return false
+    return m.rafState.timeSinceAdBreakBegin > 0
+end function
+
+function nrQoeOnContentStart(bitrate as Dynamic) as Void
+    if m.qoeTrackingEnabled = false then return
+    if nrQoeIsInAdBreak() then return
+    if bitrate = invalid or bitrate <= 0 then return
+
+    'qoePlayedRenditions is always keyed by an integer
+    'stringification. Coerce so a Double-valued bitrate cannot produce a key
+    'that would not match the same integer value seen later.
+    intBitrate = Int(bitrate)
+    m.qoePlayedRenditions[intBitrate.ToStr()] = true
+    m.qoeMaxRendition = intBitrate
+    'm.qoeSwitchedDownSinceMs stays invalid — we have not gone down yet.
+end function
+
+function nrTrackDownloadRateForQoe(rate as Dynamic) as Void
+    if m.qoeTrackingEnabled = false then return
+    if nrQoeIsInAdBreak() then return
+    if rate = invalid or rate <= 0 then return
+
+    m.qoeDownloadRateSum = m.qoeDownloadRateSum + rate
+    m.qoeDownloadRateCount = m.qoeDownloadRateCount + 1
+    if m.qoeDownloadRateMin = invalid or rate < m.qoeDownloadRateMin
+        m.qoeDownloadRateMin = rate
+    end if
+    if rate > m.qoeDownloadRateMax
+        m.qoeDownloadRateMax = rate
+    end if
+end function
+
+' Scenegraph observer — fires once per content segment download. Computes
+' instantaneous network throughput (bps) from segment size and download
+' duration, mirroring Android's bytesLoaded/loadDurationMs and iOS's
+' AVPlayerItemAccessLogEvent.observedBitrate. Each fire produces exactly
+' one Group A sample.
+function nrDownloadedSegmentObserver(event as Object) as Void
+    if m.qoeTrackingEnabled = false then return
+    seg = event.getData()
+    if seg = invalid then return
+    if type(seg) <> "roAssociativeArray" then return
+
+    segSize = seg["segSize"]
+    downloadDuration = seg["downloadDuration"]
+    if segSize = invalid or segSize <= 0 then return
+    if downloadDuration = invalid or downloadDuration <= 0 then return
+
+    'CDbl avoids 32-bit overflow: 10MB segment in 100ms → 8e10 bits/sec.
+    bps = (CDbl(segSize) * 8.0 * 1000.0) / CDbl(downloadDuration)
+    nrTrackDownloadRateForQoe(Int(bps + 0.5))
+end function
+
+' shift is tri-state — "up", "down", or "none" (no-change/sideways or
+' first observation). newBitrate must be > 0 (caller guards).
+function nrQoeOnRenditionChange(shift as String, newBitrate as Dynamic) as Void
+    if m.qoeTrackingEnabled = false then return
+    if nrQoeIsInAdBreak() then return
+    if newBitrate = invalid or newBitrate <= 0 then return
+
+    intNewBitrate = Int(newBitrate)
+
+    if shift = "up" then m.qoeSwitchUps = m.qoeSwitchUps + 1
+    if shift = "down" then m.qoeSwitchDowns = m.qoeSwitchDowns + 1
+
+    m.qoePlayedRenditions[intNewBitrate.ToStr()] = true
+
+    prevWasReduced = (m.qoeSwitchedDownSinceMs <> invalid)
+    t = m.nrTimer.TotalMilliseconds()
+
+    '1. Close any open reduced interval if recovering to max or higher
+    if prevWasReduced and intNewBitrate >= m.qoeMaxRendition
+        m.qoeTimeSwitchedDown = m.qoeTimeSwitchedDown + (t - m.qoeSwitchedDownSinceMs)
+        m.qoeSwitchedDownSinceMs = invalid
+    end if
+
+    '2. Bump the all-time max (internal only — defines "below max")
+    if intNewBitrate > m.qoeMaxRendition
+        m.qoeMaxRendition = intNewBitrate
+    end if
+
+    '3. Open a reduced interval if below the current max
+    if intNewBitrate < m.qoeMaxRendition and m.qoeSwitchedDownSinceMs = invalid
+        m.qoeSwitchedDownSinceMs = t
+    end if
+end function
+
+function nrQoeOnPause() as Void
+    if m.qoeTrackingEnabled = false then return
+    if nrQoeIsInAdBreak() then return
+    m.qoePauseStartMs = m.nrTimer.TotalMilliseconds()
+end function
+
+function nrQoeOnResume() as Void
+    if m.qoeTrackingEnabled = false then return
+    if nrQoeIsInAdBreak() then return
+    if m.qoePauseStartMs = invalid then return
+    m.qoeTotalPauseTime = m.qoeTotalPauseTime + (m.nrTimer.TotalMilliseconds() - m.qoePauseStartMs)
+    m.qoePauseStartMs = invalid
+end function
+
+' onViewEnd. Flushes every running interval exactly once.
+' MUST run before nrGenerateQoeEvent(true) on the view-end path.
+function nrQoeOnViewEnd() as Void
+    if m.qoeTrackingEnabled = false then return
+    t = m.nrTimer.TotalMilliseconds()
+
+    if m.qoePauseStartMs <> invalid
+        m.qoeTotalPauseTime = m.qoeTotalPauseTime + (t - m.qoePauseStartMs)
+        m.qoePauseStartMs = invalid
+    end if
+
+    if m.qoeSwitchedDownSinceMs <> invalid
+        m.qoeTimeSwitchedDown = m.qoeTimeSwitchedDown + (t - m.qoeSwitchedDownSinceMs)
+        m.qoeSwitchedDownSinceMs = invalid
     end if
 end function
 
@@ -2843,7 +3032,37 @@ function nrCalculateQOEKpiAttributes() as Object
         kpiAttributes["averageBitrate"] = averageBitrate
     end if
 
-    kpiAttributes["qoeAggregateVersion"] = "1.0.0"
+    t = m.nrTimer.TotalMilliseconds()
+
+    'download rate (omit when no sample arrived)
+    if m.qoeDownloadRateCount > 0
+        kpiAttributes["avgDownloadRate"] = Int((m.qoeDownloadRateSum / m.qoeDownloadRateCount) + 0.5)
+        kpiAttributes["minDownloadRate"] = m.qoeDownloadRateMin
+        kpiAttributes["maxDownloadRate"] = m.qoeDownloadRateMax
+    end if
+
+    'switch counters (always emit; 0 is a valid signal)
+    kpiAttributes["totalSwitchUps"] = m.qoeSwitchUps
+    kpiAttributes["totalSwitchDowns"] = m.qoeSwitchDowns
+
+    'switched-down timer (snapshot, do not mutate)
+    snapTimeReduced = m.qoeTimeSwitchedDown
+    if m.qoeSwitchedDownSinceMs <> invalid
+        snapTimeReduced = snapTimeReduced + (t - m.qoeSwitchedDownSinceMs)
+    end if
+    kpiAttributes["totalTimeSwitchedDown"] = snapTimeReduced
+
+    'pause accumulator (snapshot, do not mutate)
+    snapPause = m.qoeTotalPauseTime
+    if m.qoePauseStartMs <> invalid
+        snapPause = snapPause + (t - m.qoePauseStartMs)
+    end if
+    kpiAttributes["totalPauseTime"] = snapPause
+
+    'Group F — distinct variants
+    kpiAttributes["totalRenditions"] = m.qoePlayedRenditions.Count()
+
+    kpiAttributes["qoeAggregateVersion"] = "1.1.0"
 
     return kpiAttributes
 end function
@@ -2950,4 +3169,18 @@ function nrResetQoeMetrics() as Void
     m.qoeTotalBitrateWeightedTime = 0.0
     m.qoeTotalActiveTime = 0
     m.qoePlaybackActive = false
+
+    'Reset QOE_AGGREGATE extension state.
+    m.qoeDownloadRateSum = 0&
+    m.qoeDownloadRateCount = 0
+    m.qoeDownloadRateMin = invalid
+    m.qoeDownloadRateMax = 0&
+    m.qoeSwitchUps = 0
+    m.qoeSwitchDowns = 0
+    m.qoeMaxRendition = 0&
+    m.qoeTimeSwitchedDown = 0&
+    m.qoeSwitchedDownSinceMs = invalid
+    m.qoeTotalPauseTime = 0&
+    m.qoePauseStartMs = invalid
+    m.qoePlayedRenditions = {}
 end function
