@@ -1,0 +1,147 @@
+name: Release Notes Docs PR
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to use (e.g. v4.1.1)'
+        required: true
+      dry_run:
+        description: 'Dry run: fetch release notes and print MDX without creating a PR'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  # --- Agent-specific config (change these when reusing for other agents) ---
+  AGENT_REPO: newrelic/video-agent-roku
+  AGENT_NAME: Roku
+  AGENT_SLUG: roku
+  AGENT_CATEGORY: roku
+  AGENT_SUBJECT: Streaming Video & Ads for Others
+  # --- Shared docs config (same for all streaming browser agents) ---
+  DOCS_FOLDER: src/content/docs/release-notes/streaming-browser-release-notes
+
+jobs:
+  update-public-docs:
+    name: Update public docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.DOCS_APP_ID }}
+          private-key: ${{ secrets.DOCS_APP_PRIVATE_KEY }}
+          owner: newrelic
+          repositories: docs-website
+
+      - name: Resolve release tag and body
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            tag="${{ github.event.inputs.tag }}"
+          else
+            tag="${{ github.event.release.tag_name }}"
+          fi
+          body=$(gh release view "${tag}" --repo ${{ env.AGENT_REPO }} --json body --jq '.body')
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "body<<RELEASE_BODY_EOF" >> "$GITHUB_OUTPUT"
+          echo "${body}" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_BODY_EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Clone docs-website
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh repo clone newrelic/docs-website -- --depth=1 --branch develop --single-branch
+
+      - name: Configure Git
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        working-directory: docs-website
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Generate MDX content
+        id: mdx
+        run: |
+          tag="${{ steps.release.outputs.tag }}"
+          version="${tag#v}"
+          today=$(date -u "+%Y-%m-%d")
+          fileDate=$(date -u "+%y-%m-%d")
+          releaseFile="${{ env.DOCS_FOLDER }}/streaming-${{ env.AGENT_CATEGORY }}-agent-${{ env.AGENT_SLUG }}-${fileDate}.mdx"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "releaseFile=${releaseFile}" >> "$GITHUB_OUTPUT"
+          echo "fileDate=${fileDate}" >> "$GITHUB_OUTPUT"
+          echo "today=${today}" >> "$GITHUB_OUTPUT"
+
+      - name: '[Dry run] Print MDX content'
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        env:
+          RELEASE_BODY: ${{ steps.release.outputs.body }}
+        run: |
+          echo "=== DRY RUN: MDX file that would be created ==="
+          echo "File: ${{ steps.mdx.outputs.releaseFile }}"
+          echo ""
+          printf '%s\n' '---'
+          printf '%s\n' 'subject: ${{ env.AGENT_SUBJECT }}'
+          printf "title: Media agent for ${{ env.AGENT_NAME }} v%s\n" "${{ steps.mdx.outputs.version }}"
+          printf "releaseDate: '%s'\n" "${{ steps.mdx.outputs.today }}"
+          printf "version: %s\n" "${{ steps.mdx.outputs.version }}"
+          printf "metaDescription: Release notes for Media agent for ${{ env.AGENT_NAME }} version %s\n" "${{ steps.mdx.outputs.version }}"
+          printf '%s\n' 'category: ${{ env.AGENT_NAME }}'
+          printf '%s\n' '---'
+          printf '\n'
+          printf '%s\n' "${RELEASE_BODY}"
+
+      - name: Write release notes and open PR
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        working-directory: docs-website
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          RELEASE_BODY: ${{ steps.release.outputs.body }}
+        run: |
+          version="${{ steps.mdx.outputs.version }}"
+          today="${{ steps.mdx.outputs.today }}"
+          fileDate="${{ steps.mdx.outputs.fileDate }}"
+          releaseFile="${{ steps.mdx.outputs.releaseFile }}"
+          branchName="add-${{ env.AGENT_SLUG }}-release-notes-$(date -u '+%y-%m-%d')"
+          summary="Add release notes for ${{ env.AGENT_NAME }} agent v${version}"
+
+          if [[ -e "${releaseFile}" ]]; then
+            echo "File '${releaseFile}' already exists. Nothing to do."
+            exit 0
+          fi
+
+          {
+            printf '%s\n' '---'
+            printf '%s\n' 'subject: ${{ env.AGENT_SUBJECT }}'
+            printf "title: Media agent for ${{ env.AGENT_NAME }} v%s\n" "${version}"
+            printf "releaseDate: '%s'\n" "${today}"
+            printf "version: %s\n" "${version}"
+            printf "metaDescription: Release notes for Media agent for ${{ env.AGENT_NAME }} version %s\n" "${version}"
+            printf '%s\n' 'category: ${{ env.AGENT_NAME }}'
+            printf '%s\n' '---'
+            printf '\n'
+            printf '%s\n' "${RELEASE_BODY}"
+          } > "${releaseFile}"
+
+          git checkout -b "${branchName}"
+          git add "${releaseFile}"
+          git commit --message="feat: ${summary}"
+          git push --set-upstream origin "${branchName}"
+
+          gh pr create \
+            --repo newrelic/docs-website \
+            --base develop \
+            --head "${branchName}" \
+            --title "feat: ${summary}" \
+            --body "Automated PR: release notes for ${{ env.AGENT_NAME }} agent v${version}."
