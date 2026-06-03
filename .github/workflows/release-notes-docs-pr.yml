@@ -23,7 +23,7 @@ env:
   AGENT_SLUG: roku
   AGENT_CATEGORY: others
   AGENT_SUBJECT: Streaming Video & Ads for Others
-  # --- Shared docs config (same for all streaming browser agents) ---
+  # --- Shared docs config ---
   DOCS_FOLDER: src/content/docs/release-notes/streaming-others-release-notes
 
 jobs:
