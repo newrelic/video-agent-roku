@@ -21,7 +21,7 @@ env:
   AGENT_REPO: newrelic/video-agent-roku
   AGENT_NAME: Roku
   AGENT_SLUG: roku
-  AGENT_CATEGORY: others
+  AGENT_FILE_PREFIX: streaming-others-agent
   AGENT_SUBJECT: Streaming Video & Ads for Others
   # --- Shared docs config ---
   DOCS_FOLDER: src/content/docs/release-notes/streaming-others-release-notes
@@ -77,7 +77,7 @@ jobs:
           version="${tag#v}"
           today=$(date -u "+%Y-%m-%d")
           fileDate=$(date -u "+%y-%m-%d")
-          releaseFile="${{ env.DOCS_FOLDER }}/streaming-${{ env.AGENT_CATEGORY }}-agent-${{ env.AGENT_SLUG }}-${fileDate}.mdx"
+          releaseFile="${{ env.DOCS_FOLDER }}/${{ env.AGENT_FILE_PREFIX }}-${fileDate}.mdx"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "releaseFile=${releaseFile}" >> "$GITHUB_OUTPUT"
           echo "fileDate=${fileDate}" >> "$GITHUB_OUTPUT"
