@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Bumped `qoeAggregateVersion` from `1.0.0` to `1.1.0` to reflect the expanded KPI set.
+- QoE aggregate tracking is now enabled by default with an interval multiplier of 2.
 
 ## [4.2.0] - 2026/05/14
 
