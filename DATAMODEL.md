@@ -160,6 +160,14 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | rebufferingRatio         | Rebuffering time as a percentage of total playtime. Calculated as (totalRebufferingTime / totalPlaytime) × 100.                                   |
 | totalPlaytime            | Total milliseconds user spent watching content (excludes pausing, buffering, and ads). Represents actual content viewing time.                    |
 | averageBitrate           | Time-weighted average bitrate (in bits per second) across all content playback. Calculated by weighing bitrate by duration at each quality level. |
+| avgDownloadRate                 | Average network download bitrate in bits per second across every sample observed during content playback. Omitted if no sample was observed.                                     |
+| minDownloadRate                 | Minimum network download bitrate in bits per second observed during content playback. Omitted if no sample was observed.                                                         |
+| maxDownloadRate                 | Maximum network download bitrate in bits per second observed during content playback. Omitted if no sample was observed.                                                         |
+| totalSwitchUps                  | Count of rendition switches to a higher bitrate during content playback. Always emitted; 0 is a valid value.                                                                     |
+| totalSwitchDowns                | Count of rendition switches to a lower bitrate during content playback. Always emitted; 0 is a valid value.                                                                      |
+| totalTimeSwitchedDown           | Total milliseconds spent at a rendition below the session's all-time maximum. Always emitted; 0 is a valid value.                                                                |
+| totalPauseTime                  | Total milliseconds the user kept content paused. Always emitted; 0 is a valid value.                                                                                              |
+| totalRenditions             | Count of distinct rendition bitrates selected during content playback. Always emitted; 0 is a valid value.                                                                        |
 | qoeAggregateVersion      | Version identifier for QOE calculation algorithm. Currently "1.0.0".                                                                               |
 
 #### List of possible Video Actions

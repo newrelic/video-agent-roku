@@ -515,29 +515,35 @@ nrForceHarvestLogs(m.nr)
 
 ### QoE Tracking
 
-Quality of Experience tracking is **disabled by default**. Once enabled, it cannot be disabled during the session.
+Quality of Experience tracking is **enabled by default**. It sends `QOE_AGGREGATE` events containing startup time, rebuffering, bitrate, and error KPIs. The default interval multiplier is `2` (QoE evaluated every 2 harvest cycles).
 
-#### `nrActivateQoeTracking(nr)`
+To disable QoE tracking, call `nrActivateQoeTracking(nr, false)` after init or set the flag directly.
 
-Enable QoE tracking. Sends `QOE_AGGREGATE` events containing startup time, rebuffering, bitrate, and error KPIs.
+#### `nrActivateQoeTracking(nr, enable)`
+
+Enable or disable QoE tracking at runtime.
 
 ```brightscript
-m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
-nrActivateQoeTracking(m.nr)
+' Disable QoE tracking
+nrActivateQoeTracking(m.nr, false)
+
+' Re-enable QoE tracking
+nrActivateQoeTracking(m.nr, true)
 ```
 
 #### `nrSetQoeAggregateIntervalMultiplier(nr, multiplier)`
 
-Control how often QoE events are sent. A multiplier of `N` sends QoE events every N harvest cycles. Default is `1`, minimum is `1`.
+Control how often QoE events are sent. A multiplier of `N` sends QoE events every N harvest cycles. Default is `2`, minimum is `1`.
 
 ```brightscript
-' QoE evaluated every 2 harvest cycles (e.g., every 120s with 60s harvest)
-nrSetQoeAggregateIntervalMultiplier(m.nr, 2)
+' QoE evaluated every 3 harvest cycles (e.g., every 180s with 60s harvest)
+nrSetQoeAggregateIntervalMultiplier(m.nr, 3)
 ```
 
 **QoE behavior notes:**
 - QoE events use dirty checking — repeated events are suppressed when KPI values haven't changed
 - Ad breaks are automatically excluded from QoE calculations
+- KPI availability and accuracy depend on the underlying Roku Video node and the stream itself. Some attributes (e.g. `avgDownloadRate` / `minDownloadRate` / `maxDownloadRate`, rendition-switch counts, bitrate-derived metrics) are sourced from `streamingSegment`, `downloadedSegment`, and bitrate fields the player exposes — if the player does not surface them for a given stream (DRM-protected content, certain SSAI inserts, non-segmented streams, older Roku firmware), those KPIs may be omitted from the event or report values that diverge from the actual playback. Treat QoE values as best-effort signals rather than exact measurements.
 
 ---
 
