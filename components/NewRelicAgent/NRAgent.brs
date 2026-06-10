@@ -7,8 +7,8 @@
 
 sub init()
     m.nrLogsState = false
-    m.qoeTrackingEnabled = false  'Default disabled - must be explicitly enabled
-    m.qoeAggregateIntervalMultiplier = 1
+    m.qoeTrackingEnabled = true
+    m.qoeAggregateIntervalMultiplier = 2
     m.qoeHarvestCycleCounter = 0
     m.nrAgentVersion = m.top.version
     m.eventApiUrl = ""
