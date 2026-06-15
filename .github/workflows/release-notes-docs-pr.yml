@@ -66,9 +66,12 @@ jobs:
       - name: Configure Git
         if: ${{ github.event.inputs.dry_run != 'true' }}
         working-directory: docs-website
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
 
       - name: Generate MDX content
         id: mdx
