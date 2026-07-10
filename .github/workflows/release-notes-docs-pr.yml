@@ -51,7 +51,13 @@ jobs:
             tag="${{ github.event.release.tag_name }}"
           fi
           body=$(gh release view "${tag}" --repo ${{ env.AGENT_REPO }} --json body --jq '.body')
+          version="${tag#v}"
+          releaseDate=$(gh api "repos/${{ env.AGENT_REPO }}/contents/CHANGELOG.md" --jq '.content' | \
+            base64 -d | \
+            grep -m1 "^## \[${version}\]" | \
+            grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "releaseDate=${releaseDate}" >> "$GITHUB_OUTPUT"
           echo "body<<RELEASE_BODY_EOF" >> "$GITHUB_OUTPUT"
           echo "${body}" >> "$GITHUB_OUTPUT"
           echo "RELEASE_BODY_EOF" >> "$GITHUB_OUTPUT"
@@ -78,32 +84,37 @@ jobs:
         run: |
           tag="${{ steps.release.outputs.tag }}"
           version="${tag#v}"
-          today=$(date -u "+%Y-%m-%d")
+          releaseDate="${{ steps.release.outputs.releaseDate }}"
           fileDate=$(date -u "+%y-%m-%d")
           releaseFile="${{ env.DOCS_FOLDER }}/${{ env.AGENT_FILE_PREFIX }}-${fileDate}.mdx"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "releaseFile=${releaseFile}" >> "$GITHUB_OUTPUT"
           echo "fileDate=${fileDate}" >> "$GITHUB_OUTPUT"
-          echo "today=${today}" >> "$GITHUB_OUTPUT"
+          echo "releaseDate=${releaseDate}" >> "$GITHUB_OUTPUT"
 
       - name: '[Dry run] Print MDX content'
         if: ${{ github.event.inputs.dry_run == 'true' }}
         env:
           RELEASE_BODY: ${{ steps.release.outputs.body }}
         run: |
+          processed=$(printf '%s\n' "${RELEASE_BODY}" | \
+            tr -d '\r' | \
+            awk 'BEGIN{s=1} /^## /{s=0} !s{print}' | \
+            sed "s/## What's Changed/## What's changed/g; s/## Full Changelog/## Full changelog/g" | \
+            awk '/^## Full changelog/{fc=1;next} fc && /^https?:\/\//{printf "[Full changelog](%s)\n\n",$0;fc=0;next} fc && NF==0{next} {fc=0;print}')
           echo "=== DRY RUN: MDX file that would be created ==="
           echo "File: ${{ steps.mdx.outputs.releaseFile }}"
           echo ""
           printf '%s\n' '---'
           printf '%s\n' 'subject: ${{ env.AGENT_SUBJECT }}'
           printf "title: Media agent for ${{ env.AGENT_NAME }} v%s\n" "${{ steps.mdx.outputs.version }}"
-          printf "releaseDate: '%s'\n" "${{ steps.mdx.outputs.today }}"
+          printf "releaseDate: '%s'\n" "${{ steps.mdx.outputs.releaseDate }}"
           printf "version: %s\n" "${{ steps.mdx.outputs.version }}"
           printf "metaDescription: Release notes for Media agent for ${{ env.AGENT_NAME }} version %s\n" "${{ steps.mdx.outputs.version }}"
           printf '%s\n' 'category: ${{ env.AGENT_NAME }}'
           printf '%s\n' '---'
           printf '\n'
-          printf '%s\n' "${RELEASE_BODY}"
+          printf '%s\n' "${processed}"
 
       - name: Write release notes and open PR
         if: ${{ github.event.inputs.dry_run != 'true' }}
@@ -113,7 +124,7 @@ jobs:
           RELEASE_BODY: ${{ steps.release.outputs.body }}
         run: |
           version="${{ steps.mdx.outputs.version }}"
-          today="${{ steps.mdx.outputs.today }}"
+          releaseDate="${{ steps.mdx.outputs.releaseDate }}"
           fileDate="${{ steps.mdx.outputs.fileDate }}"
           releaseFile="${{ steps.mdx.outputs.releaseFile }}"
           branchName="add-${{ env.AGENT_SLUG }}-release-notes-$(date -u '+%y-%m-%d')"
@@ -124,17 +135,23 @@ jobs:
             exit 0
           fi
 
+          processed=$(printf '%s\n' "${RELEASE_BODY}" | \
+            tr -d '\r' | \
+            awk 'BEGIN{s=1} /^## /{s=0} !s{print}' | \
+            sed "s/## What's Changed/## What's changed/g; s/## Full Changelog/## Full changelog/g" | \
+            awk '/^## Full changelog/{fc=1;next} fc && /^https?:\/\//{printf "[Full changelog](%s)\n\n",$0;fc=0;next} fc && NF==0{next} {fc=0;print}')
+
           {
             printf '%s\n' '---'
             printf '%s\n' 'subject: ${{ env.AGENT_SUBJECT }}'
             printf "title: Media agent for ${{ env.AGENT_NAME }} v%s\n" "${version}"
-            printf "releaseDate: '%s'\n" "${today}"
+            printf "releaseDate: '%s'\n" "${releaseDate}"
             printf "version: %s\n" "${version}"
             printf "metaDescription: Release notes for Media agent for ${{ env.AGENT_NAME }} version %s\n" "${version}"
             printf '%s\n' 'category: ${{ env.AGENT_NAME }}'
             printf '%s\n' '---'
             printf '\n'
-            printf '%s\n' "${RELEASE_BODY}"
+            printf '%s\n' "${processed}"
           } > "${releaseFile}"
 
           git checkout -b "${branchName}"
