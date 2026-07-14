@@ -198,11 +198,7 @@ function nrConnect(appToken as string, body as object)
     jsonRequestBody = FormatJSON(body)
     urlReq = CreateObject("roUrlTransfer")    
     rport = CreateObject("roMessagePort")
-    if(m.nrRegion = "staging")
-        urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v4/connect")
-    else
-        urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v4/connect")
-    end if
+    urlReq.SetUrl(nrMobileCollectorApiUrl())
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
@@ -1389,7 +1385,7 @@ function nrEventApiUrl() as String
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
         return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
-    else if m.nrRegion = "JP"
+    else if m.nrRegion = "JP" OR m.nrRegion = "jp"
         return "https://insights-collector.jp.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
     end if
 end function
@@ -1415,7 +1411,7 @@ function nrMetricApiUrl() as String
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
         return "https://staging-metric-api.newrelic.com/metric/v1"
-    else if m.nrRegion = "JP"
+    else if m.nrRegion = "JP" OR m.nrRegion = "jp"
         return "https://metric-api.jp.newrelic.com/metric/v1"
     end if
 end function
