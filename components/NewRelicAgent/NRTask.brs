@@ -137,7 +137,7 @@ function nrSampleProcessor(sampleType as String, endpoint as String, appName as 
             end if
         end if
     else
-        print("-- nrSampleProcessor: m.nr is invalid!! --")
+        'print("-- nrSampleProcessor: m.nr is invalid!! --")
     end if
 end function
 
@@ -149,12 +149,12 @@ function nrMobileCollectorApiUrl() as String
     region = m.region
     if region = invalid then region = m.top.region
     if region = invalid then region = "US"
-    if region = "EU" OR region = "eu"
+    if region = "EU" OR region = "eu" then
         return "https://mobile-collector.eu01.nr-data.net/mobile/v3/data"
-    else if region = "staging"
+    else if region = "staging" then
         'NOTE: set address hosting the test server
         return "https://staging-mobile-collector.newrelic.com/mobile/v3/data"
-    else if(region = "JP" OR region = "jp")
+    else if region = "JP" OR region = "jp" then
        return "https://mobile-collector.jp.nr-data.net/mobile/v3/data"
     else
        return "https://mobile-collector.newrelic.com/mobile/v3/data"
@@ -162,26 +162,28 @@ function nrMobileCollectorApiUrl() as String
 end function
 
 function nrData(videoSamples)
-    
+
     body = getV3ReqBody(m.top.dataToken,videoSamples, m.top.appInfo)
     jsonRequestBody = FormatJSON(body)
-    urlReq = CreateObject("roUrlTransfer")    
+    urlReq = CreateObject("roUrlTransfer")
     rport = CreateObject("roMessagePort")
-    if(m.region = "staging")
-        urlReq.SetUrl("https://staging-mobile-collector.newrelic.com/mobile/v3/data")
-    else 
-        urlReq.SetUrl("https://mobile-collector.newrelic.com/mobile/v3/data")
-    end if
+
+    url = box(nrMobileCollectorApiUrl())
+    urlReq.SetUrl(url)
+
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
     urlReq.EnableEncodings(true)
-   
+
     urlReq.AddHeader("CONTENT-TYPE", "application/json")
     urlReq.AddHeader("X-NewRelic-OS-Name","RokuOS")
     urlReq.AddHeader("X-App-License-Key", m.top.appToken)
     urlReq.AddHeader("X-NewRelic-App-Version","1.0")
     urlReq.SetMessagePort(rport)
+    'print "=== nrData curl ==="
+    'print "curl -X POST '" + url + "' -H 'Content-Type: application/json' -H 'X-NewRelic-OS-Name: RokuOS' -H 'X-App-License-Key: " + m.top.appToken + "' -H 'X-NewRelic-App-Version: 1.0' -d '" + jsonRequestBody + "'"
+    'print "==================="
 
     urlReq.AsyncPostFromString(jsonRequestBody)
     

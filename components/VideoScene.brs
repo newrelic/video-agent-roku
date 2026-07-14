@@ -31,10 +31,10 @@ function nrRefUpdated()
     'NOTE: Uncomment ONE of the following setup calls
 
     'Setup the video player with AWS Elemental MediaTailor SSAI (default)
-    setupMediaTailorVideo()
+    ' setupMediaTailorVideo()
 
     'Setup the video player with a single video
-    ' setupSingleVideo()
+    setupSingleVideo()
 
     'Setup the video player with a playlist
     ' setupVideoPlaylist(true)

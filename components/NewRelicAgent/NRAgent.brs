@@ -187,7 +187,7 @@ function nrMobileCollectorApiUrl() as String
     else if m.nrRegion = "EU" OR m.nrRegion = "eu"
         return "https://mobile-collector.eu01.nr-data.net/mobile/v4/connect"
     else if m.nrRegion = "JP" OR m.nrRegion = "jp"
-        return "https://mobile-collector.jp.nr-data.net/mobile/v4/connect"
+        return "https://mobile-collector.jp.nr-data.net/mobile/v5/connect"
     else if m.nrRegion = "staging"
             'NOTE: set address hosting the test server
             return "https://staging-mobile-collector.newrelic.com/mobile/v4/connect"
@@ -196,17 +196,22 @@ end function
 
 function nrConnect(appToken as string, body as object)
     jsonRequestBody = FormatJSON(body)
-    urlReq = CreateObject("roUrlTransfer")    
+    urlReq = CreateObject("roUrlTransfer")
     rport = CreateObject("roMessagePort")
-    urlReq.SetUrl(nrMobileCollectorApiUrl())
+    connectUrl = nrMobileCollectorApiUrl()
+    connectTime = nrTimestampFromDateTime(CreateObject("roDateTime")).toStr()
+    urlReq.SetUrl(connectUrl)
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
     urlReq.EnableEncodings(true)
     urlReq.AddHeader("CONTENT-TYPE", "application/json")
     urlReq.AddHeader("X-App-License-Key", appToken)
-    urlReq.AddHeader("X-NewRelic-Connect-Time", nrTimestampFromDateTime(CreateObject("roDateTime")).toStr())
+    urlReq.AddHeader("X-NewRelic-Connect-Time", connectTime)
     urlReq.SetMessagePort(rport)
+    'print "=== nrConnect curl ==="
+    'print "curl -X POST '" + connectUrl + "' -H 'Content-Type: application/json' -H 'X-App-License-Key: " + appToken + "' -H 'X-NewRelic-Connect-Time: " + connectTime + "' -d '" + jsonRequestBody + "'"
+    'print "======================"
     urlReq.AsyncPostFromString(jsonRequestBody)
     
     msg = wait(10000, rport)
