@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.2] - 2026/07/17
+
+### Fixed
+
+- `CONTENT_BUFFER_END` is now fired immediately when a rebuffer completes while the video is paused. Previously, the event was delayed until the user resumed playback, causing `timeSinceBufferBegin` and `totalRebufferingTime` to be over-reported by the entire pause duration. A native `bufferingStatus` observer detects buffer recovery independently of the playback state machine. A duplicate-guard flag (`nrInBuffering`) ensures exactly one `BUFFER_END` is emitted per `BUFFER_START` regardless of which signal fires first.
+
 ## [4.2.1] - 2026/05/26
 
 ### Added
