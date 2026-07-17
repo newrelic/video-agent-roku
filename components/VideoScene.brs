@@ -31,10 +31,10 @@ function nrRefUpdated()
     'NOTE: Uncomment ONE of the following setup calls
 
     'Setup the video player with AWS Elemental MediaTailor SSAI (default)
-    setupMediaTailorVideo()
+    ' setupMediaTailorVideo()
 
     'Setup the video player with a single video
-    ' setupSingleVideo()
+    setupSingleVideo()
 
     'Setup the video player with a playlist
     ' setupVideoPlaylist(true)
@@ -64,8 +64,8 @@ end function
 
 function setupSingleVideo() as void
     print "Prepare video player with single video"
-    
-    singleVideo = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+
+    singleVideo = "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
     
     videoContent = createObject("RoSGNode", "ContentNode")
     videoContent.url = singleVideo

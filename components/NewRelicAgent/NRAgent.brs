@@ -231,6 +231,10 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Current state
     m.nrLastVideoState = "none"
     m.nrIsInitialBuffering = false
+    ' NR-531410: tracks whether a content (re)buffer is currently in progress so that
+    ' BUFFER_END is fired exactly once, no matter which signal detects buffer recovery
+    ' (the native bufferingStatus observer or the state-machine transition).
+    m.nrInBuffering = false
     'Timestamps for timeSince attributes
     m.nrTimeSinceBufferBegin = 0.0
     m.nrTimeSinceLastHeartbeat = 0.0
@@ -310,6 +314,10 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
     m.nrvideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
     m.nrVideoObject.observeFieldScoped("downloadedSegment", "nrDownloadedSegmentObserver")
+    ' NR-531410: observe the native buffering-progress field so buffer recovery is
+    ' detected even when it completes while the player is paused (the `state` field
+    ' stays "paused" in that case and never triggers nrStateObserver).
+    m.nrVideoObject.observeFieldScoped("bufferingStatus", "nrBufferingStatusObserver")
 
     'Init heartbeat timer
     m.hbTimer = m.top.findNode("nrHeartbeatTimer")
@@ -327,6 +335,7 @@ function NewRelicVideoStop() as Void
         m.nrVideoObject.unobserveFieldScoped("contentIndex")
         m.nrVideoObject.unobserveFieldScoped("licenseStatus")
         m.nrVideoObject.unobserveFieldScoped("downloadedSegment")
+        m.nrVideoObject.unobserveFieldScoped("bufferingStatus")
         'Reset content network bitrate tracker before invalidating video object
         nrResetContentBitrateTracker()
         m.nrVideoObject = Invalid
@@ -1504,6 +1513,9 @@ function nrSendResume() as Void
 end function
 
 function nrSendBufferStart() as Void
+    ' NR-531410: mark that a buffer cycle is in progress. nrSendBufferEnd() checks this
+    ' flag so exactly one BUFFER_END is emitted per BUFFER_START.
+    m.nrInBuffering = true
     m.nrTimeSinceBufferBegin = m.nrTimer.TotalMilliseconds()
 
     if m.nrTimeSinceStarted = 0
@@ -1518,6 +1530,12 @@ function nrSendBufferStart() as Void
 end function
 
 function nrSendBufferEnd() as Void
+    ' NR-531410: duplicate guard. Buffer recovery can now be detected by two independent
+    ' signals (the bufferingStatus observer and the state-machine transition). Whichever
+    ' fires first sends BUFFER_END; the second call is a no-op.
+    if not m.nrInBuffering then return
+    m.nrInBuffering = false
+
     if m.nrTimeSinceStarted = 0
         m.nrIsInitialBuffering = true
     else
@@ -1533,8 +1551,51 @@ function nrSendBufferEnd() as Void
     end if
 
     nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": bufferType})
-    nrResumePlaytime()
-    m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
+
+    ' NR-531410: only resume playtime tracking if playback is actually resuming. When the
+    ' rebuffer completes while the user is still paused, the video stays paused, so
+    ' playtime must remain frozen until the real CONTENT_RESUME (paused -> playing).
+    if m.nrVideoObject.state <> "paused"
+        nrResumePlaytime()
+        m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
+    end if
+end function
+
+' NR-531410: Native buffer-recovery listener.
+' The Roku Video node's `bufferingStatus` associative array updates independently of the
+' playback `state` field. Observers are notified as buffering progresses and, critically,
+' when buffering completes (at which point the field becomes invalid). Because this fires
+' regardless of play/pause state, it catches the case where a rebuffer finishes while the
+' user is paused - a scenario the state-machine path misses entirely.
+function nrBufferingStatusObserver() as Void
+    ' Only act on buffer cycles we started tracking for the main content. This naturally
+    ' excludes ad buffering and any seek/other flow that did not call nrSendBufferStart,
+    ' since m.nrInBuffering would be false in those cases.
+    if not m.nrInBuffering then return
+
+    ' Initial-load buffering is left entirely to the existing state-machine path so its
+    ' metrics/timing are unchanged (m.nrTimeSinceStarted is only > 0 after playback has
+    ' started). This listener is scoped to rebuffers, which is where the paused-recovery
+    ' gap exists.
+    if m.nrTimeSinceStarted = 0 then return
+
+    bs = m.nrVideoObject.bufferingStatus
+
+    ' Buffering is complete when the field becomes invalid. As a secondary signal, Roku
+    ' exposes prebufferDone=true once enough data is buffered to resume immediately.
+    ' Nested ifs avoid dereferencing bs when it is invalid (BrightScript `and` is not
+    ' guaranteed to short-circuit).
+    bufferComplete = false
+    if bs = invalid
+        bufferComplete = true
+    else if bs.prebufferDone = true
+        bufferComplete = true
+    end if
+
+    if bufferComplete
+        nrLog("nrBufferingStatusObserver: buffer recovery detected")
+        nrSendBufferEnd()
+    end if
 end function
 
 function nrSendError(video as Object) as Void
