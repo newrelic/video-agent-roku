@@ -356,19 +356,20 @@ function nrSendSummaryMetric(nr as Object, name as String, interval as Integer, 
     nr.callFunc("nrSendSummaryMetric", name, interval, value, attr)
 end function
 
-' Activate QOE (Quality of Experience) tracking at runtime.
-' Note: Once enabled, QOE tracking cannot be disabled during the session.
+' Enable or disable QOE (Quality of Experience) tracking at runtime.
+' QOE tracking is ENABLED by default (since v4.2.1). Call with false to disable.
 '
 ' @param nr New Relic Agent object.
-function nrActivateQoeTracking(nr as Object) as Void
-    nr.callFunc("nrActivateQoeTracking", true)
+' @param enable Boolean — true to enable, false to disable. Default: true.
+function nrActivateQoeTracking(nr as Object, enable = true as Boolean) as Void
+    nr.callFunc("nrActivateQoeTracking", enable)
 end function
 
 ' Set the QOE aggregate interval multiplier.
 ' QOE events are sent every (harvest_time * multiplier) seconds.
 '
 ' @param nr New Relic Agent object.
-' @param multiplier Integer multiplier (min 1). Default 1.
+' @param multiplier Integer multiplier (min 1). Default 2.
 function nrSetQoeAggregateIntervalMultiplier(nr as Object, multiplier as Integer) as Void
     nr.callFunc("nrSetQoeAggregateIntervalMultiplier", multiplier)
 end function
