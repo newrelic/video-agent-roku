@@ -22,6 +22,9 @@ The New Relic Roku Agent provides comprehensive video and system analytics for R
 
 - [Installation](#installation)
 - [Prerequisites](#prerequisites)
+- [Platform Notes](#platform-notes)
+  - [OS_NAME Requirement](#os_name-requirement)
+  - [Two Data Paths](#two-data-paths--two-new-relic-accounts)
 - [Usage](#usage)
 - [Best Practices](#best-practices)
 - [API Reference](#api-reference)
@@ -84,8 +87,39 @@ Include the agent interface script in any component XML that needs access to the
 Before using the agent, ensure you have:
 
 - **New Relic Account** — Active New Relic account with valid credentials (`ACCOUNT_ID`, `API_KEY`, `APP_TOKEN`)
-- **Roku Device** — Firmware 8.1 or higher
+- **Roku Device** — Roku OS 11.x or higher (the OS floor is enforced via the Roku Partner Dashboard, not via manifest keys)
 - **Roku Development Environment** — Ability to side-load channels for development
+
+## Platform Notes
+
+### OS_NAME Requirement
+
+The New Relic mobile collector requires `OS_NAME` to be set to `"Android"` in the agent's internal app info. This is handled automatically by the SDK — **you do not need to set it manually**. Events delivered to New Relic correctly report `osName: "RokuOS"` in the event payload. This is a transport-layer requirement only.
+
+> **Warning:** If you are constructing `nrCreateAppInfo` manually or copying integration patterns from non-Roku SDKs, ensure `OS_NAME` is `"Android"`. Sending `OS_NAME = "Roku"` results in an HTTP 400 from the mobile collector and **silent data loss** — no error is surfaced to the app.
+
+### Two Data Paths — Two New Relic Accounts
+
+The Roku Agent routes telemetry across two separate collectors, each requiring a different credential and landing in a different account:
+
+| Data Path | Events | Collector | Credential | Account |
+|-----------|--------|-----------|------------|---------|
+| **Video path** | `VideoAction`, `VideoAdAction`, `VideoErrorAction`, `VideoCustomAction`, `QOE_AGGREGATE` | `mobile-collector.newrelic.com` | `APP_TOKEN` (`-NRMA` suffix) | **Production account** |
+| **System path** | `ConnectedDeviceSystem` (`APP_STARTED`, `SCENE_LOADED`, `HTTP_REQUEST`, `HTTP_RESPONSE`, bandwidth) | `insights-collector.newrelic.com` | `API_KEY` | **Staging/ingest account** |
+
+**If you see no data after integrating**, verify you are querying the correct account for each event type:
+
+```sql
+-- Query video events (production account, via APP_TOKEN)
+SELECT * FROM VideoAction SINCE 30 minutes ago
+
+-- Query system events (account matching your API_KEY)
+SELECT * FROM ConnectedDeviceSystem SINCE 30 minutes ago
+```
+
+This split is intentional: video telemetry uses the Mobile SDK collector to support session stitching and QoE aggregation, while system events use the standard ingest pipeline.
+
+---
 
 ## Usage
 
@@ -167,6 +201,18 @@ end sub
 
 function nrRefUpdated()
     m.nr = m.top.nr
+
+    ' REQUIRED: agent node must be in the scene render tree or harvest timers
+    ' started in NRAgent.init() will be inert and no events will be delivered.
+    if m.top.nr.getParent() = invalid then m.top.appendChild(m.top.nr)
+
+    ' Restart timers after rooting — timers started while unparented are silently
+    ' dropped by the SceneGraph runtime and require a stop→start cycle to fire.
+    nrRestartHarvestTimers(m.nr)
+
+    ' Flush any boot events (e.g. APP_STARTED) immediately. Without this, events
+    ' buffered before the first harvest cycle are lost on crashes or short sessions.
+    nrForceHarvestEvents(m.nr)
 
     ' Start video tracking
     NewRelicVideoStart(m.nr, m.video)
