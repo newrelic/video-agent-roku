@@ -3071,6 +3071,8 @@ function nrCalculateQOEKpiAttributes() as Object
 
     kpiAttributes["qoeAggregateVersion"] = "1.1.0"
 
+    print "[New Relic] QOE_AGGREGATE kpiAttributes: " + FormatJSON(kpiAttributes)
+
     return kpiAttributes
 end function
 
