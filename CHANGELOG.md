@@ -2,11 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [4.2.2] - 2026/08/05
+
+### Added
+
+- Added `"JP"` as a supported `region` value (alongside `"US"`, `"EU"`, and `"staging"`), routing event, log, metric, and mobile-connect traffic to the New Relic Japan collector endpoints. Region matching is case-insensitive (`"JP"` or `"jp"`).
 
 ### Removed
 
 - Removed `totalTimeSwitchedDown` from the `QOE_AGGREGATE` event and its internal tracking (rendition-switch-down interval accumulation).
+
+### Fixed
+
+- Fixed a dirty-check gap where `QOE_AGGREGATE` events stopped being sent after the first one whenever only a KPI added in 4.2.1 (`avgDownloadRate`, `minDownloadRate`, `maxDownloadRate`, `totalSwitchUps`, `totalSwitchDowns`, `totalPauseTime`, `totalRenditions`) changed between harvests — most noticeable during a long pause, where `totalPauseTime` was the only value still moving.
 
 ## [4.2.1] - 2026/05/26
 
