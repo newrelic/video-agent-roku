@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Removed
+
+- Removed `totalTimeSwitchedDown` from the `QOE_AGGREGATE` event and its internal tracking (rendition-switch-down interval accumulation).
+
 ## [4.2.1] - 2026/05/26
 
 ### Added
