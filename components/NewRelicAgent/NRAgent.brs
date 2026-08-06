@@ -186,6 +186,8 @@ function nrMobileCollectorApiUrl() as String
         return "https://mobile-collector.newrelic.com/mobile/v4/connect"
     else if m.nrRegion = "EU" OR m.nrRegion = "eu"
         return "https://mobile-collector.eu01.nr-data.net/mobile/v4/connect"
+    else if m.nrRegion = "JP" OR m.nrRegion = "jp"
+        return "https://mobile-collector.jp.nr-data.net/mobile/v5/connect"
     else if m.nrRegion = "staging"
             'NOTE: set address hosting the test server
             return "https://staging-mobile-collector.newrelic.com/mobile/v4/connect"
@@ -194,18 +196,22 @@ end function
 
 function nrConnect(appToken as string, body as object)
     jsonRequestBody = FormatJSON(body)
-    urlReq = CreateObject("roUrlTransfer")    
+    urlReq = CreateObject("roUrlTransfer")
     rport = CreateObject("roMessagePort")
-    url = box(nrMobileCollectorApiUrl())
-    urlReq.SetUrl(url)
+    connectUrl = nrMobileCollectorApiUrl()
+    connectTime = nrTimestampFromDateTime(CreateObject("roDateTime")).toStr()
+    urlReq.SetUrl(connectUrl)
     urlReq.RetainBodyOnError(true)
     urlReq.EnablePeerVerification(false)
     urlReq.EnableHostVerification(false)
     urlReq.EnableEncodings(true)
     urlReq.AddHeader("CONTENT-TYPE", "application/json")
     urlReq.AddHeader("X-App-License-Key", appToken)
-    urlReq.AddHeader("X-NewRelic-Connect-Time", nrTimestampFromDateTime(CreateObject("roDateTime")).toStr())
+    urlReq.AddHeader("X-NewRelic-Connect-Time", connectTime)
     urlReq.SetMessagePort(rport)
+    'print "=== nrConnect curl ==="
+    'print "curl -X POST '" + connectUrl + "' -H 'Content-Type: application/json' -H 'X-App-License-Key: " + appToken + "' -H 'X-NewRelic-Connect-Time: " + connectTime + "' -d '" + jsonRequestBody + "'"
+    'print "======================"
     urlReq.AsyncPostFromString(jsonRequestBody)
     
     msg = wait(10000, rport)
@@ -264,53 +270,13 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrVideoCounter = 0
     m.nrNumberOfErrors = 0
 
-    'QOE (Quality of Experience) tracking fields
-    m.qoePeakBitrate = 0
-    m.qoeHadPlaybackFailure = false
-    m.qoeTotalRebufferingTime = 0
-    m.qoeBitrateSum = 0
-    m.qoeBitrateCount = 0
-    m.qoeLastTrackedBitrate = invalid
-    m.qoeStartupTime = invalid  'Cached startup time, calculated once per view session
-
-    'Startup time calculation fields - capture actual event timestamps
-    m.contentRequestTimestamp = invalid
-    m.contentStartTimestamp = invalid
-    m.contentErrorTimestamp = invalid  'Timestamp when content error occurred (for startup failures)
-    m.startupPeriodAdTime = 0  'Ad time that occurred during startup period
-    m.hasContentStarted = false  'Tracks whether content has successfully started (for buffer classification)
-
-    m.qoeCurrentBitrate = invalid
-    m.qoeLastRenditionChangeTime = invalid
-    m.qoeTotalBitrateWeightedTime = 0.0
-    m.qoeTotalActiveTime = 0
-    m.qoePlaybackActive = false
-
-    'QOE_AGGREGATE extension state
-    m.qoeDownloadRateSum = 0&
-    m.qoeDownloadRateCount = 0
-    m.qoeDownloadRateMin = invalid
-    m.qoeDownloadRateMax = 0&
-    'switch counters
-    m.qoeSwitchUps = 0
-    m.qoeSwitchDowns = 0
-    'Internal — anchors "switched-down"; not emitted
-    m.qoeMaxRendition = 0&
-    'time-weighted rendition state (ms timestamps)
-    m.qoeTimeSwitchedDown = 0&
-    m.qoeSwitchedDownSinceMs = invalid
-    'pause accumulator (ms timestamps)
-    m.qoeTotalPauseTime = 0&
-    m.qoePauseStartMs = invalid
-    'distinct rendition variants
-    m.qoePlayedRenditions = {}
-
-    'QOE: Harvest multiplier support
+    'QOE: Harvest multiplier support (session-lifetime — not part of the
+    'per-view state nrResetQoeMetrics() manages)
     m.qoeHarvestCycleCounter = 0  'Counter to track harvest cycles for multiplier logic
 
-    'QOE: Dirty checking support
-    m.qoeLastSentKpis = invalid  'Store last sent QOE KPIs to prevent redundant events
-    m.qoeFinalEventSent = false  'Track if final QOE was already sent for this session
+    'QOE (Quality of Experience) tracking fields — shares its field list with
+    'nrResetQoeMetrics(), which every subsequent view session runs through.
+    nrResetQoeMetrics()
 
     'Setup event listeners 
     m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
@@ -878,36 +844,36 @@ function nrAreQoeKpisEqual(currentKpis as Dynamic, lastSentKpis as Dynamic) as B
         return false  'No previous data to compare - send current QOE
     end if
 
-    'Compare core QOE KPIs (must all match to be considered equal)
-    'Using string conversion to handle potential type mismatches and rounding
-    currentStartupTime = toString(currentKpis.startupTime)
-    lastStartupTime = toString(lastSentKpis.startupTime)
+    'Every KPI field nrCalculateQOEKpiAttributes() can emit, compared by
+    'string to handle type mismatches/rounding. Fields it omits conditionally
+    '(e.g. avgDownloadRate when no sample arrived) read as invalid on either
+    'side and still compare correctly. qoeAggregateVersion is a constant, not
+    'a metric, so it is deliberately excluded.
+    qoeKpiFields = [
+        "startupTime",
+        "peakBitrate",
+        "hadStartupError",
+        "hadPlaybackError",
+        "totalRebufferingTime",
+        "rebufferingRatio",
+        "totalPlaytime",
+        "averageBitrate",
+        "avgDownloadRate",
+        "minDownloadRate",
+        "maxDownloadRate",
+        "totalSwitchUps",
+        "totalSwitchDowns",
+        "totalPauseTime",
+        "totalRenditions"
+    ]
 
-    currentAvgBitrate = toString(currentKpis.averageBitrate)
-    lastAvgBitrate = toString(lastSentKpis.averageBitrate)
+    for each field in qoeKpiFields
+        if toString(currentKpis[field]) <> toString(lastSentKpis[field])
+            return false
+        end if
+    end for
 
-    currentPeakBitrate = toString(currentKpis.peakBitrate)
-    lastPeakBitrate = toString(lastSentKpis.peakBitrate)
-
-    currentRebufferRatio = toString(currentKpis.rebufferingRatio)
-    lastRebufferRatio = toString(lastSentKpis.rebufferingRatio)
-
-    currentTotalRebufferTime = toString(currentKpis.totalRebufferingTime)
-    lastTotalRebufferTime = toString(lastSentKpis.totalRebufferingTime)
-
-    currentTotalPlaytime = toString(currentKpis.totalPlaytime)
-    lastTotalPlaytime = toString(lastSentKpis.totalPlaytime)
-
-    'Error flags
-    currentStartupError = toString(currentKpis.hadStartupError)
-    lastStartupError = toString(lastSentKpis.hadStartupError)
-
-    currentPlaybackError = toString(currentKpis.hadPlaybackError)
-    lastPlaybackError = toString(lastSentKpis.hadPlaybackError)
-
-    areEqual = (currentStartupTime = lastStartupTime and currentAvgBitrate = lastAvgBitrate and currentPeakBitrate = lastPeakBitrate and currentRebufferRatio = lastRebufferRatio and currentTotalRebufferTime = lastTotalRebufferTime and currentTotalPlaytime = lastTotalPlaytime and currentStartupError = lastStartupError and currentPlaybackError = lastPlaybackError)
-
-    return areEqual
+    return true
 end function
 
 function toString(value as Dynamic) as String
@@ -1384,6 +1350,8 @@ function nrEventApiUrl() as String
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
         return "https://staging-insights-collector.newrelic.com/v1/accounts/" + m.nrAccountNumber + "/events"
+    else if m.nrRegion = "JP" OR m.nrRegion = "jp"
+        return "https://insights-collector.jp.nr-data.net/v1/accounts/" + m.nrAccountNumber + "/events"
     end if
 end function
 
@@ -1395,6 +1363,8 @@ function nrLogApiUrl() as String
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
         return "https://staging-log-api.newrelic.com/log/v1"
+    else if m.nrRegion = "JP" OR m.nrRegion = "jp"
+        return "https://log-api.jp.newrelic.com/log/v1"
     end if
 end function
 
@@ -1406,6 +1376,8 @@ function nrMetricApiUrl() as String
     else if m.nrRegion = "staging"
         'NOTE: set address hosting the test server
         return "https://staging-metric-api.newrelic.com/metric/v1"
+    else if m.nrRegion = "JP" OR m.nrRegion = "jp"
+        return "https://metric-api.jp.newrelic.com/metric/v1"
     end if
 end function
 
@@ -1641,8 +1613,8 @@ function nrSendBackupVideoEnd() as Void
     'playlist item BEFORE the backup CONTENT_END mutates QOE state. Without
     'this, qoeFinalEventSent stays false, the next item's nrSendRequest skips
     'nrResetQoeMetrics(), and every m.qoe* accumulator (totalPauseTime,
-    'totalSwitchUps/Downs, totalTimeSwitchedDown, qoeMaxRendition,
-    'qoePlayedRenditions, etc.) carries across the playlist boundary.
+    'totalSwitchUps/Downs, qoePlayedRenditions, etc.) carries across the
+    'playlist boundary.
     nrQoeOnViewEnd()
     nrGenerateQoeEvent(true)
     nrSendBackupVideoEvent("CONTENT_END")
@@ -2857,8 +2829,6 @@ function nrQoeOnContentStart(bitrate as Dynamic) as Void
     'that would not match the same integer value seen later.
     intBitrate = Int(bitrate)
     m.qoePlayedRenditions[intBitrate.ToStr()] = true
-    m.qoeMaxRendition = intBitrate
-    'm.qoeSwitchedDownSinceMs stays invalid — we have not gone down yet.
 end function
 
 function nrTrackDownloadRateForQoe(rate as Dynamic) as Void
@@ -2910,25 +2880,6 @@ function nrQoeOnRenditionChange(shift as String, newBitrate as Dynamic) as Void
     if shift = "down" then m.qoeSwitchDowns = m.qoeSwitchDowns + 1
 
     m.qoePlayedRenditions[intNewBitrate.ToStr()] = true
-
-    prevWasReduced = (m.qoeSwitchedDownSinceMs <> invalid)
-    t = m.nrTimer.TotalMilliseconds()
-
-    '1. Close any open reduced interval if recovering to max or higher
-    if prevWasReduced and intNewBitrate >= m.qoeMaxRendition
-        m.qoeTimeSwitchedDown = m.qoeTimeSwitchedDown + (t - m.qoeSwitchedDownSinceMs)
-        m.qoeSwitchedDownSinceMs = invalid
-    end if
-
-    '2. Bump the all-time max (internal only — defines "below max")
-    if intNewBitrate > m.qoeMaxRendition
-        m.qoeMaxRendition = intNewBitrate
-    end if
-
-    '3. Open a reduced interval if below the current max
-    if intNewBitrate < m.qoeMaxRendition and m.qoeSwitchedDownSinceMs = invalid
-        m.qoeSwitchedDownSinceMs = t
-    end if
 end function
 
 function nrQoeOnPause() as Void
@@ -2954,11 +2905,6 @@ function nrQoeOnViewEnd() as Void
     if m.qoePauseStartMs <> invalid
         m.qoeTotalPauseTime = m.qoeTotalPauseTime + (t - m.qoePauseStartMs)
         m.qoePauseStartMs = invalid
-    end if
-
-    if m.qoeSwitchedDownSinceMs <> invalid
-        m.qoeTimeSwitchedDown = m.qoeTimeSwitchedDown + (t - m.qoeSwitchedDownSinceMs)
-        m.qoeSwitchedDownSinceMs = invalid
     end if
 end function
 
@@ -3051,13 +2997,6 @@ function nrCalculateQOEKpiAttributes() as Object
     'switch counters (always emit; 0 is a valid signal)
     kpiAttributes["totalSwitchUps"] = m.qoeSwitchUps
     kpiAttributes["totalSwitchDowns"] = m.qoeSwitchDowns
-
-    'switched-down timer (snapshot, do not mutate)
-    snapTimeReduced = m.qoeTimeSwitchedDown
-    if m.qoeSwitchedDownSinceMs <> invalid
-        snapTimeReduced = snapTimeReduced + (t - m.qoeSwitchedDownSinceMs)
-    end if
-    kpiAttributes["totalTimeSwitchedDown"] = snapTimeReduced
 
     'pause accumulator (snapshot, do not mutate)
     snapPause = m.qoeTotalPauseTime
@@ -3184,9 +3123,6 @@ function nrResetQoeMetrics() as Void
     m.qoeDownloadRateMax = 0&
     m.qoeSwitchUps = 0
     m.qoeSwitchDowns = 0
-    m.qoeMaxRendition = 0&
-    m.qoeTimeSwitchedDown = 0&
-    m.qoeSwitchedDownSinceMs = invalid
     m.qoeTotalPauseTime = 0&
     m.qoePauseStartMs = invalid
     m.qoePlayedRenditions = {}

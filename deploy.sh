@@ -24,7 +24,7 @@ touch timestamp
 zip -FS -9 -r out/bundle * -x run extras "*.log" "*.md" ".git/*" ".DS_Store" "out/*" "deploys/*"
 
 # deploy
-DEPLOY_RESULT=$(curl -f -sS --user rokudev:$2 --anyauth -F "mysubmit=Install" -F "archive=@out/bundle.zip" -F "passwd=" http://$ROKU_DEV_TARGET/plugin_install \
+DEPLOY_RESULT=$(curl -f -sS --user rokudev:$2 --digest -F "mysubmit=Install" -F "archive=@out/bundle.zip" -F "passwd=" http://$ROKU_DEV_TARGET/plugin_install \
 | python3 -c 'import sys, re; print("\n".join(re.findall("<font color=\"red\">(.*?)</font>", sys.stdin.read(), re.DOTALL)))')
 
 DEPLOY_STATUS=$?
