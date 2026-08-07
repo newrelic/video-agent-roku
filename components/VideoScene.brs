@@ -241,10 +241,10 @@ function setupMediaTailorVideo() as Void
     m.video.notificationinterval = 1
 
     '----------------------------------------------------------------
-    ' MediaTailor session-init URL  ← REPLACE with your real URL
+    ' MediaTailor session-init URL
     ' VOD HLS: /v1/session/<hash>/<config>/hls  or  /v1/master/<hash>/<config>
     '----------------------------------------------------------------
-    mediaTailorUrl = "https://<account-id>.mediatailor.<region>.amazonaws.com/v1/session/<hash>/<config>/hls"
+    mediaTailorUrl = "https://<your-cloudfront-domain>.cloudfront.net/v1/master/<config-hash>/<playbackConfigName>/index.m3u8"
 
     '----------------------------------------------------------------
     ' Launch the background task that owns the SSAI adapter lifecycle.
@@ -256,7 +256,7 @@ function setupMediaTailorVideo() as Void
     m.mediaTailorTask.setField("nr",           m.nr)
     m.mediaTailorTask.setField("tracker",      MediaTailorTracker(m.nr))
     m.mediaTailorTask.setField("streamUrl",    mediaTailorUrl)
-    m.mediaTailorTask.setField("streamType",   "VOD")
+    m.mediaTailorTask.setField("streamType",   "LIVE")
     m.mediaTailorTask.setField("streamFormat", "hls")
     m.mediaTailorTask.control = "RUN"
 end function

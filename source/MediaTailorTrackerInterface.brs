@@ -26,6 +26,7 @@ function nrEnableMediaTailorTracking(nr as Object, adIface as Object) as Void
     else
         m.nrMTTracker = MediaTailorTracker(nr)
     end if
+    adIface.addEventListener(adIface.AdEvent.PODS,            nrMTPodsListener)
     adIface.addEventListener(adIface.AdEvent.POD_START,      nrMTEventListener)
     adIface.addEventListener(adIface.AdEvent.IMPRESSION,     nrMTEventListener)
     adIface.addEventListener(adIface.AdEvent.FIRST_QUARTILE, nrMTEventListener)
@@ -43,6 +44,15 @@ function nrMTEventListener(adInfo as Object) as Void
     evtType = ""
     if adInfo.event <> invalid then evtType = adInfo.event
     m.nrMTTracker.callFunc("nrTrackMediaTailorEvent", evtType, adInfo)
+end function
+
+' Fires whenever RAFX_SSAI (re)parses the manifest and reports how many ad
+' pods it found - the fastest way to tell "no ad markers in this manifest"
+' apart from "ads detected but not rendering".
+function nrMTPodsListener(adInfo as Object) as Void
+    count = 0
+    if adInfo <> invalid and adInfo.adPods <> invalid then count = adInfo.adPods.Count()
+    print "MediaTailorTask: PodsFound - adPods.Count() = " + count.toStr()
 end function
 
 ' Create and return a new MediaTailorTracker node wired to the NRAgent.
