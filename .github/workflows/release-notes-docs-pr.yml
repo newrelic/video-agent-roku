@@ -31,6 +31,9 @@ jobs:
     name: Update public docs
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
       - name: Generate GitHub App token
         id: app-token
         uses: actions/create-github-app-token@v1
@@ -42,20 +45,24 @@ jobs:
 
       - name: Resolve release tag and body
         id: release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             tag="${{ github.event.inputs.tag }}"
           else
             tag="${{ github.event.release.tag_name }}"
           fi
-          body=$(gh release view "${tag}" --repo ${{ env.AGENT_REPO }} --json body --jq '.body')
           version="${tag#v}"
-          releaseDate=$(gh api "repos/${{ env.AGENT_REPO }}/contents/CHANGELOG.md" --jq '.content' | \
-            base64 -d | \
-            grep -m1 "^## \[${version}\]" | \
+          releaseDate=$(grep -m1 "^## \[${version}\]" CHANGELOG.md | \
             grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+          body=$(awk -v ver="${version}" '
+            found && /^## +\[|^# / { exit }
+            found { print }
+            $0 ~ ("^## +\\[" ver "\\]") { found=1 }
+          ' CHANGELOG.md | sed -E 's/ *\(\[[0-9a-f]{6,40}\]\([^)]*\)\) *$//')
+          body=$(printf '%s' "${body}" | sed '/[^[:space:]]/,$!d' | sed -e :a -e '/^[[:space:]]*$/{$d;N;ba}')
+          if [[ -z "${body}" ]]; then
+            body="_No new features, improvements, or bug fixes for this release._"
+          fi
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "releaseDate=${releaseDate}" >> "$GITHUB_OUTPUT"
           echo "body<<RELEASE_BODY_EOF" >> "$GITHUB_OUTPUT"
@@ -97,11 +104,6 @@ jobs:
         env:
           RELEASE_BODY: ${{ steps.release.outputs.body }}
         run: |
-          processed=$(printf '%s\n' "${RELEASE_BODY}" | \
-            tr -d '\r' | \
-            awk 'BEGIN{s=1} /^## /{s=0} !s{print}' | \
-            sed "s/## What's Changed/## What's changed/g; s/## Full Changelog/## Full changelog/g" | \
-            awk '/^## Full changelog/{fc=1;next} fc && /^https?:\/\//{printf "[Full changelog](%s)\n\n",$0;fc=0;next} fc && NF==0{next} {fc=0;print}')
           echo "=== DRY RUN: MDX file that would be created ==="
           echo "File: ${{ steps.mdx.outputs.releaseFile }}"
           echo ""
@@ -114,7 +116,7 @@ jobs:
           printf '%s\n' 'category: ${{ env.AGENT_NAME }}'
           printf '%s\n' '---'
           printf '\n'
-          printf '%s\n' "${processed}"
+          printf '%s\n' "${RELEASE_BODY}"
 
       - name: Write release notes and open PR
         if: ${{ github.event.inputs.dry_run != 'true' }}
@@ -135,12 +137,6 @@ jobs:
             exit 0
           fi
 
-          processed=$(printf '%s\n' "${RELEASE_BODY}" | \
-            tr -d '\r' | \
-            awk 'BEGIN{s=1} /^## /{s=0} !s{print}' | \
-            sed "s/## What's Changed/## What's changed/g; s/## Full Changelog/## Full changelog/g" | \
-            awk '/^## Full changelog/{fc=1;next} fc && /^https?:\/\//{printf "[Full changelog](%s)\n\n",$0;fc=0;next} fc && NF==0{next} {fc=0;print}')
-
           {
             printf '%s\n' '---'
             printf '%s\n' 'subject: ${{ env.AGENT_SUBJECT }}'
@@ -151,7 +147,7 @@ jobs:
             printf '%s\n' 'category: ${{ env.AGENT_NAME }}'
             printf '%s\n' '---'
             printf '\n'
-            printf '%s\n' "${processed}"
+            printf '%s\n' "${RELEASE_BODY}"
           } > "${releaseFile}"
 
           git checkout -b "${branchName}"
