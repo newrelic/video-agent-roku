@@ -22,7 +22,7 @@ env:
   AGENT_NAME: Roku
   AGENT_SLUG: roku
   AGENT_FILE_PREFIX: streaming-others-agent
-  AGENT_SUBJECT: Streaming Video & Ads for Others
+  AGENT_SUBJECT: Streaming Video & Ads for others
   # --- Shared docs config ---
   DOCS_FOLDER: src/content/docs/release-notes/streaming-others-release-notes
 
