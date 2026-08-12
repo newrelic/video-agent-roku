@@ -92,7 +92,11 @@ jobs:
           tag="${{ steps.release.outputs.tag }}"
           version="${tag#v}"
           releaseDate="${{ steps.release.outputs.releaseDate }}"
-          fileDate=$(date -u "+%y-%m-%d")
+          if [[ -n "${releaseDate}" ]]; then
+            fileDate="${releaseDate:2}"
+          else
+            fileDate=$(date -u "+%y-%m-%d")
+          fi
           releaseFile="${{ env.DOCS_FOLDER }}/${{ env.AGENT_FILE_PREFIX }}-${fileDate}.mdx"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "releaseFile=${releaseFile}" >> "$GITHUB_OUTPUT"
