@@ -212,7 +212,7 @@ end function
 ' Gate all debug output behind the NRAgent logging state (nrActivateLogging / nrEnableLogging).
 ' Only prints when the app has explicitly enabled NR logging.
 function nrMTLog(msg as String) as Void
-    if m.top.nr <> invalid and m.top.nr.callFunc("nrCheckLoggingState", {}) = true
+    if m.top.nr <> invalid and m.top.nr.callFunc("nrCheckLoggingState") = true
         print "MediaTailorTracker: " + msg
     end if
 end function
