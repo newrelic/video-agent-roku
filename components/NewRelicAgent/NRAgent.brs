@@ -1623,11 +1623,13 @@ function nrSendBackupVideoEnd() as Void
 end function
 
 function nrAddVideoAttributes(ev as Object) as Object
-    ev.AddReplace("errorMessage",m.nrVideoObject.errorMsg)
-    ev.AddReplace("errorCode",m.nrVideoObject.errorCode)
-    if m.nrVideoObject.errorInfo <> invalid
-        ev.AddReplace("backtrace",m.nrVideoObject.errorInfo.source)
-    end if
+    ' errorCode/errorMessage/backtrace are intentionally NOT set here. This
+    ' helper runs for every VideoAction/VideoAdAction/VideoErrorAction event,
+    ' but the Video node's errorCode/errorMsg/errorInfo fields reflect the
+    ' last error seen (Roku defaults errorCode to 0, not invalid, when there
+    ' is no error). Stamping them here leaked errorCode=0 onto every
+    ' non-error event, including heartbeats (NR-606648). Error events set
+    ' these explicitly via nrSendError()/nrSendErrorEvent().
     ev.AddReplace("contentDuration", m.nrVideoObject.duration * 1000)
     ev.AddReplace("contentPlayhead", m.nrVideoObject.position * 1000)
     ev.AddReplace("contentIsMuted", m.nrVideoObject.mute)
