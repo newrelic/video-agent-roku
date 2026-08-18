@@ -14,6 +14,7 @@ Function TestSuite__Main() as Object
     this.addTest("VideoEvents", TestCase__Main_VideoEvents)
     this.addTest("TimeSinceAttributes", TestCase__Main_TimeSinceAttributes)
     this.addTest("RAFTracker", TestCase__Main_RAFTracker)
+    this.addTest("NoErrorAttributesOnNonErrorEvents", TestCase__Main_NoErrorAttributesOnNonErrorEvents)
 
     return this
 End Function
@@ -190,5 +191,36 @@ Function TestCase__Main_RAFTracker() as String
         m.assertTrue(events[6].timeSinceAdStarted > 600 AND events[6].timeSinceAdStarted < 630)
         m.assertEqual(events[7].actionName, "AD_BREAK_END")
         m.assertTrue(events[7].timeSinceAdBreakBegin > 1400 AND events[7].timeSinceAdBreakBegin < 1500)
+    ])
+End Function
+
+' Regression test for NR-606648: the Video node's errorCode/errorMsg fields
+' (DummyVideo fakes a permanently non-zero errorCode, mirroring how Roku's
+' real Video node always reports errorCode=0 even when there is no error)
+' must only be attached to actual error events, not every VideoAction.
+Function TestCase__Main_NoErrorAttributesOnNonErrorEvents() as String
+    print "Checking error attributes are not leaked onto non-error events..."
+
+    Video_Tracking_SetUp(m)
+
+    m.videoObject.callFunc("startBuffering")
+    m.videoObject.callFunc("error")
+
+    events = m.nr.callFunc("nrExtractAllSamples", "event")
+
+    return multiAssert([
+        m.assertArrayCount(events, 4)
+        m.assertEqual(events[0].actionName, "CONTENT_REQUEST")
+        m.assertInvalid(events[0].errorCode)
+        m.assertInvalid(events[0].errorMessage)
+        m.assertEqual(events[1].actionName, "CONTENT_BUFFER_START")
+        m.assertInvalid(events[1].errorCode)
+        m.assertInvalid(events[1].errorMessage)
+        m.assertEqual(events[2].actionName, "CONTENT_BUFFER_END")
+        m.assertInvalid(events[2].errorCode)
+        m.assertInvalid(events[2].errorMessage)
+        m.assertEqual(events[3].actionName, "CONTENT_ERROR")
+        m.assertEqual(events[3].errorCode, 12345)
+        m.assertEqual(events[3].errorMessage, "whatever error")
     ])
 End Function
