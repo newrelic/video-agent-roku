@@ -129,7 +129,9 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | viewId                   | Trackers will generate unique IDs for every new video iteration.                                              |
 | contentId                | The ID of the video.                                                                                          |
 | contentTitle             | The title of the video.                                                                                       |
-| contentBitrate           | The actual encoding bitrate of the currently playing rendition (in bits per second).                          |
+| contentBitrate                      | The actual encoding bitrate of the currently playing rendition (in bits per second).                          |
+| contentSegmentDownloadBitrate       | Measured bitrate (in bits per second) based on segment download performance.                                  |
+| contentNetworkDownloadBitrate       | Network download bitrate (in bits per second) measured during content delivery.                               |
 | contentIsFullscreen      | Always "true".                                                                                                |
 | contentRenditionName     | Name of the rendition (e.g., 1080p).                                                                          |
 | contentDuration          | Duration of the video, in ms.                                                                                 |
@@ -147,8 +149,6 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | enduser.id               | User ID.                                                                                                      |
 
 **QoE (Quality of Experience) Attributes** - These attributes are sent with `actionName = QOE_AGGREGATE` events:
-
-> **Note:** QoE aggregate events are opt-in and must be explicitly enabled. Reporting frequency is configurable per integration.
 
 
 | Attribute Name           | Definition                                                                                                                                         |
