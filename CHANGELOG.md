@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.3] - 2026/08/21
+
+### Fixed
+
+- Fixed `CONTENT_BUFFER_END` being delayed until playback resumed when a rebuffer completed while the video was paused. The event is now fired as soon as buffering actually recovers (detected via the player's native buffering-progress signal), independent of whether the user has resumed playback yet. This corrects over-reporting of buffering duration and total rebuffering time for pause-during-buffer scenarios.
+
 ## [4.2.2] - 2026/08/05
 
 ### Added
