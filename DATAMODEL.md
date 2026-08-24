@@ -129,9 +129,9 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | viewId                   | Trackers will generate unique IDs for every new video iteration.                                              |
 | contentId                | The ID of the video.                                                                                          |
 | contentTitle             | The title of the video.                                                                                       |
-| contentBitrate           | The actual encoding bitrate of the currently playing rendition (in bits per second).                          |
-| contentSegmentDownloadBitrate | Bandwidth estimate used by the ABR (Adaptive Bitrate) algorithm (in bits per second).                   |
-| contentNetworkDownloadBitrate | Raw network download speed from the most recent segment (in bits per second).                           |
+| contentBitrate                      | The actual encoding bitrate of the currently playing rendition (in bits per second).                          |
+| contentSegmentDownloadBitrate       | Measured bitrate (in bits per second) based on segment download performance.                                  |
+| contentNetworkDownloadBitrate       | Network download bitrate (in bits per second) measured during content delivery.                               |
 | contentIsFullscreen      | Always "true".                                                                                                |
 | contentRenditionName     | Name of the rendition (e.g., 1080p).                                                                          |
 | contentDuration          | Duration of the video, in ms.                                                                                 |
@@ -140,7 +140,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | contentIsFullscreen      | True if the video is currently fullscreen.                                                                    |
 | contentIsMuted           | True if the video is currently muted.                                                                         |
 | totalAdPlaytime          | Total time ad is played for this video session.                                                               |
-| elapsedTime              | Time that has passed since the last event.                                                                    |
+| elapsedTime              | Active content watched between two consecutive heartbeats, in milliseconds.                                                                    |
 | bufferType               | When buffer starts, i.e., initial, seek, pause & connection.                                                  |
 | timestamp                | The time (date, hour, minute, second) at which the interaction occurred.                                      |
 | instrumentation.provider | Player/agent name.                                                                                            |
@@ -149,6 +149,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | enduser.id               | User ID.                                                                                                      |
 
 **QoE (Quality of Experience) Attributes** - These attributes are sent with `actionName = QOE_AGGREGATE` events:
+
 
 | Attribute Name           | Definition                                                                                                                                         |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -210,7 +211,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | adCreativeId             | The creative ID of the ad.                                                                                              |
 | adPartner                | The ad partner, e.g., ima, freewheel.                                                                                   |
 | timestamp                | The time (date, hour, minute, second) at which the interaction occurred.                                                |
-| elapsedTime              | Time that has passed since the last event.                                                                              |
+| elapsedTime              | Active content watched between two consecutive heartbeats, in milliseconds.                                                                              |
 | instrumentation.provider | Player/agent name.                                                                                                      |
 | instrumentation.name     | Name of the instrumentation collecting the data.                                                                        |
 | instrumentation.version  | Agent’s version.                                                                                                        |
@@ -250,7 +251,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | errorCode                | Error code if it's known.                                                                                     |
 | backTrace                | Stack trace of the error.                                                                                     |
 | contentSrc               | Content source URL.                                                                                           |
-| elapsedTime              | Time that has passed since the last event.                                                                    |
+| elapsedTime              | Active content watched between two consecutive heartbeats, in milliseconds.                                                                    |
 | timestamp                | The time (date, hour, minute, second) at which the interaction occurred.                                      |
 | instrumentation.provider | Player/agent name.                                                                                            |
 | instrumentation.name     | Name of the instrumentation collecting the data.                                                              |
