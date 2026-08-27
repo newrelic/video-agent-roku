@@ -12,6 +12,8 @@ jobs:
     # Only run if PR was merged (not just closed)
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Checkout code
@@ -82,6 +84,13 @@ jobs:
           echo ""
           echo "✓ Zip file validation passed"
 
+      - name: Read package version
+        id: version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Package version: ${version}"
+
       - name: Upload artifact for publishing
         uses: actions/upload-artifact@v4
         with:
@@ -110,12 +119,20 @@ jobs:
 
       - name: Upload to S3
         run: |
-          echo "Uploading NewRelicAgent.zip to S3..."
+          version="${{ needs.build.outputs.version }}"
+          latestKey="media-agents/roku/video-agent-roku-latest.zip"
+          versionedKey="media-agents/roku/video-agent-roku-${version}.zip"
 
-          # Upload to S3
+          echo "Uploading video-agent-roku-latest.zip to S3..."
           aws s3 cp out/NewRelicAgent.zip \
-            s3://${{ secrets.S3_BUCKET_NAME }}/media-agents/roku/NewRelicAgent.zip \
+            "s3://${{ secrets.S3_BUCKET_NAME }}/${latestKey}" \
+            --content-type application/zip
+
+          echo "Uploading video-agent-roku-${version}.zip to S3..."
+          aws s3 cp out/NewRelicAgent.zip \
+            "s3://${{ secrets.S3_BUCKET_NAME }}/${versionedKey}" \
             --content-type application/zip
 
           echo "✓ Upload complete!"
-          echo "S3 Location: s3://${{ secrets.S3_BUCKET_NAME }}/media-agents/roku/NewRelicAgent.zip"
+          echo "S3 Location: s3://${{ secrets.S3_BUCKET_NAME }}/${latestKey}"
+          echo "S3 Location: s3://${{ secrets.S3_BUCKET_NAME }}/${versionedKey}"
