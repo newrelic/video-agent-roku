@@ -14,19 +14,19 @@ All notable changes to this project will be documented in this file.
 - Fixed `errorCode`/`errorMessage`/`backtrace` being stamped onto every `VideoAction`/`VideoAdAction` event, including heartbeats — Roku's Video node reports `errorCode: 0` (not `invalid`) even absent an error, so every non-error event was leaking error-shaped attributes (NR-606648). These now only appear on actual error events.
 - Fixed MediaTailor SSAI debug logging (`nrActivateLogging`) being silently suppressed since its introduction in 4.2.0 — an extra argument passed to `nrCheckLoggingState()` via `callFunc` caused the call to no-op instead of evaluating the logging gate, so no MediaTailor debug output was ever produced regardless of logging state.
 
-## [4.2.2] - 2026/08/05
+## [4.2.2] - 2026-08-05
 
-### Added
+### New features
 
 - Added `"JP"` as a supported `region` value (alongside `"US"`, `"EU"`, and `"staging"`), routing event, log, metric, and mobile-connect traffic to the New Relic Japan collector endpoints. Region matching is case-insensitive (`"JP"` or `"jp"`).
 
-### Removed
-
-- Removed `totalTimeSwitchedDown` from the `QOE_AGGREGATE` event and its internal tracking (rendition-switch-down interval accumulation).
-
-### Fixed
+### Bug fixes
 
 - Fixed a dirty-check gap where `QOE_AGGREGATE` events stopped being sent after the first one whenever only a KPI added in 4.2.1 (`avgDownloadRate`, `minDownloadRate`, `maxDownloadRate`, `totalSwitchUps`, `totalSwitchDowns`, `totalPauseTime`, `totalRenditions`) changed between harvests — most noticeable during a long pause, where `totalPauseTime` was the only value still moving.
+
+### Notes
+
+- Removed `totalTimeSwitchedDown` from the `QOE_AGGREGATE` event and its internal tracking (rendition-switch-down interval accumulation).
 
 ## [4.2.1] - 2026/05/26
 

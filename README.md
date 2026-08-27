@@ -559,6 +559,20 @@ nrForceHarvestLogs(m.nr)
 
 ---
 
+### Live Stream Configuration
+
+For live content, keep the harvest time at the minimum (60s) for timely data delivery:
+
+```brightscript
+' Live content — use minimum harvest time
+nrSetHarvestTime(nr, 60)
+
+' VOD content — higher values reduce network overhead
+nrSetHarvestTime(nr, 120)
+```
+
+---
+
 ### QoE Tracking
 
 Quality of Experience tracking is **enabled by default**. It sends `QOE_AGGREGATE` events containing startup time, rebuffering, bitrate, and error KPIs. The default interval multiplier is `2` (QoE evaluated every 2 harvest cycles).
