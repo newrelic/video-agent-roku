@@ -244,6 +244,9 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Current state
     m.nrLastVideoState = "none"
     m.nrIsInitialBuffering = false
+    ' Tracks an in-progress buffer so BUFFER_END fires once regardless of which
+    ' signal (bufferingStatus observer or state transition) detects recovery first.
+    m.nrInBuffering = false
     'Timestamps for timeSince attributes
     m.nrTimeSinceBufferBegin = 0.0
     m.nrTimeSinceLastHeartbeat = 0.0
@@ -283,6 +286,9 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
     m.nrvideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
     m.nrVideoObject.observeFieldScoped("downloadedSegment", "nrDownloadedSegmentObserver")
+    ' Detects buffer recovery even while paused, since `state` stays "paused" and
+    ' never triggers nrStateObserver in that case.
+    m.nrVideoObject.observeFieldScoped("bufferingStatus", "nrBufferingStatusObserver")
 
     'Init heartbeat timer
     m.hbTimer = m.top.findNode("nrHeartbeatTimer")
@@ -300,6 +306,7 @@ function NewRelicVideoStop() as Void
         m.nrVideoObject.unobserveFieldScoped("contentIndex")
         m.nrVideoObject.unobserveFieldScoped("licenseStatus")
         m.nrVideoObject.unobserveFieldScoped("downloadedSegment")
+        m.nrVideoObject.unobserveFieldScoped("bufferingStatus")
         'Reset content network bitrate tracker before invalidating video object
         nrResetContentBitrateTracker()
         m.nrVideoObject = Invalid
@@ -1483,6 +1490,7 @@ function nrSendResume() as Void
 end function
 
 function nrSendBufferStart() as Void
+    m.nrInBuffering = true
     m.nrTimeSinceBufferBegin = m.nrTimer.TotalMilliseconds()
 
     if m.nrTimeSinceStarted = 0
@@ -1497,6 +1505,11 @@ function nrSendBufferStart() as Void
 end function
 
 function nrSendBufferEnd() as Void
+    ' Guards against double-firing: buffer recovery can be detected by either the
+    ' bufferingStatus observer or the state transition, so the second call is a no-op.
+    if not m.nrInBuffering then return
+    m.nrInBuffering = false
+
     if m.nrTimeSinceStarted = 0
         m.nrIsInitialBuffering = true
     else
@@ -1512,8 +1525,40 @@ function nrSendBufferEnd() as Void
     end if
 
     nrSendVideoEvent("CONTENT_BUFFER_END", {"isInitialBuffering": m.nrIsInitialBuffering, "bufferType": bufferType})
-    nrResumePlaytime()
-    m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
+
+    ' Playtime stays frozen if the rebuffer completes while still paused; it only
+    ' resumes on the real CONTENT_RESUME (paused -> playing).
+    if m.nrVideoObject.state <> "paused"
+        nrResumePlaytime()
+        m.nrPlaytimeSinceLastEvent = CreateObject("roTimespan")
+    end if
+end function
+
+' The `bufferingStatus` field updates independently of `state` and fires even while
+' paused, catching rebuffer recovery that the state-machine path would otherwise miss.
+function nrBufferingStatusObserver() as Void
+    ' Ignores ad buffering and any flow that never called nrSendBufferStart.
+    if not m.nrInBuffering then return
+
+    ' Initial-load buffering stays on the state-machine path; this listener only
+    ' covers rebuffers (m.nrTimeSinceStarted > 0 once playback has started).
+    if m.nrTimeSinceStarted = 0 then return
+
+    bs = m.nrVideoObject.bufferingStatus
+
+    ' Complete when the field goes invalid, or prebufferDone=true. Checked via nested
+    ' ifs (not `and`) since BrightScript doesn't guarantee short-circuit evaluation.
+    bufferComplete = false
+    if bs = invalid
+        bufferComplete = true
+    else if bs.prebufferDone = true
+        bufferComplete = true
+    end if
+
+    if bufferComplete
+        nrLog("nrBufferingStatusObserver: buffer recovery detected")
+        nrSendBufferEnd()
+    end if
 end function
 
 function nrSendError(video as Object) as Void
