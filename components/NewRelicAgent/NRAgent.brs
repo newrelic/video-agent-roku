@@ -2288,8 +2288,8 @@ function nrExtractDomainFromUrl(url as String) as String
 end function
 
 function nrGenerateId() as String
-    timestamp = CreateObject("roDateTime").asSeconds()
-    randStr = "ID" + Str(timestamp) + Str(Rnd(0) * 1000.0)
+    dev = CreateObject("roDeviceInfo")
+    randStr = "ID" + dev.GetRandomUUID()
     ba = CreateObject("roByteArray")
     ba.FromAsciiString(randStr)
     digest = CreateObject("roEVPDigest")
