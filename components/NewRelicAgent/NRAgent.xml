@@ -35,6 +35,7 @@
         <function name="nrDisableHttpEvents"/>
         <function name="nrSetCustomAttribute"/>
         <function name="nrSetCustomAttributeList"/>
+        <function name="nrDeleteCustomAttributes"/>
         <function name="nrSetHarvestTime"/>
         <function name="nrSetHarvestTimeEvents"/>
         <function name = "nrSetUserId" />

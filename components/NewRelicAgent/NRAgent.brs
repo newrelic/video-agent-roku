@@ -576,6 +576,19 @@ function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as 
     nrLog(["Custom Attributes: ", m.nrCustomAttributes[dictName]])
 end function
 
+' Remove the given keys from a custom attribute bucket (default: general).
+function nrDeleteCustomAttributes(keys as Object, actionName = "" as String) as Void
+    dictName = actionName
+    if dictName = "" then dictName = "GENERAL_ATTR"
+
+    actionDict = m.nrCustomAttributes[dictName]
+    if actionDict = invalid then return
+
+    for each key in keys
+        actionDict.Delete(key)
+    end for
+end function
+
 function nrSetHarvestTime(seconds as Integer) as Void
     nrSetHarvestTimeEvents(seconds)
     nrSetHarvestTimeLogs(seconds)
@@ -1242,6 +1255,11 @@ function nrAddCustomAttributes(ev as Object) as Object
     actionName = ev["actionName"]
     actionCustomAttr = m.nrCustomAttributes[actionName]
     if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
+    ' Ad-scoped attributes apply to VideoAdAction events only
+    if ev["eventType"] = "VideoAdAction"
+        adCustomAttr = m.nrCustomAttributes["VIDEO_AD_ATTR"]
+        if adCustomAttr <> invalid then ev.Append(adCustomAttr)
+    end if
     return ev
 end function
 
