@@ -309,13 +309,32 @@ Build a New Relic Agent object. Call this once at app startup.
 | `appName` | String | Yes | — | Application name |
 | `appToken` | String | Yes | — | Mobile Application Token |
 | `region` | String | No | `"US"` | API region: `"US"`, `"EU"`, `"staging"`, or `"JP"` |
-| `activeLogs` | Boolean | No | `false` | Enable agent debug logging |
+| `activeLogs` | Boolean or String | No | `false` | `false` = no logs, `true` = all logs, or a minimum level: `"INFO"`, `"WARNING"`, `"ERROR"` |
 
 ```brightscript
 m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN")
 
 ' EU region with logging enabled
 m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN", "EU", true)
+```
+
+---
+
+#### Logging levels
+
+`activeLogs` also accepts a minimum level instead of `true`:
+
+| Value | Output |
+|-------|--------|
+| `false` | Nothing |
+| `true` or `"INFO"` | Everything: debug output plus `WARNING` and `ERROR` messages |
+| `"WARNING"` | `WARNING` and `ERROR` messages only |
+| `"ERROR"` | `ERROR` messages only |
+
+When a harvest cannot keep up and a buffer is full, the agent permanently loses a sample to its reservoir sampling. Each loss is counted per sample type (event, log, metric) for the session and logged at `ERROR` level, for example `[NewRelic][ERROR] Buffer full, event sample dropped (capacity 400). Total dropped events this session: 1`. Every drop is logged. Buffer sizes, harvest intervals and eviction behavior are unchanged.
+
+```brightscript
+m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN", "US", "ERROR")
 ```
 
 ---
