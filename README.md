@@ -331,7 +331,7 @@ m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN", "EU", true)
 | `"WARNING"` | `WARNING` and `ERROR` messages only |
 | `"ERROR"` | `ERROR` messages only |
 
-When a harvest cannot keep up and a buffer is full, the agent permanently loses a sample to its reservoir sampling. Each loss is counted per sample type (event, log, metric) for the session and logged at `ERROR` level, for example `[NewRelic][ERROR] Buffer full, event sample dropped (capacity 400). Total dropped events this session: 1`. Every drop is logged. Buffer sizes, harvest intervals and eviction behavior are unchanged.
+Each buffer (event, log, metric) also reports how full it is: `INFO` at 85% and `WARNING` at 90% of capacity, once per crossing, for example `[NewRelic][WARNING] event buffer 90% full (360 of 400 events)`. When a harvest cannot keep up and a buffer is full, the agent permanently loses a sample to its reservoir sampling. Every loss is counted per buffer for the session and logged at `ERROR` level, for example `[NewRelic][ERROR] event buffer full (capacity 400), sample dropped. Total dropped this session: 1`. Buffer sizes, harvest intervals and eviction behavior are unchanged.
 
 ```brightscript
 m.nr = NewRelic("ACCOUNT_ID", "API_KEY", "APP_NAME", "APP_TOKEN", "US", "ERROR")

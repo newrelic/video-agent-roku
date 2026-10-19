@@ -13,6 +13,7 @@ Function TestSuite__Logs() as Object
     this.addTest("CustomLogs", TestCase__Logs_CustomLogs)
     this.addTest("DroppedSamplesCounted", TestCase__Logs_DroppedSamplesCounted)
     this.addTest("LoggingLevel", TestCase__Logs_LoggingLevel)
+    this.addTest("FillThresholdsDoNotDropSamples", TestCase__Logs_FillThresholdsDoNotDropSamples)
 
     return this
 End Function
@@ -83,5 +84,22 @@ Function TestCase__Logs_LoggingLevel() as String
         m.assertEqual(asError[1], "ERROR")
         m.assertFalse(asInvalid)
         m.assertFalse(asFalse)
+    ])
+End Function
+
+Function TestCase__Logs_FillThresholdsDoNotDropSamples() as String
+    print "Checking fill thresholds keep every sample below capacity..."
+
+    m.nr.callFunc("nrExtractAllSamples", "log")
+    before = m.nr.callFunc("nrGetDroppedSamplesCount", "log")
+    ' 380 of 400 crosses both the 85% and 90% marks without filling the buffer.
+    for i = 1 to 380
+        nrSendLog(m.nr, "fill " + Str(i).Trim(), "test", {})
+    end for
+    dropped = m.nr.callFunc("nrGetDroppedSamplesCount", "log") - before
+    logs = m.nr.callFunc("nrExtractAllSamples", "log")
+    return multiAssert([
+        m.assertArrayCount(logs, 380)
+        m.assertEqual(dropped, 0)
     ])
 End Function

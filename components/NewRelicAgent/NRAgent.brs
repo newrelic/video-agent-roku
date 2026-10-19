@@ -10,6 +10,8 @@ sub init()
     m.nrLoggingLevel = "INFO"
     'Cumulative samples lost to reservoir overwrite/discard, per sample type. Never reset between harvests.
     m.nrDroppedCounts = {event: 0, log: 0, metric: 0}
+    'Highest fill tier already logged per sample type: 0 none, 1 INFO (85%), 2 WARNING (90%). Re-armed when the buffer falls below the tier.
+    m.nrFillTierLogged = {event: 0, log: 0, metric: 0}
     m.qoeTrackingEnabled = true
     m.qoeAggregateIntervalMultiplier = 2
     m.qoeHarvestCycleCounter = 0
@@ -1002,11 +1004,34 @@ function nrGetDroppedSamplesCount(sampleType as String) as Integer
     return 0
 end function
 
+' Log INFO at 85% and WARNING at 90% of capacity, once per crossing. Logging only, no behavior change.
+function nrLogBufferFill(sampleType as String, count as Integer, capacity as Integer) as Void
+    tier = 0
+    if count * 100 >= capacity * 90
+        tier = 2
+    else if count * 100 >= capacity * 85
+        tier = 1
+    end if
+
+    logged = m.nrFillTierLogged[sampleType]
+    if tier < logged
+        m.nrFillTierLogged[sampleType] = tier
+    else if tier > logged
+        m.nrFillTierLogged[sampleType] = tier
+        msg = sampleType + " buffer "
+        if tier = 2
+            nrLogAtLevel("WARNING", msg + "90% full (" + Str(count).Trim() + " of " + Str(capacity).Trim() + " events)")
+        else
+            nrLogAtLevel("INFO", msg + "85% full (" + Str(count).Trim() + " of " + Str(capacity).Trim() + " events)")
+        end if
+    end if
+end function
+
 ' Count a dropped sample and emit an ERROR with the running count.
 function nrRecordDroppedSample(sampleType as String, capacity as Integer) as Void
     count = m.nrDroppedCounts[sampleType] + 1
     m.nrDroppedCounts[sampleType] = count
-    nrLogAtLevel("ERROR", "Buffer full, " + sampleType + " sample dropped (capacity " + Str(capacity).Trim() + "). Total dropped " + sampleType + "s this session: " + Str(count).Trim())
+    nrLogAtLevel("ERROR", sampleType + " buffer full (capacity " + Str(capacity).Trim() + "), sample dropped. Total dropped this session: " + Str(count).Trim())
 end function
 
 function nrExtractAllSamples(sampleType as String) as Object
@@ -2421,6 +2446,7 @@ function nrAddSample(sample as Object, buffer as Object, i as Integer, k as Inte
     if i < k
         buffer.Push(sample)
         nrLog(["RESERVOIR BUFFER SIZE AFTER PUSH = ", buffer.Count()])
+        nrLogBufferFill(sampleType, buffer.Count(), k)
     else
         j = Rnd(i) - 1
         if j < k
