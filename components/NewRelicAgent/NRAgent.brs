@@ -3209,6 +3209,8 @@ function nrGenerateQoeEvent(forceSend = false as Boolean) as Void
         else
             nrLog("QOE_AGGREGATE generated with synchronized KPIs - bitrate tracking closed")
         end if
+        'Log the KPI values like the iOS agent does
+        nrLog(["[QOE_AGGREGATE] => ", FormatJSON(kpiAttributes)])
     end if
 end function
 
