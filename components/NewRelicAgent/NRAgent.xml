@@ -45,6 +45,7 @@
         <function name="nrForceHarvestEvents"/>
         <function name="nrForceHarvestLogs"/>
         <function name="nrTrackRAF"/>
+        <function name="nrGenerateStreamUrl"/>
         <function name="nrSendLog"/>
         <function name="nrSendMetric"/>
         <function name="nrSendCountMetric"/>
