@@ -54,6 +54,8 @@
         <!-- Internal Methods (not wrapped, but used from the outside by some internal components) -->
         <function name="nrActivateLogging"/>
         <function name="nrCheckLoggingState"/>
+        <function name="nrGetLoggingLevel"/>
+        <function name="nrGetDroppedSamplesCount"/>
         <function name="nrActivateQoeTracking"/>
         <function name="nrCheckQoeTrackingState"/>
         <function name="nrSetQoeAggregateIntervalMultiplier"/>
