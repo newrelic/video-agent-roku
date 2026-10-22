@@ -141,6 +141,12 @@ function nrMTExtractAdMetadata(evtType as String, ctx as Object) as Void
         if ctx.errType = invalid then ctx.errType = ctx.adErrorType
     end if
 
+    ' SSAI ads are stitched into the content stream, so the stream URL is the ad source
+    if ctx.server = invalid
+        streamUrl = m.top.nr.callFunc("nrGenerateStreamUrl")
+        if streamUrl <> invalid and streamUrl <> "" then m.customAdMetadata.AddReplace("adSrc", streamUrl)
+    end if
+
     ' Tag the event as coming from the MediaTailor SSAI path
     m.customAdMetadata.AddReplace("adPartner", "mediatailor")
 end function
