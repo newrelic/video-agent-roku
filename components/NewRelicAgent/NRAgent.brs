@@ -576,6 +576,19 @@ function nrSetCustomAttributeList(attr as Object, actionName = "" as String) as 
     nrLog(["Custom Attributes: ", m.nrCustomAttributes[dictName]])
 end function
 
+' Remove the given keys from a custom attribute bucket (default: general).
+function nrDeleteCustomAttributes(keys as Object, actionName = "" as String) as Void
+    dictName = actionName
+    if dictName = "" then dictName = "GENERAL_ATTR"
+
+    actionDict = m.nrCustomAttributes[dictName]
+    if actionDict = invalid then return
+
+    for each key in keys
+        actionDict.Delete(key)
+    end for
+end function
+
 function nrSetHarvestTime(seconds as Integer) as Void
     nrSetHarvestTimeEvents(seconds)
     nrSetHarvestTimeLogs(seconds)
@@ -1154,6 +1167,34 @@ function nrCreateAppInfo() as Object
     return {"appInfo" : appInfo, "deviceInfo":appInfo[1]}
 end function
 
+' GetDisplaySize() tops out at 1920x1080 regardless of actual output, so it can't
+' represent 4K/8K rendition. GetVideoMode() reflects the real playback resolution
+' (e.g. "2160p24", "2160p60b10", "1080p60Dv") but only as a string, so parse the
+' leading height digits and derive width from Roku's fixed height->width pairs.
+function nrGetRenditionSizeFromVideoMode(videoMode as String) as Object
+    if videoMode = invalid or videoMode = "" then return invalid
+    heightStr = ""
+    for i = 1 to Len(videoMode)
+        c = Mid(videoMode, i, 1)
+        if c >= "0" and c <= "9"
+            heightStr = heightStr + c
+        else
+            exit for
+        end if
+    end for
+    widthByHeight = {
+        "480": 720
+        "576": 720
+        "720": 1280
+        "1080": 1920
+        "2160": 3840
+        "4320": 7680
+    }
+    width = widthByHeight[heightStr]
+    if heightStr = "" or width = invalid then return invalid
+    return { h: heightStr.ToInt(), w: width }
+end function
+
 function nrCreateEvent(eventType as String, actionName as String) as Object
     ev = CreateObject("roAssociativeArray")
     if actionName <> invalid and actionName <> "" then ev["actionName"] = actionName
@@ -1203,12 +1244,14 @@ function nrAddBaseAttributes(ev as Object) as Object
     'ev.AddReplace("ipAddress", dev.GetExternalIp())
     ev.AddReplace("displayType", dev.GetDisplayType())
     ev.AddReplace("displayMode", dev.GetDisplayMode())
-    if dev.GetDisplaySize() <> invalid
-        ev.AddReplace("contentRenditionHeight", dev.GetDisplaySize().h)
-        ev.AddReplace("contentRenditionWidth", dev.GetDisplaySize().w)
+    videoMode = dev.GetVideoMode()
+    renditionSize = nrGetRenditionSizeFromVideoMode(videoMode)
+    if renditionSize <> invalid
+        ev.AddReplace("contentRenditionHeight", renditionSize.h)
+        ev.AddReplace("contentRenditionWidth", renditionSize.w)
     end if
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
-    ev.AddReplace("videoMode", dev.GetVideoMode())
+    ev.AddReplace("videoMode", videoMode)
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
     ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)
 
@@ -1242,6 +1285,11 @@ function nrAddCustomAttributes(ev as Object) as Object
     actionName = ev["actionName"]
     actionCustomAttr = m.nrCustomAttributes[actionName]
     if actionCustomAttr <> invalid then ev.Append(actionCustomAttr)
+    ' Ad-scoped attributes apply to VideoAdAction events only
+    if ev["eventType"] = "VideoAdAction"
+        adCustomAttr = m.nrCustomAttributes["VIDEO_AD_ATTR"]
+        if adCustomAttr <> invalid then ev.Append(adCustomAttr)
+    end if
     return ev
 end function
 
@@ -2288,8 +2336,8 @@ function nrExtractDomainFromUrl(url as String) as String
 end function
 
 function nrGenerateId() as String
-    timestamp = CreateObject("roDateTime").asSeconds()
-    randStr = "ID" + Str(timestamp) + Str(Rnd(0) * 1000.0)
+    dev = CreateObject("roDeviceInfo")
+    randStr = "ID" + dev.GetRandomUUID()
     ba = CreateObject("roByteArray")
     ba.FromAsciiString(randStr)
     digest = CreateObject("roEVPDigest")

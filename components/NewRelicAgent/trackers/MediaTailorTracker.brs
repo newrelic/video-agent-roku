@@ -88,7 +88,7 @@ function nrTrackMediaTailorEvent(evtType as String, ctx as Object) as Void
         end if
         timingAttr.AddReplace("numberOfAds", m.adState.numberOfAds)
         if timingAttr.Count() > 0
-            m.top.nr.callFunc("nrSetCustomAttributeList", timingAttr, "")
+            m.top.nr.callFunc("nrSetCustomAttributeList", timingAttr, "VIDEO_AD_ATTR")
         end if
         m.adState.timeSinceAdStarted = 0
         nrMTLog("clearing ad-level metadata")
@@ -104,7 +104,7 @@ function nrTrackMediaTailorEvent(evtType as String, ctx as Object) as Void
         end if
         timingAttr.AddReplace("numberOfAds", m.adState.numberOfAds)
         if timingAttr.Count() > 0
-            m.top.nr.callFunc("nrSetCustomAttributeList", timingAttr, "")
+            m.top.nr.callFunc("nrSetCustomAttributeList", timingAttr, "VIDEO_AD_ATTR")
         end if
         m.adState.timeSinceAdBreakBegin = 0
     end if
@@ -185,11 +185,11 @@ function nrMTExtractAdMetadata(evtType as String, ctx as Object) as Void
 end function
 
 ' Push accumulated MediaTailor metadata into the NRAgent as a custom
-' attribute list scoped to all action types (invalid = no filter).
-' nrAddCustomAttributes() in NRAgent will merge these into the next event.
+' attribute list scoped to VideoAdAction events only.
+' nrAddCustomAttributes() in NRAgent will merge these into the next ad event.
 function nrMTFlushCustomAdAttributes() as Void
     if m.customAdMetadata.Count() = 0 then return
-    m.top.nr.callFunc("nrSetCustomAttributeList", m.customAdMetadata, "")
+    m.top.nr.callFunc("nrSetCustomAttributeList", m.customAdMetadata, "VIDEO_AD_ATTR")
 end function
 
 ' Remove ad-level (not pod-level) keys after each individual ad ends,
@@ -201,6 +201,7 @@ function nrMTClearAdLevelMetadata() as Void
     for each key in adLevelKeys
         m.customAdMetadata.Delete(key)
     end for
+    m.top.nr.callFunc("nrDeleteCustomAttributes", adLevelKeys, "VIDEO_AD_ATTR")
 end function
 
 function nrMTResetAdState() as Void

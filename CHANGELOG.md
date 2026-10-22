@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed MediaTailor SSAI ad attributes (`adId`, `adTitle`, `adSystem`, `adPartner`, and other ad-level and timing fields) being added to `VideoAction` events after an ad finished. They are now attached to `VideoAdAction` events only, and ad-level keys are removed from the agent when each ad ends.
+
 ## [4.2.3] - 2026-08-27
 
 ### Added
