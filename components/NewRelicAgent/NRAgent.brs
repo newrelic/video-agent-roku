@@ -7,6 +7,11 @@
 
 sub init()
     m.nrLogsState = false
+    m.nrLoggingLevel = "INFO"
+    'Cumulative samples lost to reservoir overwrite/discard, per sample type. Never reset between harvests.
+    m.nrDroppedCounts = {event: 0, log: 0, metric: 0}
+    'Highest fill tier already logged per sample type: 0 none, 1 INFO (85%), 2 WARNING (90%). Re-armed when the buffer falls below the tier.
+    m.nrFillTierLogged = {event: 0, log: 0, metric: 0}
     m.qoeTrackingEnabled = true
     m.qoeAggregateIntervalMultiplier = 2
     m.qoeHarvestCycleCounter = 0
@@ -747,7 +752,7 @@ function nrSendLog(message as String, logtype as String, fields as Object) as Vo
 
     nrLog(["RECORD NEW LOG = ", lg])
 
-    m.nrLogArrayIndex = nrAddSample(lg, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
+    m.nrLogArrayIndex = nrAddSample(lg, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK, "log")
 end function
 
 'Send a Gauge metric
@@ -771,7 +776,7 @@ function nrSendMetric(name as String, value as dynamic, attr = invalid as Object
 
     nrLog(["RECORD NEW METRIC = ", metric])
 
-    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK, "metric")
 end function
 
 'Send Count metric
@@ -796,7 +801,7 @@ function nrSendCountMetric(name as String, value as dynamic, interval as Integer
 
     nrLog(["RECORD NEW COUNT METRIC = ", metric])
 
-    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK, "metric")
 end function
 
 'Send Summary metric
@@ -811,15 +816,23 @@ function nrSendSummaryMetric(name as String, interval as Integer, value as Objec
 
     nrLog(["RECORD NEW SUMMARY METRIC = ", metric])
 
-    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+    m.nrMetricArrayIndex = nrAddSample(metric, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK, "metric")
 end function
 
 '=========================='
 ' Public Internal Functions '
 '=========================='
 
-function nrActivateLogging(state as Boolean) as Void
-    m.nrLogsState = state
+' state: false = off, true = on at INFO (everything), or a level string ("INFO", "WARNING", "ERROR") = on at that minimum level.
+function nrActivateLogging(state as Dynamic) as Void
+    m.nrLoggingLevel = "INFO"
+    if type(state) = "String" or type(state) = "roString"
+        l = UCase(state)
+        m.nrLogsState = (l = "INFO" or l = "WARNING" or l = "ERROR")
+        if m.nrLogsState then m.nrLoggingLevel = l
+    else
+        m.nrLogsState = (state = true)
+    end if
 end function
 
 function nrCheckLoggingState() as Boolean
@@ -963,8 +976,9 @@ function nrFilterQoeContextAttributes(fullAttributes as Object) as Object
     return filteredAttributes
 end function
 
+' Debug output. Treated as INFO level, so it is hidden when activeLogs is "WARNING" or "ERROR".
 function nrLog(msg as Dynamic) as Void
-    if m.nrLogsState = true
+    if m.nrLogsState = true and nrLoggingLevelRank(m.nrLoggingLevel) = 0
         if type(msg) = "roArray"         
             For i=0 To msg.Count() - 1 Step 1
                 print msg[i];
@@ -974,6 +988,63 @@ function nrLog(msg as Dynamic) as Void
             print msg
         end if
     end if
+end function
+
+' Level-filtered log line. Printed when logging is enabled and level >= the level set via activeLogs.
+function nrLogAtLevel(level as String, msg as String) as Void
+    if m.nrLogsState = true and nrLoggingLevelRank(level) >= nrLoggingLevelRank(m.nrLoggingLevel)
+        print "[NewRelic][" + level + "] " + msg
+    end if
+end function
+
+' INFO = 0, WARNING = 1, ERROR = 2. Unknown values rank as INFO.
+function nrLoggingLevelRank(level as String) as Integer
+    l = UCase(level)
+    if l = "ERROR"
+        return 2
+    else if l = "WARNING"
+        return 1
+    end if
+    return 0
+end function
+
+function nrGetLoggingLevel() as String
+    return m.nrLoggingLevel
+end function
+
+function nrGetDroppedSamplesCount(sampleType as String) as Integer
+    if m.nrDroppedCounts.DoesExist(sampleType) then return m.nrDroppedCounts[sampleType]
+    return 0
+end function
+
+' Log INFO at 85% and WARNING at 90% of capacity, once per crossing. Logging only, no behavior change.
+function nrLogBufferFill(sampleType as String, count as Integer, capacity as Integer) as Void
+    tier = 0
+    if count * 100 >= capacity * 90
+        tier = 2
+    else if count * 100 >= capacity * 85
+        tier = 1
+    end if
+
+    logged = m.nrFillTierLogged[sampleType]
+    if tier < logged
+        m.nrFillTierLogged[sampleType] = tier
+    else if tier > logged
+        m.nrFillTierLogged[sampleType] = tier
+        msg = sampleType + " buffer "
+        if tier = 2
+            nrLogAtLevel("WARNING", msg + "90% full (" + Str(count).Trim() + " of " + Str(capacity).Trim() + " " + sampleType + "s)")
+        else
+            nrLogAtLevel("INFO", msg + "85% full (" + Str(count).Trim() + " of " + Str(capacity).Trim() + " " + sampleType + "s)")
+        end if
+    end if
+end function
+
+' Count a dropped sample and emit an ERROR with the running count.
+function nrRecordDroppedSample(sampleType as String, capacity as Integer) as Void
+    count = m.nrDroppedCounts[sampleType] + 1
+    m.nrDroppedCounts[sampleType] = count
+    nrLogAtLevel("ERROR", sampleType + " buffer full (capacity " + Str(capacity).Trim() + "), sample dropped. Total dropped this session: " + Str(count).Trim())
 end function
 
 function nrExtractAllSamples(sampleType as String) as Object
@@ -1028,7 +1099,7 @@ end function
 function nrRecordEvent(event as Object) as Void
     nrLog(["RECORD NEW EVENT = ", event])
     nrApplyObfuscationToEvent(event)
-    m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
+    m.nrEventArrayIndex = nrAddSample(event, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK, "event")
 end function
 
 function nrProcessSystemEvent(i as Object) as Boolean
@@ -2419,10 +2490,11 @@ function nrCalculateTotalPlaytime() as Integer
 end function
 
 ' Implement simple reservoir sampling (Algorithm R)
-function nrAddSample(sample as Object, buffer as Object, i as Integer, k as Integer) as Integer
+function nrAddSample(sample as Object, buffer as Object, i as Integer, k as Integer, sampleType = "event" as String) as Integer
     if i < k
         buffer.Push(sample)
         nrLog(["RESERVOIR BUFFER SIZE AFTER PUSH = ", buffer.Count()])
+        nrLogBufferFill(sampleType, buffer.Count(), k)
     else
         j = Rnd(i) - 1
         if j < k
@@ -2431,12 +2503,14 @@ function nrAddSample(sample as Object, buffer as Object, i as Integer, k as Inte
         else
             nrLog("RESERVOIR: DISCARD SAMPLE")
         end if
+        ' Either branch permanently loses one sample (the evicted one or the new one).
+        nrRecordDroppedSample(sampleType, k)
     end if
     return i + 1
 end function
 
 ' Get back samples after an error and resample buffer if necessary
-function nrGetBackSamples(samples as Object, buffer as Object, i as Integer, k as Integer) as Integer
+function nrGetBackSamples(samples as Object, buffer as Object, i as Integer, k as Integer, sampleType = "event" as String) as Integer
     if samples.Count() + buffer.Count() > k
         ' Buffer size exceeded, we have to resample
         tmpBuffer = []
@@ -2444,10 +2518,10 @@ function nrGetBackSamples(samples as Object, buffer as Object, i as Integer, k a
         buffer.Clear()
         i = 0
         for each s in samples
-            i = nrAddSample(s, buffer, i, k)
+            i = nrAddSample(s, buffer, i, k, sampleType)
         end for
         for each s in tmpBuffer
-            i = nrAddSample(s, buffer, i, k)
+            i = nrAddSample(s, buffer, i, k, sampleType)
         end for
         nrLog(["nrGetBackSamples: RESERVOIR RESAMPLED. ARRAY SIZE = ", buffer.Count()])
     else
@@ -2467,7 +2541,7 @@ end function
 
 function nrGetBackEvents(events as Object) as Void
     nrLog("------> nrGetBackEvents, current K = " + str(m.nrEventArrayK) + ", ev size = " + str(events.Count()))
-    m.nrEventArrayIndex = nrGetBackSamples(events, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK)
+    m.nrEventArrayIndex = nrGetBackSamples(events, m.nrEventArray, m.nrEventArrayIndex, m.nrEventArrayK, "event")
 end function
 
 function nrExtractAllLogs() as Object
@@ -2479,7 +2553,7 @@ end function
 
 function nrGetBackLogs(logs as Object) as Void
     nrLog("------> nrGetBackLogs, current K = " + str(m.nrLogArrayK) + ", log size = " + str(logs.Count()))
-    m.nrLogArrayIndex = nrGetBackSamples(logs, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK)
+    m.nrLogArrayIndex = nrGetBackSamples(logs, m.nrLogArray, m.nrLogArrayIndex, m.nrLogArrayK, "log")
 end function
 
 function nrExtractAllMetrics() as Object
@@ -2491,7 +2565,7 @@ end function
 
 function nrGetBackMetrics(metrics as Object) as Void
     nrLog("------> nrGetBackMetrics, current K = " + str(m.nrMetricArrayK) + ", metric size = " + str(metrics.Count()))
-    m.nrMetricArrayIndex = nrGetBackSamples(metrics, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK)
+    m.nrMetricArrayIndex = nrGetBackSamples(metrics, m.nrMetricArray, m.nrMetricArrayIndex, m.nrMetricArrayK, "metric")
 end function
 
 ' Check if roAppMemoryMonitor is available for current device according to official docs:
@@ -3123,6 +3197,8 @@ function nrQoeHarvestHandler() as Void
     shouldGenerateQoe = (m.qoeHarvestCycleCounter Mod m.qoeAggregateIntervalMultiplier = 0)
     if shouldGenerateQoe
         nrGenerateQoeEvent()
+    else
+        nrLog(["QOE_AGGREGATE not due yet, harvest cycle ", m.qoeHarvestCycleCounter, " of every ", m.qoeAggregateIntervalMultiplier])
     end if
 end function
 
@@ -3132,6 +3208,7 @@ function nrGenerateQoeEvent(forceSend = false as Boolean) as Void
 
     'Check if QOE tracking is enabled
     if m.qoeTrackingEnabled = false
+        nrLog("QOE_AGGREGATE skipped - QOE tracking disabled")
         return
     end if
 
@@ -3148,6 +3225,7 @@ function nrGenerateQoeEvent(forceSend = false as Boolean) as Void
     shouldSend = forceSend
     if not shouldSend
         shouldSend = not nrAreQoeKpisEqual(kpiAttributes, m.qoeLastSentKpis)
+        if not shouldSend then nrLog("QOE_AGGREGATE skipped - KPIs unchanged since last send")
     end if
 
     if shouldSend
@@ -3179,6 +3257,8 @@ function nrGenerateQoeEvent(forceSend = false as Boolean) as Void
         else
             nrLog("QOE_AGGREGATE generated with synchronized KPIs - bitrate tracking closed")
         end if
+        'Log the KPI values like the iOS agent does
+        nrLog(["[QOE_AGGREGATE] => ", FormatJSON(kpiAttributes)])
     end if
 end function
 
