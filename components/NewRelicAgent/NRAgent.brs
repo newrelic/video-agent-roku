@@ -1020,9 +1020,9 @@ function nrLogBufferFill(sampleType as String, count as Integer, capacity as Int
         m.nrFillTierLogged[sampleType] = tier
         msg = sampleType + " buffer "
         if tier = 2
-            nrLogAtLevel("WARNING", msg + "90% full (" + Str(count).Trim() + " of " + Str(capacity).Trim() + " events)")
+            nrLogAtLevel("WARNING", msg + "90% full (" + Str(count).Trim() + " of " + Str(capacity).Trim() + " " + sampleType + "s)")
         else
-            nrLogAtLevel("INFO", msg + "85% full (" + Str(count).Trim() + " of " + Str(capacity).Trim() + " events)")
+            nrLogAtLevel("INFO", msg + "85% full (" + Str(count).Trim() + " of " + Str(capacity).Trim() + " " + sampleType + "s)")
         end if
     end if
 end function
