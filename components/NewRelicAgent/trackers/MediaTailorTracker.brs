@@ -12,14 +12,6 @@
 '**********************************************************
 
 sub init()
-    m.adState = {}
-    nrMTResetAdState()
-
-    ' Master wall-clock timer – shared with the NRAgent timer epoch
-    ' so relative times are comparable across events.
-    m.nrTimer = CreateObject("roTimespan")
-    m.nrTimer.Mark()
-
     ' Persistent bucket for MediaTailor-specific ad metadata.
     ' Populated from nrMTExtractAdMetadata() on every relevant event
     ' and also injectable via nrSetMediaTailorAdMetadata() for sidecar
@@ -64,49 +56,18 @@ function nrTrackMediaTailorEvent(evtType as String, ctx as Object) as Void
         nrMTFlushCustomAdAttributes()
     end if
 
-    ' 3. Record pod-start timestamp for timeSinceAdBreakBegin
-    if evtType = "PodStart"
-        m.adState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
-    end if
-
-    ' 4. Hand off to the standard RAF event handler in NRAgent
+    ' 3. Hand off to the standard RAF event handler in NRAgent
     m.top.nr.callFunc("nrTrackRAF", evtType, ctx)
 
     ' awsemt maps both MediaTailor "start" and "impression" to AdEvent.IMPRESSION,
     ' so "Start" is never fired separately. Synthesize AD_START after AD_REQUEST.
     if evtType = "Impression"
         m.top.nr.callFunc("nrTrackRAF", "Start", ctx)
-        m.adState.numberOfAds = m.adState.numberOfAds + 1
-        m.adState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
     end if
 
-    ' 5. Attach timing attributes to AD_END / AD_BREAK_END events
-    if evtType = "Complete" or evtType = "Close"
-        timingAttr = {}
-        if m.adState.timeSinceAdStarted > 0
-            timingAttr.AddReplace("timeSinceAdStarted", m.nrTimer.TotalMilliseconds() - m.adState.timeSinceAdStarted)
-        end if
-        timingAttr.AddReplace("numberOfAds", m.adState.numberOfAds)
-        if timingAttr.Count() > 0
-            m.top.nr.callFunc("nrSetCustomAttributeList", timingAttr, "")
-        end if
-        m.adState.timeSinceAdStarted = 0
+    if evtType = "Complete" or evtType = "Close" or evtType = "PodComplete"
         nrMTLog("clearing ad-level metadata")
         nrMTClearAdLevelMetadata()
-    end if
-
-    if evtType = "PodComplete"
-        timingAttr = {}
-        if m.adState.timeSinceAdBreakBegin > 0
-            timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.adState.timeSinceAdBreakBegin
-            timingAttr.AddReplace("timeSinceAdBreakBegin", timeSinceAdBreakBegin)
-            m.top.nr.callFunc("nrAddToTotalAdPlaytime", timeSinceAdBreakBegin)
-        end if
-        timingAttr.AddReplace("numberOfAds", m.adState.numberOfAds)
-        if timingAttr.Count() > 0
-            m.top.nr.callFunc("nrSetCustomAttributeList", timingAttr, "")
-        end if
-        m.adState.timeSinceAdBreakBegin = 0
     end if
 end function
 
@@ -174,10 +135,16 @@ function nrMTExtractAdMetadata(evtType as String, ctx as Object) as Void
         if ad.bitrate <> invalid then m.customAdMetadata.AddReplace("adBitrate", ad.bitrate)
     end if
 
-    ' --- Error fields (available on Error ctx synthesized by the task) ---
+    ' Error ctx from the task uses adError*; nrTrackRAF reads errMsg / errType
     if evtType = "Error"
-        if ctx.adErrorMsg <> invalid  then m.customAdMetadata.AddReplace("adErrorMsg",  ctx.adErrorMsg)
-        if ctx.adErrorType <> invalid then m.customAdMetadata.AddReplace("adErrorType", ctx.adErrorType)
+        if ctx.errMsg = invalid then ctx.errMsg = ctx.adErrorMsg
+        if ctx.errType = invalid then ctx.errType = ctx.adErrorType
+    end if
+
+    ' SSAI ads are stitched into the content stream, so the stream URL is the ad source
+    if ctx.server = invalid
+        streamUrl = m.top.nr.callFunc("nrGenerateStreamUrl")
+        if streamUrl <> invalid and streamUrl <> "" then m.customAdMetadata.AddReplace("adSrc", streamUrl)
     end if
 
     ' Tag the event as coming from the MediaTailor SSAI path
@@ -185,11 +152,11 @@ function nrMTExtractAdMetadata(evtType as String, ctx as Object) as Void
 end function
 
 ' Push accumulated MediaTailor metadata into the NRAgent as a custom
-' attribute list scoped to all action types (invalid = no filter).
-' nrAddCustomAttributes() in NRAgent will merge these into the next event.
+' attribute list scoped to VideoAdAction events only.
+' nrAddCustomAttributes() in NRAgent will merge these into the next ad event.
 function nrMTFlushCustomAdAttributes() as Void
     if m.customAdMetadata.Count() = 0 then return
-    m.top.nr.callFunc("nrSetCustomAttributeList", m.customAdMetadata, "")
+    m.top.nr.callFunc("nrSetCustomAttributeList", m.customAdMetadata, "VIDEO_AD_ATTR")
 end function
 
 ' Remove ad-level (not pod-level) keys after each individual ad ends,
@@ -201,12 +168,7 @@ function nrMTClearAdLevelMetadata() as Void
     for each key in adLevelKeys
         m.customAdMetadata.Delete(key)
     end for
-end function
-
-function nrMTResetAdState() as Void
-    m.adState.numberOfAds = 0
-    m.adState.timeSinceAdBreakBegin = 0
-    m.adState.timeSinceAdStarted = 0
+    m.top.nr.callFunc("nrDeleteCustomAttributes", adLevelKeys, "VIDEO_AD_ATTR")
 end function
 
 ' Gate all debug output behind the NRAgent logging state (nrActivateLogging / nrEnableLogging).

@@ -13,7 +13,7 @@
 
 	<interface>
 		<!-- Properties -->
-        <field id="version" type="string" value="4.2.3"/>
+        <field id="version" type="string" value="4.3.0"/>
 		<!-- Public Methods (wrapped) -->
         <function name="NewRelicInit"/>
         <function name="NewRelicVideoStart"/>
@@ -35,6 +35,7 @@
         <function name="nrDisableHttpEvents"/>
         <function name="nrSetCustomAttribute"/>
         <function name="nrSetCustomAttributeList"/>
+        <function name="nrDeleteCustomAttributes"/>
         <function name="nrSetHarvestTime"/>
         <function name="nrSetHarvestTimeEvents"/>
         <function name = "nrSetUserId" />
@@ -44,6 +45,7 @@
         <function name="nrForceHarvestEvents"/>
         <function name="nrForceHarvestLogs"/>
         <function name="nrTrackRAF"/>
+        <function name="nrGenerateStreamUrl"/>
         <function name="nrSendLog"/>
         <function name="nrSendMetric"/>
         <function name="nrSendCountMetric"/>
@@ -53,6 +55,8 @@
         <!-- Internal Methods (not wrapped, but used from the outside by some internal components) -->
         <function name="nrActivateLogging"/>
         <function name="nrCheckLoggingState"/>
+        <function name="nrGetLoggingLevel"/>
+        <function name="nrGetDroppedSamplesCount"/>
         <function name="nrActivateQoeTracking"/>
         <function name="nrCheckQoeTrackingState"/>
         <function name="nrSetQoeAggregateIntervalMultiplier"/>
