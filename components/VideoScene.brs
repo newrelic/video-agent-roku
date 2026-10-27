@@ -18,6 +18,7 @@ sub init()
 end sub
 
 function nrRefUpdated()
+    m.top.observeField("moteButton", "onHarnessKey")
     print "Updated NR object reference"
     m.nr = m.top.nr
     
@@ -30,20 +31,23 @@ function nrRefUpdated()
     
     'NOTE: Uncomment ONE of the following setup calls
 
-    'Setup the video player with AWS Elemental MediaTailor SSAI (default)
-    ' setupMediaTailorVideo()
-
-    'Setup the video player with a single video
-    setupSingleVideo()
-
-    'Setup the video player with a playlist
-    ' setupVideoPlaylist(true)
-
-    'Setup the video player with a single video and ads
-    ' setupVideoWithAds()
-
-    'Setup the video player with a single video and Google IMA ads
-    ' setupVideoWithIMA()
+    'Pick the setup from the launch param "source" (default single)
+    source = m.global.source
+    if source = "mt-vod"
+        setupMediaTailorVideo(m.global.mtUrl, "VOD")
+    else if source = "mt-live"
+        setupMediaTailorVideo(m.global.mtUrl, "LIVE")
+    else if source = "raf"
+        setupVideoWithAds()
+    else if source = "ima-vod"
+        setupVideoWithIMA(false)
+    else if source = "ima-live"
+        setupVideoWithIMA(true)
+    else if source = "playlist"
+        setupVideoPlaylist(true)
+    else
+        setupSingleVideo()
+    end if
 
     'Activate video tracking
     NewRelicVideoStart(m.nr, m.video)
@@ -139,7 +143,7 @@ function setupVideoWithAds() as void
     m.adstask.control = "RUN"
 end function
 
-function setupVideoWithIMA() as Void
+function setupVideoWithIMA(live = false as Boolean) as Void
     m.video = m.top.findNode("myVideo")
     m.video.notificationinterval = 1
     
@@ -151,7 +155,7 @@ function setupVideoWithIMA() as Void
     }
     testVodStream = {
         title: "VOD stream"
-        contentSourceId: "2528370",
+        contentSourceId: "2548831",
         videoId: "tears-of-steel",
         apiKey: "",
         type: "vod"
@@ -159,7 +163,11 @@ function setupVideoWithIMA() as Void
 
     
     
-    loadImaSdk(testVodStream)
+    if live
+        loadImaSdk(testLiveStream)
+    else
+        loadImaSdk(testVodStream)
+    end if
 end function
 
 function videoAction(key as String) as Boolean
@@ -233,7 +241,7 @@ end function
 '   streamType   = "VOD"
 '   streamFormat = "hls"
 '   streamUrl    = /v1/session/<hash>/<config>/hls
-function setupMediaTailorVideo() as Void
+function setupMediaTailorVideo(overrideUrl = "" as String, streamType = "LIVE" as String) as Void
     print "VideoScene: setupMediaTailorVideo"
     print "Prepare video player with MediaTailor SSAI"
 
@@ -244,7 +252,10 @@ function setupMediaTailorVideo() as Void
     ' MediaTailor session-init URL
     ' VOD HLS: /v1/session/<hash>/<config>/hls  or  /v1/master/<hash>/<config>
     '----------------------------------------------------------------
-    mediaTailorUrl = "https://<your-cloudfront-domain>.cloudfront.net/v1/master/<config-hash>/<playbackConfigName>/index.m3u8"
+    ' nr-roku-test-1 (pre-roll via session init). nr-roku-test-2 swaps host and name:
+    ' https://YOUR_MEDIATAILOR_HOST.mediatailor.us-east-1.amazonaws.com/v1/session/YOUR_SESSION_HASH/nr-roku-test-2/scte35.isml/.m3u8
+    mediaTailorUrl = "https://YOUR_MEDIATAILOR_HOST.mediatailor.us-east-1.amazonaws.com/v1/session/YOUR_SESSION_HASH/nr-roku-test-1/scte35.isml/.m3u8"
+    if overrideUrl <> "" then mediaTailorUrl = overrideUrl
 
     '----------------------------------------------------------------
     ' Launch the background task that owns the SSAI adapter lifecycle.
@@ -256,7 +267,7 @@ function setupMediaTailorVideo() as Void
     m.mediaTailorTask.setField("nr",           m.nr)
     m.mediaTailorTask.setField("tracker",      MediaTailorTracker(m.nr))
     m.mediaTailorTask.setField("streamUrl",    mediaTailorUrl)
-    m.mediaTailorTask.setField("streamType",   "LIVE")
+    m.mediaTailorTask.setField("streamType",   streamType)
     m.mediaTailorTask.setField("streamFormat", "hls")
     m.mediaTailorTask.control = "RUN"
 end function
@@ -304,3 +315,9 @@ End Sub
 Sub onSdkLoadedError(message as Object)
   print "----- errors in the sdk loading process --- ";message
 End Sub
+
+'Harness: Main.brs simulates remote key presses by writing "HARNESS:<key>" to moteButton
+sub onHarnessKey()
+    v = m.top.moteButton
+    if v <> invalid and Left(v, 8) = "HARNESS:" then videoAction(Mid(v, 9))
+end sub
