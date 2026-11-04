@@ -17,6 +17,10 @@ sub init()
     ' and also injectable via nrSetMediaTailorAdMetadata() for sidecar
     ' data that arrives before playback (e.g. ads_metadata response).
     m.customAdMetadata = {}
+    ' The awsemt adapter only hands the ad pod to PodStart, ad events carry no ad: keep the pod
+    ' and follow its ads in order (one per Impression)
+    m.pod = invalid
+    m.adIndex = -1
 end sub
 
 '==========================
@@ -95,34 +99,61 @@ end function
 function nrMTExtractAdMetadata(evtType as String, ctx as Object) as Void
     if ctx = invalid then return
 
-    ' --- Pod-level fields (available on PodStart / PodComplete) ---
+    ' --- Pod-level fields (the pod arrives with PodStart) ---
+    if evtType = "PodStart" and type(ctx.adPod) = "roAssociativeArray"
+        m.pod = ctx.adPod
+        m.adIndex = -1
+    end if
+    pod = m.pod
+    if pod = invalid then pod = {}
     if evtType = "PodStart" or evtType = "PodComplete"
-        if ctx.rendersequence <> invalid
-            m.customAdMetadata.AddReplace("adRenderSequence", ctx.rendersequence)
+        renderSequence = pod.rendersequence
+        if renderSequence = invalid then renderSequence = ctx.rendersequence
+        if renderSequence <> invalid
+            m.customAdMetadata.AddReplace("adRenderSequence", renderSequence)
+            ' Ad-level contexts carry no position, keep the break position for the ads in it
+            if renderSequence = "preroll" then m.customAdMetadata.AddReplace("adPosition", "pre")
+            if renderSequence = "midroll" then m.customAdMetadata.AddReplace("adPosition", "mid")
+            if renderSequence = "postroll" then m.customAdMetadata.AddReplace("adPosition", "post")
         end if
-        if ctx.duration <> invalid
-            m.customAdMetadata.AddReplace("adBreakDurationMs", ctx.duration * 1000)
+        if pod.duration <> invalid
+            m.customAdMetadata.AddReplace("adBreakDurationMs", pod.duration * 1000)
         end if
-        ' awsemt adapter populates adPod info on the context
-        if ctx.adPod <> invalid
-            pod = ctx.adPod
-            if pod.id <> invalid       then m.customAdMetadata.AddReplace("adPodId",       pod.id)
-            if pod.origIndex <> invalid then m.customAdMetadata.AddReplace("adPodIndex",    pod.origIndex)
-            if pod.type <> invalid     then m.customAdMetadata.AddReplace("adPodType",      pod.type)
-        end if
+        if pod.id <> invalid then m.customAdMetadata.AddReplace("adPodId", pod.id)
+        if pod.origIndex <> invalid then m.customAdMetadata.AddReplace("adPodIndex", pod.origIndex)
+        if pod.type <> invalid then m.customAdMetadata.AddReplace("adPodType", pod.type)
     end if
 
     ' --- Ad-level fields (available on Impression / Start / Complete / quartiles) ---
-    ad = invalid
-    if ctx.ad <> invalid then ad = ctx.ad
+    if evtType = "Impression" then m.adIndex = m.adIndex + 1
+    ad = ctx.ad
+    if ad = invalid and type(pod.ads) = "roArray" and m.adIndex >= 0 and m.adIndex < pod.ads.Count()
+        ad = pod.ads[m.adIndex]
+    end if
 
     if ad <> invalid
-        ' Standard RAF ad fields
-        if ad.adid <> invalid      then m.customAdMetadata.AddReplace("adId",         ad.adid)
-        if ad.adtitle <> invalid   then m.customAdMetadata.AddReplace("adTitle",      ad.adtitle)
-        if ad.adsystem <> invalid  then m.customAdMetadata.AddReplace("adSystem",     ad.adsystem)
-        if ad.duration <> invalid  then m.customAdMetadata.AddReplace("adDurationMs", ad.duration * 1000)
-        if ad.creativeid <> invalid then m.customAdMetadata.AddReplace("creativeId",  ad.creativeid)
+        ' The awsemt adapter keeps the full MediaTailor tracking ad (adTitle, adSystem, ...) in ad.nativeAd
+        native = ad.nativeAd
+        if type(native) <> "roAssociativeArray" then native = {}
+
+        adId = ad.adid
+        if adId = invalid then adId = native.adId
+        adTitle = ad.adtitle
+        if adTitle = invalid then adTitle = native.adTitle
+        adSystem = ad.adsystem
+        if adSystem = invalid then adSystem = native.adSystem
+        creativeId = ad.creativeid
+        if creativeId = invalid then creativeId = native.creativeId
+        duration = ad.duration
+        if duration = invalid or duration = 0 then duration = native.durationInSeconds
+        if adId <> invalid         then m.customAdMetadata.AddReplace("adId",         adId)
+        if adTitle <> invalid      then m.customAdMetadata.AddReplace("adTitle",      adTitle)
+        if adSystem <> invalid     then m.customAdMetadata.AddReplace("adSystem",     adSystem)
+        if creativeId <> invalid   then m.customAdMetadata.AddReplace("creativeId",   creativeId)
+        if duration <> invalid
+            m.customAdMetadata.AddReplace("adDuration",   duration * 1000)
+            m.customAdMetadata.AddReplace("adDurationMs", duration * 1000)
+        end if
 
         ' MediaTailor / SSAI extension fields populated by the awsemt adapter
         if ad.advertiser <> invalid  then m.customAdMetadata.AddReplace("adAdvertiser",   ad.advertiser)
@@ -162,7 +193,7 @@ end function
 ' Remove ad-level (not pod-level) keys after each individual ad ends,
 ' preventing stale creativeId / adTitle from leaking into the next ad.
 function nrMTClearAdLevelMetadata() as Void
-    adLevelKeys = ["adId", "adTitle", "adSystem", "adDurationMs", "creativeId",
+    adLevelKeys = ["adId", "adTitle", "adSystem", "adDuration", "adDurationMs", "creativeId",
                    "adAdvertiser", "adCampaignId", "adLineItemId", "adVastTagUri",
                    "adDealId", "adBitrate"]
     for each key in adLevelKeys

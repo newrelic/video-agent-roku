@@ -291,6 +291,7 @@ Sub playStream(url as Object)
   vidContent.url = url
   vidContent.title = m.videoTitle
   vidContent.streamformat = "hls"
+  vidContent.live = (m.sdkTask.streamData.type = "live")
   m.video.content = vidContent
   m.video.visible = true
   m.video.control = "play"

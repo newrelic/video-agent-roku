@@ -248,6 +248,11 @@ function NewRelicVideoStart(videoObject as Object) as Void
     m.nrVideoObject = videoObject
     'Current state
     m.nrLastVideoState = "none"
+    m.nrSeeking = false
+    m.nrSeekFrom = 0
+    m.nrSeekStartTs = 0
+    m.nrLastPlayhead = invalid
+    m.nrLastPlayheadTs = 0
     m.nrIsInitialBuffering = false
     ' Tracks an in-progress buffer so BUFFER_END fires once regardless of which
     ' signal (bufferingStatus observer or state transition) detects recovery first.
@@ -289,6 +294,8 @@ function NewRelicVideoStart(videoObject as Object) as Void
     'Setup event listeners 
     m.nrVideoObject.observeFieldScoped("state", "nrStateObserver")
     m.nrVideoObject.observeFieldScoped("contentIndex", "nrIndexObserver")
+    m.nrVideoObject.observeFieldScoped("position", "nrPositionObserver")
+    m.nrVideoObject.observeFieldScoped("seek", "nrSeekObserver")
     m.nrvideoObject.observeFieldScoped("licenseStatus", "nrLicenseStatusObserver")
     m.nrVideoObject.observeFieldScoped("downloadedSegment", "nrDownloadedSegmentObserver")
     ' Detects buffer recovery even while paused, since `state` stays "paused" and
@@ -309,6 +316,8 @@ function NewRelicVideoStop() as Void
     if m.nrVideoObject <> invalid
         m.nrVideoObject.unobserveFieldScoped("state")
         m.nrVideoObject.unobserveFieldScoped("contentIndex")
+        m.nrVideoObject.unobserveFieldScoped("position")
+        m.nrVideoObject.unobserveFieldScoped("seek")
         m.nrVideoObject.unobserveFieldScoped("licenseStatus")
         m.nrVideoObject.unobserveFieldScoped("downloadedSegment")
         m.nrVideoObject.unobserveFieldScoped("bufferingStatus")
@@ -653,6 +662,15 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             nrSendRAFEvent("AD_BREAK_START", ctx)
             m.rafState.timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds()
 
+            'SSAI adapters report a stitched pre-roll only once they have the ad metadata, the stream is already
+            'playing it. Count that time in the break and in its first ad.
+            renderSequence = ctx.rendersequence
+            if renderSequence = invalid and type(ctx.adPod) = "roAssociativeArray" then renderSequence = ctx.adPod.rendersequence
+            if renderSequence = "preroll" and m.nrVideoObject <> invalid and m.nrVideoObject.position > 1
+                m.rafState.lateStartMs = m.nrVideoObject.position * 1000
+                m.rafState.timeSinceAdBreakBegin = m.rafState.timeSinceAdBreakBegin - m.rafState.lateStartMs
+            end if
+
             'Pause content playtime tracking during ad break
             nrPausePlaytime()
 
@@ -662,6 +680,7 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
                 m.contentRequestTimestamp = m.rafState.timeSinceAdBreakBegin
             end if
         else if evtType = "PodComplete"
+            if m.rafState.timeSinceAdBreakBegin = 0 then return
             timeSinceAdBreakBegin = m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin
             nrAddToTotalAdPlaytime(timeSinceAdBreakBegin)
             nrSendRAFEvent("AD_BREAK_END", ctx, {"timeSinceAdBreakBegin": timeSinceAdBreakBegin})
@@ -678,8 +697,10 @@ function nrTrackRAF(evtType = invalid as Dynamic, ctx = invalid as Dynamic) as V
             m.rafState.numberOfAds = m.rafState.numberOfAds + 1
             nrResetAdBitrateTracker()  ' Reset tracker for new ad
             nrSendRAFEvent("AD_START", ctx)
-            m.rafState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds()
+            m.rafState.timeSinceAdStarted = m.nrTimer.TotalMilliseconds() - m.rafState.lateStartMs
+            m.rafState.lateStartMs = 0
         else if evtType = "Complete"
+            if m.rafState.timeSinceAdStarted = 0 then return
             nrSendRAFEvent("AD_END", ctx)
             'Reset attributes after END
             nrResetRAFState()
@@ -1386,7 +1407,7 @@ function nrCalculateBufferType(actionName as String) as String
         m.nrIsInitialBuffering = false
         if m.nrLastVideoState = "paused"
             bufferType = "pause"
-        else if m.nrLastVideoState = "seeking"
+        else if m.nrSeeking
             bufferType = "seek"
         else
             bufferType = "connection"
@@ -1582,6 +1603,7 @@ function nrSendEnd() as Void
 
     nrSendVideoEvent("CONTENT_END")
 
+    m.nrLastPlayhead = invalid
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrResetPlaytime()
     m.nrPlaytimeSinceLastEvent = invalid
@@ -2358,6 +2380,21 @@ function nrSendRAFEvent(actionName as String, ctx as Dynamic, attr = invalid) as
     nrRecordEvent(ev)
 end function
 
+'Close the ad and ad break that are open, if any (seek or abandoned ad)
+function nrCloseOpenAd() as Void
+    if m.rafState.timeSinceAdStarted <> 0
+        nrSendRAFEvent("AD_END", {})
+        nrResetRAFState()
+        m.rafState.timeSinceAdRequested = 0
+        m.rafState.timeSinceAdStarted = 0
+    end if
+    if m.rafState.timeSinceAdBreakBegin <> 0
+        nrSendRAFEvent("AD_BREAK_END", {}, {"timeSinceAdBreakBegin": m.nrTimer.TotalMilliseconds() - m.rafState.timeSinceAdBreakBegin})
+        nrResumePlaytime()
+        m.rafState.timeSinceAdBreakBegin = 0
+    end if
+end function
+
 function nrResetRAFState() as Void
     m.rafState.didFirstQuartile = false
     m.rafState.didSecondQuartile = false
@@ -2365,6 +2402,7 @@ function nrResetRAFState() as Void
 end function
 
 function nrResetRAFTimers() as Void
+    m.rafState.lateStartMs = 0
     m.rafState.timeSinceAdBreakBegin = 0
     m.rafState.timeSinceAdRequested = 0
     m.rafState.timeSinceAdStarted = 0
@@ -2415,6 +2453,10 @@ function nrGenerateId() as String
     digest.Setup("md5")
     result = digest.Process(ba)
     return result
+end function
+
+function nrIsLiveContent() as Boolean
+    return m.nrVideoObject <> invalid and m.nrVideoObject.content <> invalid and m.nrVideoObject.content.live = true
 end function
 
 function nrGenerateStreamUrl() as String
@@ -2612,6 +2654,10 @@ function nrStateTransitionPlaying() as Void
         m.nrLastPlayTimestamp = CreateObject("roDateTime").AsSeconds()
     end if
     nrLog("nrStateTransitionPlaying")
+    nrEndSeek()
+    'No position updates arrive while paused or buffering, restart the seek baseline
+    m.nrLastPlayhead = m.nrVideoObject.position * 1000
+    m.nrLastPlayheadTs = m.nrTimer.TotalMilliseconds()
     if m.nrLastVideoState = "paused"
         nrSendResume()
     else if m.nrLastVideoState = "buffering"
@@ -2651,8 +2697,58 @@ function nrStateTransitionBuffering() as Void
     nrSendBufferStart()
 end function
 
+'Seeks. Roku has no seeking state: an app seek sets the "seek" field, a remote seek (trick play)
+'shows up as a jump of the position. Both send CONTENT_SEEK_START, CONTENT_SEEK_END comes when playing resumes.
+function nrSeekObserver() as Void
+    if m.hasContentStarted <> true then return
+    nrStartSeek(m.nrVideoObject.seek * 1000)
+end function
+
+function nrPositionObserver() as Void
+    if m.hasContentStarted <> true then return
+    now = m.nrTimer.TotalMilliseconds()
+    'Some seeks resume without a state change
+    if m.nrSeeking
+        if m.nrVideoObject.state = "playing" and now - m.nrSeekStartTs > 1500 then nrEndSeek()
+        return
+    end if
+    curPos = m.nrVideoObject.position * 1000
+    if m.nrLastPlayhead <> invalid and m.nrLastVideoState = "playing"
+        expected = m.nrLastPlayhead + (now - m.nrLastPlayheadTs)
+        if Abs(curPos - expected) > 2500
+            nrStartSeek(curPos)
+            return
+        end if
+    end if
+    m.nrLastPlayhead = curPos
+    m.nrLastPlayheadTs = now
+end function
+
+function nrStartSeek(seekTo as Dynamic) as Void
+    if m.nrSeeking then return
+    m.nrSeeking = true
+    m.nrSeekStartTs = m.nrTimer.TotalMilliseconds()
+    m.nrSeekFrom = 0
+    if m.nrLastPlayhead <> invalid then m.nrSeekFrom = m.nrLastPlayhead
+    'A seek abandons whatever ad was open, its end events will never arrive
+    nrCloseOpenAd()
+    nrSendVideoEvent("CONTENT_SEEK_START", {"seekFrom": m.nrSeekFrom, "seekTo": seekTo})
+end function
+
+function nrEndSeek() as Void
+    if not m.nrSeeking then return
+    m.nrSeeking = false
+    m.nrLastPlayhead = m.nrVideoObject.position * 1000
+    m.nrLastPlayheadTs = m.nrTimer.TotalMilliseconds()
+    nrSendVideoEvent("CONTENT_SEEK_END", {"seekFrom": m.nrSeekFrom, "seekTo": m.nrLastPlayhead})
+end function
+
 function nrStateTransitionEnd() as Void
     nrLog("nrStateTransitionEnd")
+    'Roku reports "finished" and then "stopped" when the app stops the video after the end.
+    'The view is already closed, a second CONTENT_END would carry a new viewId.
+    if m.nrLastVideoState = "none" or m.nrLastVideoState = "stopped" or m.nrLastVideoState = "finished" then return
+    m.nrSeeking = false
     if m.nrLastVideoState = "buffering"
         nrSendBufferEnd()
     end if
@@ -2684,6 +2780,7 @@ function nrIndexObserver() as Void
     '  instead a buffering cycle happens, followed by an index change. The video attributes are mixed during this process, some belong
     '  to the next video, some to the previous. In order to send an END that belongs to the ending video, we have to make this trick.
     nrSendBackupVideoEnd()
+    m.nrLastPlayhead = invalid
     '- Send REQUEST and START using normal send, with current video attributes
     m.nrVideoCounter = m.nrVideoCounter + 1
     nrSendRequest()
