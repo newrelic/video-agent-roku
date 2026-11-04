@@ -182,6 +182,8 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | CONTENT_RESUME       | Content video resumed.                                                                           |
 | CONTENT_BUFFER_START | Content video buffering started.                                                                 |
 | CONTENT_BUFFER_END   | Content video buffering ended.                                                                   |
+| CONTENT_SEEK_START   | Content video seek started. Has seekFrom and seekTo (ms).                                        |
+| CONTENT_SEEK_END     | Content video seek ended. Has seekFrom and seekTo (ms).                                          |
 | CONTENT_HEARTBEAT    | Content video heartbeat, an event that happens once every 30 seconds while the video is playing. |
 | QOE_AGGREGATE        | Quality of Experience aggregate event containing QoE KPI metrics for content playback.           |
 
@@ -210,6 +212,9 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | adPosition               | The position of the ad.                                                                                                 |
 | adCreativeId             | The creative ID of the ad.                                                                                              |
 | adPartner                | The ad partner, e.g., ima, freewheel.                                                                                   |
+| adSystem                 | MediaTailor and IMA only. Ad system reported by the ad server.                                                          |
+| adDurationMs             | MediaTailor only. Duration of the individual ad, in ms.                                                 |
+| numberOfAds              | Running count of ads started since the agent was created. It is not reset at each ad break.                              |
 | timestamp                | The time (date, hour, minute, second) at which the interaction occurred.                                                |
 | elapsedTime              | Active content watched between two consecutive heartbeats, in milliseconds.                                                                              |
 | instrumentation.provider | Player/agent name.                                                                                                      |
@@ -229,6 +234,17 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | AD_BREAK_START | Ad break (a block of ads) started.    |
 | AD_BREAK_END   | Ad break ended.                       |
 | AD_QUARTILE    | Ad quartile happened.                 |
+
+#### Ad and view tracking notes
+
+- **timeSinceAdBreakBegin**: on every ad event inside a break for Google IMA, only on AD_BREAK_END for RAF and MediaTailor.
+- **timeSinceAdRequested**: Google IMA stitches ads into the stream and has no request callback, the start of the break is used as the request.
+- **adPosition**: `pre`, `mid` or `post`, or `live` for every break of a live stream. Google IMA reports pod index -1 for the VOD post-roll, the agent uses `contentIsLive` to tell it from a live break. Set `live = true` on the ContentNode for live streams.
+- **Pre-roll in SSAI**: MediaTailor reports a stitched pre-roll once the adapter has the ad metadata (about 5 s into playback). The agent counts that time in the break and in the first ad, so `timeSinceAdBreakBegin` and `timeSinceAdStarted` cover the full ad.
+- **Seeks**: app seeks (`seek` field) and remote seeks (position jump over 2.5 s) send CONTENT_SEEK_START (`seekFrom`, `seekTo` in ms), CONTENT_SEEK_END is sent when playback resumes. The buffering in between has `bufferType` `seek`. A seek closes the ad and ad break that were open (AD_END, AD_BREAK_END).
+- **Stalled IMA ad**: if a new ad break starts while the previous one never ended, the previous AD_END / AD_BREAK_END are sent first and the stalled time is not added to `totalAdPlaytime`.
+- **End of playback**: `finished` and `stopped` both close the view, but only the first one sends CONTENT_END.
+- **Event buffer**: when more events arrive than the buffer holds, events are dropped at random (reservoir sampling), including start events. This is by design. Each drop is logged as a warning when logging is enabled.
 
 ### VideoErrorAction
 

@@ -14,6 +14,8 @@ Function TestSuite__Main() as Object
     this.addTest("VideoEvents", TestCase__Main_VideoEvents)
     this.addTest("TimeSinceAttributes", TestCase__Main_TimeSinceAttributes)
     this.addTest("RAFTracker", TestCase__Main_RAFTracker)
+    this.addTest("SingleContentEndAfterStop", TestCase__Main_SingleContentEndAfterStop)
+    this.addTest("SeekClosesOpenAd", TestCase__Main_SeekClosesOpenAd)
     this.addTest("NoErrorAttributesOnNonErrorEvents", TestCase__Main_NoErrorAttributesOnNonErrorEvents)
 
     return this
@@ -223,4 +225,66 @@ Function TestCase__Main_NoErrorAttributesOnNonErrorEvents() as String
         m.assertEqual(events[3].errorCode, 12345)
         m.assertEqual(events[3].errorMessage, "whatever error")
     ])
+End Function
+
+' "finished" followed by "stopped" (app stops the video after the end) must close the view only once.
+Function TestCase__Main_SingleContentEndAfterStop() as String
+    print "Checking a single CONTENT_END after finished + stopped..."
+
+    Video_Tracking_SetUp(m)
+
+    m.videoObject.callFunc("startBuffering")
+    m.videoObject.callFunc("startPlayback")
+    m.videoObject.callFunc("endPlayback")
+    m.videoObject.callFunc("stopPlayback")
+
+    events = m.nr.callFunc("nrExtractAllSamples", "event")
+    ends = 0
+    for each ev in events
+        if ev.actionName = "CONTENT_END" then ends = ends + 1
+    end for
+
+    return m.assertEqual(ends, 1)
+End Function
+
+' A seek abandons the open ad: AD_END and AD_BREAK_END are sent with CONTENT_SEEK_START, and the
+' late Complete / PodComplete from the ad adapter are ignored.
+Function TestCase__Main_SeekClosesOpenAd() as String
+    print "Checking a seek closes the open ad..."
+
+    Video_Tracking_SetUp(m)
+
+    ctx = { "rendersequence": "midroll", "duration": 10 }
+    m.videoObject.callFunc("startBuffering")
+    m.videoObject.callFunc("startPlayback")
+    nrTrackRAF(m.nr, "PodStart", ctx)
+    nrTrackRAF(m.nr, "Impression", ctx)
+    nrTrackRAF(m.nr, "Start", ctx)
+    m.videoObject.seek = 90
+
+    names = []
+    for each ev in m.nr.callFunc("nrExtractAllSamples", "event")
+        names.Push(ev.actionName)
+    end for
+    closedBySeek = CountOf(names, "AD_END") + CountOf(names, "AD_BREAK_END")
+
+    nrTrackRAF(m.nr, "Complete", ctx)
+    nrTrackRAF(m.nr, "PodComplete", ctx)
+    lateEvents = m.nr.callFunc("nrExtractAllSamples", "event")
+
+    return multiAssert([
+        m.assertEqual(CountOf(names, "CONTENT_SEEK_START"), 1)
+        m.assertEqual(CountOf(names, "AD_END"), 1)
+        m.assertEqual(CountOf(names, "AD_BREAK_END"), 1)
+        m.assertEqual(closedBySeek, 2)
+        m.assertArrayCount(lateEvents, 0)
+    ])
+End Function
+
+Function CountOf(items as Object, value as String) as Integer
+    total = 0
+    for each item in items
+        if item = value then total = total + 1
+    end for
+    return total
 End Function

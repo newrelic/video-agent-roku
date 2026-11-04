@@ -5,6 +5,7 @@
 	<interface>
 		<!-- Observed state values -->
 		<field id="state" type="string" value="none"/>
+        <field id="seek" type="time" value="0"/>
         <field id="contentIndex" type="integer" value="1"/>
         <field id="licenseStatus" type="node"/>
 
