@@ -14,6 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
+    env:
+      # Single source of truth for the loose source files that go in the zip,
+      # shared by the verify, build and validate steps below so they cannot
+      # drift apart. components/NewRelicAgent is added wholesale separately.
+      REQUIRED_SOURCE_FILES: >-
+        source/NewRelicAgent.brs
+        source/IMATrackerInterface.brs
+        source/MediaTailorTrackerInterface.brs
 
     steps:
       - name: Checkout code
@@ -28,10 +36,16 @@ jobs:
             exit 1
           fi
 
-          if [ ! -f "source/NewRelicAgent.brs" ]; then
-            echo "Error: source/NewRelicAgent.brs file not found"
-            exit 1
-          fi
+          # Every source file the guided-install flow tells customers to copy.
+          # IMATrackerInterface.brs and MediaTailorTrackerInterface.brs define
+          # the IMATracker(), MediaTailorTracker() and
+          # nrEnableMediaTailorTracking() entry points the ad snippets call.
+          for file in $REQUIRED_SOURCE_FILES; do
+            if [ ! -f "$file" ]; then
+              echo "Error: $file not found"
+              exit 1
+            fi
+          done
 
           echo "✓ All required files found"
 
@@ -39,7 +53,7 @@ jobs:
           echo ""
           echo "Files to be included in zip:"
           find components/NewRelicAgent -type f
-          echo "source/NewRelicAgent.brs"
+          for file in $REQUIRED_SOURCE_FILES; do echo "$file"; done
 
       - name: Create output directory
         run: mkdir -p out
@@ -51,7 +65,7 @@ jobs:
           # Create the zip file with maximum compression
           zip -9 -r out/NewRelicAgent.zip \
             components/NewRelicAgent \
-            source/NewRelicAgent.brs
+            $REQUIRED_SOURCE_FILES
 
           echo "✓ Zip file created"
 
@@ -80,6 +94,16 @@ jobs:
             echo "Warning: Zip file seems too small ($FILE_SIZE bytes)"
             exit 1
           fi
+
+          # A present-but-incomplete zip is the failure mode that shipped:
+          # the size check passes happily while a required file is absent, so
+          # assert on the archive's actual contents.
+          for file in $REQUIRED_SOURCE_FILES; do
+            if ! unzip -l out/NewRelicAgent.zip | grep -q "[[:space:]]$file\$"; then
+              echo "Error: $file is missing from the zip"
+              exit 1
+            fi
+          done
 
           echo ""
           echo "✓ Zip file validation passed"
