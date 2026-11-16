@@ -1238,32 +1238,19 @@ function nrCreateAppInfo() as Object
     return {"appInfo" : appInfo, "deviceInfo":appInfo[1]}
 end function
 
-' GetDisplaySize() tops out at 1920x1080 regardless of actual output, so it can't
-' represent 4K/8K rendition. GetVideoMode() reflects the real playback resolution
-' (e.g. "2160p24", "2160p60b10", "1080p60Dv") but only as a string, so parse the
-' leading height digits and derive width from Roku's fixed height->width pairs.
-function nrGetRenditionSizeFromVideoMode(videoMode as String) as Object
-    if videoMode = invalid or videoMode = "" then return invalid
-    heightStr = ""
-    for i = 1 to Len(videoMode)
-        c = Mid(videoMode, i, 1)
-        if c >= "0" and c <= "9"
-            heightStr = heightStr + c
-        else
-            exit for
-        end if
-    end for
-    widthByHeight = {
-        "480": 720
-        "576": 720
-        "720": 1280
-        "1080": 1920
-        "2160": 3840
-        "4320": 7680
-    }
-    width = widthByHeight[heightStr]
-    if heightStr = "" or width = invalid then return invalid
-    return { h: heightStr.ToInt(), w: width }
+' Rendition comes from the segment currently streaming, not from device info:
+' GetVideoMode() is the TV output mode (2160p for HD content on a 4K display) and
+' GetDisplaySize() is capped at 1920x1080. Returns invalid when the segment carries
+' no video picture size (audio segment, progressive content, start of playback).
+function nrGetRenditionSizeFromSegment(segment as Dynamic) as Object
+    if segment = invalid or Type(segment) <> "roAssociativeArray" then return invalid
+    w = segment["width"]
+    h = segment["height"]
+    if w = invalid or h = invalid then return invalid
+    if Type(w) <> "roInt" and Type(w) <> "Integer" then return invalid
+    if Type(h) <> "roInt" and Type(h) <> "Integer" then return invalid
+    if w <= 0 or h <= 0 then return invalid
+    return { h: h, w: w }
 end function
 
 function nrCreateEvent(eventType as String, actionName as String) as Object
@@ -1315,14 +1302,8 @@ function nrAddBaseAttributes(ev as Object) as Object
     'ev.AddReplace("ipAddress", dev.GetExternalIp())
     ev.AddReplace("displayType", dev.GetDisplayType())
     ev.AddReplace("displayMode", dev.GetDisplayMode())
-    videoMode = dev.GetVideoMode()
-    renditionSize = nrGetRenditionSizeFromVideoMode(videoMode)
-    if renditionSize <> invalid
-        ev.AddReplace("contentRenditionHeight", renditionSize.h)
-        ev.AddReplace("contentRenditionWidth", renditionSize.w)
-    end if
     ev.AddReplace("displayAspectRatio", dev.GetDisplayAspectRatio())
-    ev.AddReplace("videoMode", videoMode)
+    ev.AddReplace("videoMode", dev.GetVideoMode())
     ev.AddReplace("graphicsPlatform", dev.GetGraphicsPlatform())
     ev.AddReplace("timeSinceLastKeypress", dev.TimeSinceLastKeypress() * 1000)
 
@@ -1815,6 +1796,11 @@ function nrAddVideoAttributes(ev as Object) as Object
         contentBitrate = m.nrVideoObject.streamInfo["streamBitrate"]
     end if
     ev.AddReplace("contentBitrate", contentBitrate)
+    renditionSize = nrGetRenditionSizeFromSegment(m.nrVideoObject.streamingSegment)
+    if renditionSize <> invalid
+        ev.AddReplace("contentRenditionHeight", renditionSize.h)
+        ev.AddReplace("contentRenditionWidth", renditionSize.w)
+    end if
     ' Set contentSegmentDownloadBitrate: bandwidth estimate used by ABR algorithm
     if m.nrVideoObject.streamInfo <> invalid and m.nrVideoObject.streamInfo["measuredBitrate"] <> invalid
         ev.AddReplace("contentSegmentDownloadBitrate", m.nrVideoObject.streamInfo["measuredBitrate"])

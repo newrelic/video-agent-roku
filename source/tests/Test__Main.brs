@@ -15,6 +15,7 @@ Function TestSuite__Main() as Object
     this.addTest("TimeSinceAttributes", TestCase__Main_TimeSinceAttributes)
     this.addTest("RAFTracker", TestCase__Main_RAFTracker)
     this.addTest("NoErrorAttributesOnNonErrorEvents", TestCase__Main_NoErrorAttributesOnNonErrorEvents)
+    this.addTest("RenditionFromStreamingSegment", TestCase__Main_RenditionFromStreamingSegment)
 
     return this
 End Function
@@ -222,5 +223,43 @@ Function TestCase__Main_NoErrorAttributesOnNonErrorEvents() as String
         m.assertEqual(events[3].actionName, "CONTENT_ERROR")
         m.assertEqual(events[3].errorCode, 12345)
         m.assertEqual(events[3].errorMessage, "whatever error")
+    ])
+End Function
+
+' contentRenditionHeight/Width must come from the streaming segment's encoded
+' picture size, never from device info (GetVideoMode() is the TV output mode and
+' reports 2160p for HD content on a 4K display), and be absent when unknown.
+Function TestCase__Main_RenditionFromStreamingSegment() as String
+    print "Checking rendition comes from streamingSegment..."
+
+    Video_Tracking_SetUp(m)
+    m.videoObject.streamingSegment = {segType: 2, width: 1280, height: 720}
+    m.videoObject.callFunc("startBuffering")
+    hd = m.nr.callFunc("nrExtractAllSamples", "event")
+
+    Video_Tracking_SetUp(m)
+    m.videoObject.streamingSegment = {segType: 2, width: 3840, height: 2160}
+    m.videoObject.callFunc("startBuffering")
+    uhd = m.nr.callFunc("nrExtractAllSamples", "event")
+
+    Video_Tracking_SetUp(m)
+    m.videoObject.streamingSegment = {segType: 1, width: 0, height: 0}
+    m.videoObject.callFunc("startBuffering")
+    audio = m.nr.callFunc("nrExtractAllSamples", "event")
+
+    Video_Tracking_SetUp(m)
+    m.videoObject.streamingSegment = {}
+    m.videoObject.callFunc("startBuffering")
+    none = m.nr.callFunc("nrExtractAllSamples", "event")
+
+    return multiAssert([
+        m.assertEqual(hd[0].contentRenditionHeight, 720)
+        m.assertEqual(hd[0].contentRenditionWidth, 1280)
+        m.assertEqual(uhd[0].contentRenditionHeight, 2160)
+        m.assertEqual(uhd[0].contentRenditionWidth, 3840)
+        m.assertInvalid(audio[0].contentRenditionHeight)
+        m.assertInvalid(audio[0].contentRenditionWidth)
+        m.assertInvalid(none[0].contentRenditionHeight)
+        m.assertInvalid(none[0].contentRenditionWidth)
     ])
 End Function
