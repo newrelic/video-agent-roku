@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed `contentRenditionHeight` and `contentRenditionWidth` reporting the device output mode (e.g. 3840x2160 for HD content on a 4K display). They now come from the width and height of the currently streaming video segment (`streamingSegment`), and are omitted when it is unavailable. `videoMode` is unchanged and still reports the device output mode.
+
 ## [4.3.0] - 2026-10-27
 
 ### Added

@@ -58,7 +58,7 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | displayType                 | Type of display, screen, TV, etc.                                                                        |
 | contentRenditionName        | Display mode.                                                                                            |
 | displayAspectRatio          | Aspect ratio.                                                                                            |
-| videoMode                   | Video mode.                                                                                              |
+| videoMode                   | Device video output mode (e.g. `2160p60`). Not the resolution of the stream being played.                |
 | graphicsPlatform            | Graphics platform (OpenGL, etc).                                                                         |
 | timeSinceLastKeyPress       | Time since last keypress in the remote. Milliseconds.                                                    |
 | appId                       | Application ID.                                                                                          |
@@ -130,6 +130,8 @@ An Attribute is a piece of data associated with an event. Attributes provide add
 | contentId                | The ID of the video.                                                                                          |
 | contentTitle             | The title of the video.                                                                                       |
 | contentBitrate                      | The actual encoding bitrate of the currently playing rendition (in bits per second).                          |
+| contentRenditionHeight              | Height in pixels of the encoded video currently streaming. Omitted when unavailable.                          |
+| contentRenditionWidth               | Width in pixels of the encoded video currently streaming. Omitted when unavailable.                           |
 | contentSegmentDownloadBitrate       | Measured bitrate (in bits per second) based on segment download performance.                                  |
 | contentNetworkDownloadBitrate       | Network download bitrate (in bits per second) measured during content delivery.                               |
 | contentIsFullscreen      | Always "true".                                                                                                |
